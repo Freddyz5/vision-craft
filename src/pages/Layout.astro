@@ -1,5 +1,15 @@
 ---
 import "../assets/app.css";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "Vision Craft - Sueña y Enfócate",
+	description = "Crea tu vision board. Descubre, selecciona y crea tableros de imágenes inspiradoras.",
+} = Astro.props;
 ---
 
 <html lang="en">
@@ -7,11 +17,35 @@ import "../assets/app.css";
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta name="description" content={description} />
+		<title>{title}</title>
+
+		<!-- Google Fonts: Inter -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Anti-flash: apply saved theme before paint -->
+		<script is:inline>
+			(function () {
+				const saved = localStorage.getItem("df-theme");
+				const prefersDark = window.matchMedia(
+					"(prefers-color-scheme: dark)",
+				).matches;
+				if (saved === "dark" || (!saved && prefersDark)) {
+					document.documentElement.classList.add("dark");
+				}
+			})();
+		</script>
 	</head>
-	<body>
+
+	<body
+		class="bg-df-bg dark:bg-df-bg-dark text-df-ink dark:text-df-ink-dark font-sans antialiased transition-colors duration-300">
 		<slot />
 	</body>
 </html>
