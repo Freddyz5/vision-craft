@@ -1,17 +1,14 @@
 import type { NormalizedImage } from "../types";
 
 export const getUnsplashImg = async (query?: string, page: number = 1): Promise<NormalizedImage[]> => {
-  const clientId = "O4C3y9s_t9mhtuteakcP0oAM-REbX2zy0bpy63okaEE";
-  
-  const endpoint = query 
-    ? `https://api.unsplash.com/search/photos/?client_id=${clientId}&query=${encodeURIComponent(query)}&per_page=20&page=${page}` 
-    : `https://api.unsplash.com/photos/?client_id=${clientId}&per_page=20&page=${page}`;
-
   try {
-    const response = await fetch(endpoint, {
-      method: "GET",
-      redirect: "follow"
-    });
+    const url = new URL('/api/images', window.location.origin);
+    url.searchParams.append('provider', 'unsplash');
+    url.searchParams.append('page', page.toString());
+    if (query) url.searchParams.append('query', query);
+
+    const response = await fetch(url.toString());
+    if (!response.ok) throw new Error("Network response was not ok");
 
     const data = await response.json();
     const photos = query ? data.results : data;

@@ -1,19 +1,14 @@
 import type { NormalizedImage } from "../types";
 
 export const getPexelsImg = async (query?: string, page: number = 1): Promise<NormalizedImage[]> => {
-  const myHeaders = new Headers();
-  myHeaders.append("Authorization", "nJcBee8Xd8jDS9HQhJGUF03xPMKxIxepySyO8JZgseyhBQs25khlPlwD");
-  
-  const endpoint = query 
-    ? `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=20&page=${page}` 
-    : `https://api.pexels.com/v1/curated?per_page=20&page=${page}`;
-
   try {
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: myHeaders,
-      redirect: "follow"
-    });
+    const url = new URL('/api/images', window.location.origin);
+    url.searchParams.append('provider', 'pexels');
+    url.searchParams.append('page', page.toString());
+    if (query) url.searchParams.append('query', query);
+
+    const response = await fetch(url.toString());
+    if (!response.ok) throw new Error("Network response was not ok");
 
     const data = await response.json();
     const photos = data.photos || [];
