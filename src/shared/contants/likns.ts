@@ -14,7 +14,7 @@ export const LINKS: Array<Link> = [
   {
     id: 'discover',
     name: 'Descubre',
-    href: '/',
+    href: '/discover',
     icon: Compass
   },
   {

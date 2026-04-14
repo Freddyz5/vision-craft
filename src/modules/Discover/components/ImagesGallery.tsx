@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react';
-import ImageCard from '../components/ImageCard';
+import ImageCard from './ImageCard';
 import type { NormalizedImage } from '../types';
 import { providers } from '../constants/providers';
 import SearcBar from './SearchBar';

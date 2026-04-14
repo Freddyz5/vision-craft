@@ -1,5 +1,5 @@
 import { persistentAtom } from '@nanostores/persistent';
-import type { NormalizedImage } from '../modules/Explore/types';
+import type { NormalizedImage } from '../modules/Discover/types';
 
 // We need to serialize/deserialize the JSON array
 export const selectedImagesStore = persistentAtom<NormalizedImage[]>('selectedImages', [], {
