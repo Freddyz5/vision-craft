@@ -1,7 +1,7 @@
 import Compass from "../icons/Compass.astro";
-import PlusCircle from "../icons/PlusCircle.astro";
-import Blocks from "../icons/Blocks.astro";
-import Archive from "../icons/Archive.astro";
+import Proportions from "../icons/Proportions.astro";
+import Wallpaper from "../icons/Wallpaper.astro";
+import ImageDown from "../icons/ImageDown.astro";
 
 export type Link = {
   id: string;
@@ -12,27 +12,27 @@ export type Link = {
 
 export const LINKS: Array<Link> = [
   {
-    id: 'discover',
-    name: 'Descubre',
-    href: '/discover',
+    id: 'explore',
+    name: 'Explora',
+    href: '/explore',
     icon: Compass
   },
   {
-    id: 'create',
-    name: 'Crea',
+    id: 'canvas',
+    name: 'Lienzo',
     href: '/canvas',
-    icon: PlusCircle
+    icon: Proportions
   },
   {
-    id: 'my-boards',
-    name: 'Mis tableros',
-    href: '/boards',
-    icon: Blocks
+    id: 'design',
+    name: 'Diseña',
+    href: '/design',
+    icon: Wallpaper
   },
   {
-    id: 'archive',
-    name: 'Archivo',
-    href: '/archive',
-    icon: Archive
+    id: 'export',
+    name: 'Exporta',
+    href: '/export',
+    icon: ImageDown
   }
 ];
