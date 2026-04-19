@@ -1,6 +1,6 @@
 import ImageCard from './ImageCard';
 import { useStore } from '@nanostores/react';
-import { selectedImagesStore, toggleImageSelection } from '../../../store/boardStore';
+import { selectedImagesStore, toggleImageSelection } from '../../../shared/store/boardStore';
 
 interface Props {
   isOpen: boolean;

@@ -5,7 +5,7 @@ import type { NormalizedImage } from '../types';
 import { providers } from '../constants/providers';
 import SearcBar from './SearchBar';
 import { useStore } from '@nanostores/react';
-import { selectedImagesStore, toggleImageSelection } from '../../../store/boardStore';
+import { selectedImagesStore, toggleImageSelection } from '../../../shared/store/boardStore';
 import SelectedImagesModal from './SelectedImagesModal';
 
 export default function ImagesGallery() {
