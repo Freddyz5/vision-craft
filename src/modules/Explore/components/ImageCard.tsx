@@ -6,6 +6,7 @@ interface Props {
 	width?: string;
 	height?: string;
 	onClick?: () => void;
+	onDragStart?: (e: React.DragEvent<HTMLImageElement>) => void;
 }
 
 export default function ImageCard({
@@ -14,7 +15,8 @@ export default function ImageCard({
 	selected = false,
 	width,
 	height,
-	onClick
+	onClick,
+	onDragStart
 }: Props) {
 
 	const large = Number(height) > Number(width);
@@ -32,6 +34,8 @@ export default function ImageCard({
 						: "ring-1 ring-gray-200 dark:ring-gray-700/60 hover:ring-df-primary/40 dark:hover:ring-df-primary-dark/40 hover:-translate-y-1 hover:shadow-lg hover:z-10",
 				].join(" ")}
 				aria-selected={selected}
+				draggable={onDragStart ? true : false}
+				onDragStart={onDragStart}
 			>
 				<div className="flex-1 w-full h-full overflow-hidden relative bg-gray-100 dark:bg-gray-800">
 					<img
