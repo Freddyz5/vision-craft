@@ -61,54 +61,6 @@ export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
               <ul role="list" className="space-y-3">
                 {savedCanvases.map((canvas) => (
                   <CanvasCard key={canvas.id} canvas={canvas} />
-                  // <li key={canvas.id} className="card bg-base-100 border border-base-300 dark:border-gray-700 shadow-sm">
-                  //   <div className="card-body p-4">
-                  //     <h4 className="card-title text-base font-bold truncate">{canvas.name}</h4>
-                  //     <p className="text-xs text-base-content/60">
-                  //       {new Date(canvas.createdAt).toLocaleDateString('es-MX')} • {canvas.items.length} imágenes
-                  //     </p>
-                  //     <p className="text-xs text-base-content/60">
-                  //       {canvas.config.widthMm} × {canvas.config.heightMm} mm
-                  //     </p>
-
-                  //     {canvas.thumbnail && (
-                  //       <img src={canvas.thumbnail} alt="Thumbnail" className="w-full h-32 object-contain border border-base-200 bg-base-200 rounded my-2" />
-                  //     )}
-
-                  //     <div className="card-actions justify-end mt-2">
-                  //       <button
-                  //         onClick={() => loadCanvas(canvas.id)}
-                  //         className="btn btn-primary btn-sm flex-1"
-                  //       >
-                  //         Cargar
-                  //       </button>
-                  //       <div className="flex gap-1">
-                  //         <button
-                  //           onClick={() => duplicateCanvas(canvas.id)}
-                  //           className="btn btn-outline btn-sm px-2"
-                  //           title="Duplicar"
-                  //         >
-                  //           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  //           </svg>
-                  //         </button>
-                  //         <button
-                  //           onClick={() => {
-                  //             if (confirm('¿Eliminar este lienzo?')) {
-                  //               deleteCanvas(canvas.id);
-                  //             }
-                  //           }}
-                  //           className="btn btn-outline btn-error btn-sm px-2"
-                  //           title="Eliminar"
-                  //         >
-                  //           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  //           </svg>
-                  //         </button>
-                  //       </div>
-                  //     </div>
-                  //   </div>
-                  // </li>
                 ))}
               </ul>
             )}
