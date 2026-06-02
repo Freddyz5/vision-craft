@@ -21,23 +21,36 @@ export default function ImageCard({
 
 	const large = Number(height) > Number(width);
 
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLTitleElement>) => {
+		// Activar con Enter o Space
+		if ((e.key === 'Enter' || e.key === ' ') && onClick) {
+			e.preventDefault();
+			onClick();
+		}
+	};
+
 	return (
 		<li className={large ? "row-span-2 h-full" : "row-span-1 col-span-2 h-full"}>
 			<article
 				onClick={onClick}
+				onKeyDown={handleKeyDown}
 				className={[
 					"group relative flex flex-col rounded-2xl overflow-hidden cursor-pointer h-full",
 					"transition-all duration-200 ease-out",
 					"bg-df-surface dark:bg-df-surface-dark",
+					"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark",
 					selected
 						? "ring-2 ring-df-primary dark:ring-df-primary-dark shadow-lg shadow-df-primary/10 dark:shadow-df-primary-dark/10 -translate-y-0.5 z-10"
-						: "ring-1 ring-gray-200 dark:ring-gray-700/60 hover:ring-df-primary/40 dark:hover:ring-df-primary-dark/40 hover:-translate-y-1 hover:shadow-lg hover:z-10",
+						: "ring-1 ring-df-muted dark:ring-df-muted-dark hover:ring-df-primary/40 dark:hover:ring-df-primary-dark/40 hover:-translate-y-1 hover:shadow-lg hover:z-10",
 				].join(" ")}
+				role="button"
+				tabIndex={0}
 				aria-selected={selected}
+				aria-label={`${alt} ${selected ? '- seleccionada' : ''}`}
 				draggable={onDragStart ? true : false}
 				onDragStart={onDragStart}
 			>
-				<div className="flex-1 w-full h-full overflow-hidden relative bg-gray-100 dark:bg-gray-800">
+				<div className="flex-1 w-full h-full overflow-hidden relative bg-df-surface dark:bg-df-surface-dark">
 					<img
 						src={imageSrc}
 						alt={alt}

@@ -28,6 +28,17 @@ export default function SearcBar({
     });
   };
 
+  const handleInputChange = (newValue: string) => {
+    setInputValue(newValue);
+    // Immediate search for empty string
+    if (newValue.trim() === "") {
+      onSearch("");
+    } else {
+      // Debounced search for non-empty queries
+      onSearch(newValue);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(inputValue);
@@ -36,7 +47,7 @@ export default function SearcBar({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-3 px-4 py-3 bg-df-surface dark:bg-df-surface-dark border border-gray-200 dark:border-gray-700/60 rounded-2xl shadow-sm"
+      className="flex items-center gap-3 px-4 py-3 bg-df-surface dark:bg-df-surface-dark border border-df-muted dark:border-df-muted-dark rounded-2xl shadow-sm"
     >
       {/* Search input */}
       <search className="flex-1 flex items-center gap-3 min-w-0">
@@ -58,20 +69,14 @@ export default function SearcBar({
           id="inspiration-search"
           type="search"
           value={inputValue}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            setInputValue(newValue);
-            if (newValue.trim() === "") {
-              onSearch("");
-            }
-          }}
+          onChange={(e) => handleInputChange(e.target.value)}
           placeholder="Busca tu inspiración (ej. 'Arquitectura Minimalista', 'Neon Tokyo')"
           className="flex-1 min-w-0 bg-transparent text-sm text-df-ink dark:text-df-ink-dark placeholder:text-df-muted dark:placeholder:text-df-muted-dark outline-none"
         />
       </search>
 
       {/* Divider */}
-      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 shrink-0" aria-hidden="true" />
+      <div className="w-px h-5 bg-df-border dark:bg-df-border-dark shrink-0" aria-hidden="true" />
 
       {/* Provider filters */}
       <fieldset className="flex items-center gap-4 shrink-0">
@@ -87,7 +92,7 @@ export default function SearcBar({
               value={value}
               checked={selectedProviders.includes(value)}
               onChange={(e) => handleChange(e.target.value)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 accent-[#7C3AED] dark:accent-[#A78BFA] cursor-pointer"
+              className="w-4 h-4 rounded border-df-border dark:border-df-border-dark accent-df-primary dark:accent-df-primary-dark cursor-pointer"
             />
             <span className="text-xs font-medium text-df-ink dark:text-df-ink-dark group-hover/check:text-df-primary dark:group-hover/check:text-df-primary-dark transition-colors select-none">
               {label}

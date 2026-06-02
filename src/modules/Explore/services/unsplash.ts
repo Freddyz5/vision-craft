@@ -1,4 +1,5 @@
 import type { NormalizedImage } from "../types";
+import { errorLogger } from "../../../shared/utils/errorLogger";
 
 export const getUnsplashImg = async (query?: string, page: number = 1): Promise<NormalizedImage[]> => {
   try {
@@ -8,12 +9,26 @@ export const getUnsplashImg = async (query?: string, page: number = 1): Promise<
     if (query) url.searchParams.append('query', query);
 
     const response = await fetch(url.toString());
-    if (!response.ok) throw new Error("Network response was not ok");
+    
+    if (!response.ok) {
+      const statusText = response.statusText || 'Unknown error';
+      const error = new Error(`Unsplash API error: ${response.status} ${statusText}`);
+      errorLogger.error('Unsplash API request failed', {
+        status: response.status,
+        statusText,
+        url: url.toString(),
+        query,
+        page,
+      }, error);
+      throw error;
+    }
 
     const data = await response.json();
     const photos = query ? data.results : data;
     
-    if (!Array.isArray(photos)) return [];
+    if (!Array.isArray(photos)) {
+      throw new Error('Invalid response format from Unsplash');
+    }
     
     return photos.map((img: any) => ({
       width: img.width,
@@ -22,7 +37,9 @@ export const getUnsplashImg = async (query?: string, page: number = 1): Promise<
       alt: img.alt_description || img.user?.name || "Unsplash Image",
     }));
   } catch (error) {
-    console.error("Error fetching Unsplash images:", error);
-    return [];
+    if (error instanceof Error) {
+      errorLogger.error('Unsplash fetch error', { query, page }, error);
+    }
+    throw error;
   }
 }
