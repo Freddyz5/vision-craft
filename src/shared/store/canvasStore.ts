@@ -28,8 +28,14 @@ export interface CanvasConfig {
 export interface CanvasItem {
   /** Unique identifier – crypto.randomUUID() */
   id: string;
-  imageSrc: string;
-  alt: string;
+  type?: 'image' | 'text';
+  imageSrc?: string;
+  alt?: string;
+  text?: string;
+  fontSize?: number;
+  fillColor?: string;
+  fontFamily?: string;
+  fontStyle?: string;
   /** Position & size in logical Stage pixels (96 dpi basis) */
   x: number;
   y: number;

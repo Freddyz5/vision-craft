@@ -19,6 +19,11 @@ export interface PrintConfig {
   paperPresetId: 'a4' | 'a3' | 'us-letter';
   paperWidthMm: number;
   paperHeightMm: number;
+  /** Scale applied to the original canvas before tiling (1 = original size) */
+  canvasScale: number;
+  /** Start offsets (mm) for the first tile (can be negative to allow shifting cuts without cropping) */
+  startXMm: number;
+  startYMm: number;
   /** Calculated grid */
   cols: number;
   rows: number;
@@ -36,10 +41,33 @@ export function buildPrintConfig(
   canvasWidthMm: number,
   canvasHeightMm: number,
   paperId: 'a4' | 'a3' | 'us-letter',
+  options?: {
+    canvasScale?: number;
+    /** 0..paperWidthMm (moves the first cut line inside the canvas) */
+    shiftXMm?: number;
+    /** 0..paperHeightMm (moves the first cut line inside the canvas) */
+    shiftYMm?: number;
+  },
 ): PrintConfig {
   const paper = PRINT_PAPERS.find((p) => p.id === paperId)!;
-  const cols = Math.ceil(canvasWidthMm / paper.widthMm);
-  const rows = Math.ceil(canvasHeightMm / paper.heightMm);
+  const canvasScale = options?.canvasScale ?? 1;
+  const effectiveCanvasWidthMm = canvasWidthMm * canvasScale;
+  const effectiveCanvasHeightMm = canvasHeightMm * canvasScale;
+
+  const shiftXMm = options?.shiftXMm ?? 0;
+  const shiftYMm = options?.shiftYMm ?? 0;
+
+  const startXMm = shiftXMm - paper.widthMm;
+  const startYMm = shiftYMm - paper.heightMm;
+
+  const cols = Math.max(
+    1,
+    Math.ceil((effectiveCanvasWidthMm - startXMm) / paper.widthMm),
+  );
+  const rows = Math.max(
+    1,
+    Math.ceil((effectiveCanvasHeightMm - startYMm) / paper.heightMm),
+  );
 
   const tiles: PrintTile[] = [];
   for (let r = 0; r < rows; r++) {
@@ -47,8 +75,8 @@ export function buildPrintConfig(
       tiles.push({
         col: c,
         row: r,
-        offsetXMm: c * paper.widthMm,
-        offsetYMm: r * paper.heightMm,
+        offsetXMm: startXMm + c * paper.widthMm,
+        offsetYMm: startYMm + r * paper.heightMm,
       });
     }
   }
@@ -57,6 +85,9 @@ export function buildPrintConfig(
     paperPresetId: paperId,
     paperWidthMm: paper.widthMm,
     paperHeightMm: paper.heightMm,
+    canvasScale,
+    startXMm,
+    startYMm,
     cols,
     rows,
     tiles,
