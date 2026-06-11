@@ -7,9 +7,11 @@ import CanvasCard from './CanvasCard';
 
 interface ImagesTrayProps {
   viewMode?: 'images' | 'canvases';
+  selectedId?: string | null;
+  setSelectedId: (id: string | null) => void;
 }
 
-export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
+export function ImagesTray({ viewMode = 'images', selectedId, setSelectedId }: ImagesTrayProps) {
   const selectedImages = useStore(selectedImagesStore);
   const canvasItems = useStore(activeCanvasItemsStore);
   const savedCanvases = useStore(savedCanvasesStore);
@@ -22,12 +24,19 @@ export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
   };
 
   const handleAddClick = (imageSrc: string, width: number, height: number) => {
-    // Add at center roughly
+    // If the image is already on the canvas, select it and return (no duplicates)
+    const existing = canvasItems.find(i => i.imageSrc === imageSrc);
+    if (existing) {
+      setSelectedId(existing.id);
+      return;
+    }
+
     const targetW = 200;
     const targetH = (height / width) * targetW;
 
-    addItem({
+    const newItem = {
       id: crypto.randomUUID(),
+      type: 'image' as const,
       imageSrc,
       alt: 'Added Image',
       x: 50, // naive positioning
@@ -36,12 +45,33 @@ export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
       height: targetH,
       rotation: 0,
       zIndex: canvasItems.length,
-    });
+    };
+    addItem(newItem);
+    setSelectedId(newItem.id);
+  };
+
+  const handleAddText = () => {
+    const newItem = {
+      id: crypto.randomUUID(),
+      type: 'text' as const,
+      text: 'Sueña en grande',
+      x: 100,
+      y: 100,
+      width: 250,
+      height: 60,
+      rotation: 0,
+      fontSize: 28,
+      fillColor: '#7C3AED',
+      fontFamily: 'Inter',
+      zIndex: canvasItems.length,
+    };
+    addItem(newItem);
+    setSelectedId(newItem.id);
   };
 
   return (
     <aside
-      className="w-96 h-[calc(100vh-8rem)] overflow-y-scroll shrink-0 sticky top-24 -mt-55 bg-gray-100 dark:bg-gray-800/50 rounded-3xl p-5 space-y-4 border-2 border-df-primary/30"
+      className="w-96 h-[calc(100vh-8rem)] overflow-y-scroll shrink-0 sticky top-24 -mt-55 bg-base-100 dark:bg-df-surface-dark rounded-3xl p-5 space-y-4 border-2 border-df-primary/20 shadow-md"
       aria-label="Bandeja de imagenes"
     >
       {viewMode === 'canvases' ?
@@ -69,7 +99,14 @@ export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
         <>
           {/* Images */}
           {/* Label */}
-          <p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark">Tus Imágenes ({selectedImages.length})</p>
+          <p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark mb-2">Tus Imágenes ({selectedImages.length})</p>
+
+          <button
+            onClick={handleAddText}
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-semibold bg-df-primary/10 hover:bg-df-primary/20 text-df-primary dark:text-df-primary-dark dark:bg-df-primary-dark/10 dark:hover:bg-df-primary-dark/20 border border-df-primary/20 transition-colors mb-3 cursor-pointer"
+          >
+            📝 Agregar Texto
+          </button>
 
           {/* Images Tray */}
           <article className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -103,4 +140,3 @@ export function ImagesTray({ viewMode = 'images' }: ImagesTrayProps) {
     </aside>
   );
 }
-

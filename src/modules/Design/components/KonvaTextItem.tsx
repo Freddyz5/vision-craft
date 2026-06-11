@@ -1,22 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Image as KonvaImage, Transformer } from 'react-konva';
+import React, { useEffect, useRef } from 'react';
+import { Text as KonvaText, Transformer } from 'react-konva';
 import type { CanvasItem } from '../../../shared/store/canvasStore';
 import { updateItem, bringToFront, sendToBack, removeItem } from '../../../shared/store/canvasStore';
 import type Konva from 'konva';
 
-function useImage(url?: string) {
-  const [image, setImage] = useState<HTMLImageElement | undefined>();
-  useEffect(() => {
-    if (!url) return;
-    const img = new window.Image();
-    img.crossOrigin = 'Anonymous';
-    img.src = url;
-    img.onload = () => setImage(img);
-  }, [url]);
-  return [image];
-}
-
-interface KonvaImageItemProps {
+interface KonvaTextItemProps {
   item: CanvasItem;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -25,14 +13,13 @@ interface KonvaImageItemProps {
   onDragEnd?: (id: string, e: any) => void;
 }
 
-export function KonvaImageItem({ item, isSelected, onSelect, scaleFactor, onDragMove, onDragEnd }: KonvaImageItemProps) {
-  const [image] = useImage(item.imageSrc);
-  const imageRef = useRef<Konva.Image>(null);
+export function KonvaTextItem({ item, isSelected, onSelect, scaleFactor, onDragMove, onDragEnd }: KonvaTextItemProps) {
+  const textRef = useRef<Konva.Text>(null);
   const trRef = useRef<Konva.Transformer>(null);
 
   useEffect(() => {
-    if (isSelected && trRef.current && imageRef.current) {
-      trRef.current.nodes([imageRef.current]);
+    if (isSelected && trRef.current && textRef.current) {
+      trRef.current.nodes([textRef.current]);
       trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected]);
@@ -42,7 +29,7 @@ export function KonvaImageItem({ item, isSelected, onSelect, scaleFactor, onDrag
     if (!isSelected) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only react if we are not typing in an input
+      // Only react if we are not typing in an input or textarea
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
 
       if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -66,13 +53,17 @@ export function KonvaImageItem({ item, isSelected, onSelect, scaleFactor, onDrag
 
   return (
     <React.Fragment>
-      <KonvaImage
-        ref={imageRef}
-        image={image}
+      <KonvaText
+        ref={textRef}
+        text={item.text || ''}
         x={item.x * scaleFactor}
         y={item.y * scaleFactor}
         width={item.width * scaleFactor}
         height={item.height * scaleFactor}
+        fontSize={(item.fontSize || 24) * scaleFactor}
+        fontFamily={item.fontFamily || 'Inter'}
+        fill={item.fillColor || '#7C3AED'}
+        fontStyle={item.fontStyle || 'normal'}
         rotation={item.rotation}
         draggable
         onClick={() => onSelect(item.id)}
@@ -89,7 +80,7 @@ export function KonvaImageItem({ item, isSelected, onSelect, scaleFactor, onDrag
           }
         }}
         onTransformEnd={(e) => {
-          const node = imageRef.current;
+          const node = textRef.current;
           if (!node) return;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
@@ -102,16 +93,17 @@ export function KonvaImageItem({ item, isSelected, onSelect, scaleFactor, onDrag
             x: node.x() / scaleFactor,
             y: node.y() / scaleFactor,
             rotation: node.rotation(),
-            width: (item.width * scaleX),
-            height: (item.height * scaleY),
+            width: item.width * scaleX,
+            height: item.height * scaleY,
           });
         }}
       />
       {isSelected && (
         <Transformer
           ref={trRef}
+          enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right', 'middle-left', 'middle-right']}
           boundBoxFunc={(oldBox, newBox) => {
-            if (newBox.width < 10 || newBox.height < 10) return oldBox;
+            if (newBox.width < 30 || newBox.height < 10) return oldBox;
             return newBox;
           }}
         />
