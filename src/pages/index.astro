@@ -3,14 +3,14 @@ import Layout from "./Layout.astro";
 ---
 
 <Layout
-	title="EtherealVision — Visualiza tus sueños, crea tu realidad"
-	description="Crea moodboards y vision boards que dan vida a tus proyectos creativos.">
+	title="Vision Craft — Crea vision boards y expórtalos en alta calidad"
+	description="Busca imágenes en Unsplash y Pexels, diseña tu lienzo con drag & drop y exporta a PDF, PNG, JPG o JSON (listo para imprimir).">
 	<!-- ══ MARKETING NAV ══ -->
 	<nav
 		class="fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-8 gap-6
            bg-df-surface/90 dark:bg-df-surface-dark/90 backdrop-blur-sm
            border-b border-gray-200/60 dark:border-gray-800/60">
-		<a href="/landing" class="font-extrabold text-base shrink-0 mr-4">
+		<a href="/" class="font-extrabold text-base shrink-0 mr-4">
 			<span class="text-df-primary dark:text-df-primary-dark">Ethereal</span
 			><span class="text-df-ink dark:text-df-ink-dark">Vision</span>
 		</a>
@@ -18,9 +18,9 @@ import Layout from "./Layout.astro";
 			{
 				[
 					{ href: "#inicio", label: "Inicio", active: true },
-					{ href: "#features", label: "Nos Admires" },
-					{ href: "#gallery", label: "Gallery" },
-					{ href: "#pricing", label: "Pricing" },
+					{ href: "#features", label: "Funciones" },
+					{ href: "#gallery", label: "Cómo funciona" },
+					{ href: "#cta", label: "Exporta" },
 				].map(({ href, label, active }) => (
 					<a
 						href={href}
@@ -62,14 +62,14 @@ import Layout from "./Layout.astro";
 				</svg>
 			</button>
 			<a
-				href="/"
+				href="/explore"
 				class="text-sm font-medium text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors"
-				>Login</a
+				>Ir al Studio</a
 			>
 			<a
-				href="/discover"
+				href="/explore"
 				class="px-4 py-2 rounded-xl text-sm font-bold bg-df-primary dark:bg-df-primary-dark text-white hover:opacity-90 transition-opacity shadow-sm">
-				Start Dreaming
+				Empezar
 			</a>
 		</div>
 	</nav>
@@ -97,29 +97,29 @@ import Layout from "./Layout.astro";
 				<div class="flex-1 max-w-xl">
 					<p
 						class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-df-accent dark:text-df-accent-dark border border-df-accent/30 dark:border-df-accent-dark/30 rounded-full px-3 py-1 mb-5">
-						Sueños / Realidad
+						Explora / Diseña / Exporta
 					</p>
 					<h1
 						class="text-5xl md:text-6xl font-black leading-[1.05] text-df-ink dark:text-df-ink-dark mb-5">
-						Visualiza tus<br />
+						Crea tu<br />
 						<span class="text-df-primary dark:text-df-primary-dark"
-							>sueños,</span
+							>vision board</span
 						><br />
-						crea tu realidad.
+						listo para imprimir.
 					</h1>
 					<p
 						class="text-base text-df-muted dark:text-df-muted-dark leading-relaxed mb-8 max-w-md">
-						La herramienta esencial para dar forma a tus ideas. Convierte
-						imágenes en tableros para un objetivo tangible y estructurado para
-						tu futuro.
+						Encuentra imágenes en Unsplash y Pexels, arrástralas al lienzo y
+						ajústalas a tu estilo. Exporta tu vision board en alta calidad:
+						PDF, PNG, JPG o JSON — listo para imprimir.
 					</p>
 					<div class="flex items-center gap-3 flex-wrap">
 						<a
-							href="/discover"
+							href="/explore"
 							class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white
                      bg-df-primary dark:bg-df-primary-dark hover:opacity-90 active:scale-95
                      transition-all shadow-lg shadow-df-primary/30 dark:shadow-df-primary-dark/20">
-							Start Dreaming
+							Crear mi primer board
 						</a>
 						<a
 							href="#gallery"
@@ -138,7 +138,7 @@ import Layout from "./Layout.astro";
 								<circle cx="12" cy="12" r="10"></circle><polygon
 									points="10 8 16 12 10 16 10 8"></polygon>
 							</svg>
-							Ver Video
+							Ver cómo funciona
 						</a>
 					</div>
 				</div>
@@ -204,12 +204,12 @@ import Layout from "./Layout.astro";
 				<!-- Heading -->
 				<div class="mb-12">
 					<h2 class="text-3xl font-extrabold text-df-ink dark:text-df-ink-dark">
-						Captura la esencia de tus metas
+						Todo el flujo para construir tu vision board
 					</h2>
 					<p
 						class="text-sm text-df-muted dark:text-df-muted-dark mt-2 max-w-md">
-						Desde el diseño hasta la impresión. Haz cada idea un paso que se
-						puede tocar con tus manos.
+						Explora imágenes, configura el tamaño del lienzo, diseña con
+						drag &amp; drop y exporta en formatos listos para compartir o imprimir.
 					</p>
 				</div>
 
@@ -223,8 +223,8 @@ import Layout from "./Layout.astro";
 						</h3>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark mb-4 leading-relaxed">
-							Construye tu visión sin restricciones. Arrastra imágenes, texto y
-							más.
+							Define tamaño y formato del lienzo para tu board. Construye con
+							libertad y mantén todo ordenado.
 						</p>
 						<!-- Mini board mockup -->
 						<div
@@ -277,12 +277,12 @@ import Layout from "./Layout.astro";
 						</div>
 						<h3 class="font-bold text-white mb-1">Listo para imprimir</h3>
 						<p class="text-xs text-white/80 leading-relaxed mb-4">
-							Papel preparado a la resolución 300 DPI para que siempre tengas
-							listo para la impresión.
+							Exporta en alta calidad y prepara tu board para impresión o PDF,
+							con control de DPI.
 						</p>
 						<p
 							class="text-[10px] font-bold tracking-[0.15em] uppercase text-white/50">
-							A4 / A3 / A5
+							PDF / PNG / JPG
 						</p>
 						<!-- Decorative -->
 						<div
@@ -311,12 +311,12 @@ import Layout from "./Layout.astro";
 							</svg>
 						</div>
 						<h3 class="font-bold text-df-ink dark:text-df-ink-dark mb-1">
-							Búsqueda Multiplataforma
+							Búsqueda de imágenes
 						</h3>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed mb-4">
-							Usa cualquier fuente — Unsplash, Pexels, Pinterest — para buscar
-							la imagen perfecta para tu moodboard.
+							Busca inspiración en Unsplash y Pexels. Selecciona tus favoritas
+							y llévalas al editor.
 						</p>
 						<!-- Thumbnails -->
 						<div class="flex gap-2 mb-3">
@@ -375,10 +375,10 @@ import Layout from "./Layout.astro";
 									></path>
 								</svg>
 							</div>
-							<h3 class="font-bold text-white mb-1">Diseñando Premium</h3>
+							<h3 class="font-bold text-white mb-1">Editor drag &amp; drop</h3>
 							<p class="text-xs text-gray-400 leading-relaxed">
-								Una experiencia ultra refinada y flexible que se adapta
-								totalmente hasta el último detalle.
+								Arrastra imágenes al lienzo, muévelas, redimensiónalas y
+								organiza tu composición con precisión.
 							</p>
 							<!-- Mini dark UI preview -->
 							<div
@@ -416,15 +416,15 @@ import Layout from "./Layout.astro";
 			<div class="max-w-5xl mx-auto">
 				<div class="text-center mb-14">
 					<h2 class="text-3xl font-extrabold text-df-ink dark:text-df-ink-dark">
-						Diseñado para la claridad
+						Cómo funciona
 					</h2>
 					<div
 						class="w-12 h-1 rounded-full bg-df-primary dark:bg-df-primary-dark mx-auto mt-3">
 					</div>
 					<p
 						class="text-sm text-df-muted dark:text-df-muted-dark mt-3 max-w-md mx-auto">
-						Nuestra interfaz transparente para que el contenido, no la
-						herramienta, reciban toda la atención.
+						Tres pasos simples: explora imágenes, diseña tu lienzo y exporta
+						en el formato que necesitas.
 					</p>
 				</div>
 
@@ -446,11 +446,11 @@ import Layout from "./Layout.astro";
 						</div>
 						<h3
 							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
-							Clásica Visual
+							1) Explora
 						</h3>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[140px] mx-auto">
-							Cuadrícula clásica con imágenes elegantes y narrativa.
+							Busca y selecciona imágenes de Unsplash y Pexels.
 						</p>
 					</div>
 
@@ -470,11 +470,11 @@ import Layout from "./Layout.astro";
 						</div>
 						<h3
 							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
-							Lienzo Simple
+							2) Diseña
 						</h3>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[160px] mx-auto">
-							Una sola tarjeta, toda la atención sobre lo que importa.
+							Arrastra, ajusta y organiza elementos en tu lienzo.
 						</p>
 					</div>
 
@@ -494,11 +494,11 @@ import Layout from "./Layout.astro";
 						</div>
 						<h3
 							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
-							Alta Intensidad
+							3) Exporta
 						</h3>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[140px] mx-auto">
-							Diseño denso y rico para proyectos ambiciosos.
+							Guarda como PDF, PNG, JPG o JSON, listo para imprimir.
 						</p>
 					</div>
 				</div>
@@ -508,7 +508,7 @@ import Layout from "./Layout.astro";
 		<!-- ══════════════════════════════════════════
          CTA
     ══════════════════════════════════════════ -->
-		<section id="pricing" class="py-20 px-8 bg-df-bg dark:bg-df-bg-dark">
+		<section id="cta" class="py-20 px-8 bg-df-bg dark:bg-df-bg-dark">
 			<div class="max-w-5xl mx-auto">
 				<div
 					class="relative overflow-hidden rounded-3xl px-12 py-16 text-center
@@ -525,25 +525,25 @@ import Layout from "./Layout.astro";
 					<div class="relative z-10">
 						<h2
 							class="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
-							Tu futuro merece ser diseñado.
+							Crea un board que puedas usar de verdad.
 						</h2>
 						<p
 							class="text-white/80 text-sm mb-8 max-w-md mx-auto leading-relaxed">
-							Crea metas con imágenes que te inspiren. Usa la herramienta de la
-							que tu yo del futuro te estará agradecido.
+							Explora imágenes, diseña tu lienzo y exporta en alta calidad para
+							compartir o imprimir.
 						</p>
 						<div class="flex gap-4 justify-center flex-wrap">
 							<a
-								href="/"
+								href="/explore"
 								class="px-6 py-3 rounded-full bg-white text-df-primary font-bold text-sm
                        hover:bg-gray-50 transition-colors shadow-lg">
-								Start Experiencing
+								Empezar ahora
 							</a>
 							<a
-								href="/"
+								href="/export"
 								class="px-6 py-3 rounded-full border-2 border-white/50 text-white font-bold text-sm
                        hover:bg-white/10 transition-colors">
-								Capture Grands
+								Ver opciones de exportación
 							</a>
 						</div>
 					</div>
@@ -567,8 +567,8 @@ import Layout from "./Layout.astro";
 						</p>
 						<p
 							class="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed mb-4">
-							La plataforma esencial para visualizar tus metas y estructurar tu
-							futuro.
+							Explora imágenes, diseña tu lienzo y exporta en alta calidad para
+							compartir o imprimir.
 						</p>
 						<!-- Social icons -->
 						<div class="flex gap-3">
@@ -603,12 +603,17 @@ import Layout from "./Layout.astro";
 						</h3>
 						<ul class="space-y-2.5">
 							{
-								["Discover", "Canvas", "My Boards", "Pricing"].map((item) => (
+								[
+									{ label: "Explora", href: "/explore" },
+									{ label: "Lienzo", href: "/canvas" },
+									{ label: "Diseña", href: "/design" },
+									{ label: "Exporta", href: "/export" },
+								].map(({ label, href }) => (
 									<li>
 										<a
-											href="#"
+											href={href}
 											class="text-xs text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
-											{item}
+											{label}
 										</a>
 									</li>
 								))
