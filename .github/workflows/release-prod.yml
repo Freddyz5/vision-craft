@@ -1,0 +1,113 @@
+name: CI/CD & Release
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - prod   # PR hacia prod solo corre CI/tests, no release
+  push:
+    branches:
+      - prod   # push a prod dispara semantic-release
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            app:
+              - 'src/**'
+              - 'public/**'
+              - 'astro.config.mjs'
+              - 'package.json'
+              - 'bun.lock'
+              - 'tsconfig.json'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        if: steps.changes.outputs.app == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.changes.outputs.app == 'true'
+        run: bun run build
+      # - name: Run tests
+      #   run: bun test
+
+  release:
+    runs-on: ubuntu-latest
+    # Solo corre cuando hay push a prod
+    if: github.ref == 'refs/heads/prod' && github.event_name == 'push'
+    concurrency:
+      group: release-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            app:
+              - 'src/**'
+              - 'public/**'
+              - 'astro.config.mjs'
+              - 'package.json'
+              - 'bun.lock'
+              - 'tsconfig.json'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bunx semantic-release
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        if: steps.changes.outputs.app == 'true' && env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: |
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          OUTPUT=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "$OUTPUT"
