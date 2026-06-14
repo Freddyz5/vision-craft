@@ -1,0 +1,708 @@
+---
+import Layout from "./Layout.astro";
+---
+
+<Layout
+	title="Vision Craft — Crea vision boards y expórtalos en alta calidad"
+	description="Busca imágenes en Unsplash y Pexels, diseña tu lienzo con drag & drop y exporta a PDF, PNG, JPG o JSON (listo para imprimir).">
+	<!-- ══ MARKETING NAV ══ -->
+	<nav
+		class="fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-8 gap-6
+           bg-df-surface/90 dark:bg-df-surface-dark/90 backdrop-blur-sm
+           border-b border-gray-200/60 dark:border-gray-800/60">
+		<a href="/" class="font-extrabold text-base shrink-0 mr-4">
+			<span class="text-df-primary dark:text-df-primary-dark">Vision</span
+			><span class="text-df-ink dark:text-df-ink-dark">Craft</span>
+		</a>
+		<div class="hidden md:flex gap-6 flex-1">
+			{
+				[
+					{ href: "#inicio", label: "Inicio", active: true },
+					{ href: "#features", label: "Funciones" },
+					{ href: "#gallery", label: "Cómo funciona" },
+					{ href: "#cta", label: "Exporta" },
+				].map(({ href, label, active }) => (
+					<a
+						href={href}
+						class:list={[
+							"text-sm font-medium transition-colors",
+							active
+								? "text-df-ink dark:text-df-ink-dark border-b-2 border-df-primary dark:border-df-primary-dark pb-0.5"
+								: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark",
+						]}>
+						{label}
+					</a>
+				))
+			}
+		</div>
+		<div class="ml-auto flex items-center gap-3">
+			<button
+				id="landing-theme-toggle"
+				aria-label="Toggle dark mode"
+				class="p-2 rounded-full text-df-muted dark:text-df-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+				<svg
+					class="hidden dark:block w-4 h-4"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true">
+					<circle cx="12" cy="12" r="4"></circle><path
+						d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+					></path>
+				</svg>
+				<svg
+					class="block dark:hidden w-4 h-4"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true">
+					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+				</svg>
+			</button>
+			<a
+				href="/explore"
+				class="text-sm font-medium text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors"
+				>Ir al Studio</a
+			>
+			<a
+				href="/explore"
+				class="px-4 py-2 rounded-xl text-sm font-bold bg-df-primary dark:bg-df-primary-dark text-white hover:opacity-90 transition-opacity shadow-sm">
+				Empezar
+			</a>
+		</div>
+	</nav>
+
+	<div class="pt-14">
+		<!-- ══════════════════════════════════════════
+         HERO
+    ══════════════════════════════════════════ -->
+		<section
+			id="inicio"
+			class="relative overflow-hidden bg-df-bg dark:bg-df-bg-dark min-h-[82vh] flex items-center">
+			<!-- Ambient glow -->
+			<div
+				class="absolute top-1/2 right-0 -translate-y-1/2 w-[700px] h-[700px] bg-df-primary/10 dark:bg-df-primary-dark/15 rounded-full blur-3xl pointer-events-none"
+				aria-hidden="true">
+			</div>
+			<div
+				class="absolute top-1/3 right-1/4 w-64 h-64 bg-df-accent/10 dark:bg-df-accent-dark/10 rounded-full blur-2xl pointer-events-none"
+				aria-hidden="true">
+			</div>
+
+			<div
+				class="relative max-w-6xl mx-auto px-8 w-full flex items-center gap-12">
+				<!-- Left: copy -->
+				<div class="flex-1 max-w-xl">
+					<p
+						class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-df-accent dark:text-df-accent-dark border border-df-accent/30 dark:border-df-accent-dark/30 rounded-full px-3 py-1 mb-5">
+						Explora / Diseña / Exporta
+					</p>
+					<h1
+						class="text-5xl md:text-6xl font-black leading-[1.05] text-df-ink dark:text-df-ink-dark mb-5">
+						Crea tu<br />
+						<span class="text-df-primary dark:text-df-primary-dark"
+							>vision board</span
+						><br />
+						listo para imprimir.
+					</h1>
+					<p
+						class="text-base text-df-muted dark:text-df-muted-dark leading-relaxed mb-8 max-w-md">
+						Encuentra imágenes en Unsplash y Pexels, arrástralas al lienzo y
+						ajústalas a tu estilo. Exporta tu vision board en alta calidad:
+						PDF, PNG, JPG o JSON — listo para imprimir.
+					</p>
+					<div class="flex items-center gap-3 flex-wrap">
+						<a
+							href="/explore"
+							class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white
+                     bg-df-primary dark:bg-df-primary-dark hover:opacity-90 active:scale-95
+                     transition-all shadow-lg shadow-df-primary/30 dark:shadow-df-primary-dark/20">
+							Crear mi primer board
+						</a>
+						<a
+							href="#gallery"
+							class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm
+                     border-2 border-gray-200 dark:border-gray-700
+                     text-df-ink dark:text-df-ink-dark
+                     hover:border-df-primary/40 dark:hover:border-df-primary-dark/40
+                     bg-df-surface dark:bg-df-surface-dark transition-all">
+							<svg
+								class="w-4 h-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+								aria-hidden="true">
+								<circle cx="12" cy="12" r="10"></circle><polygon
+									points="10 8 16 12 10 16 10 8"></polygon>
+							</svg>
+							Ver cómo funciona
+						</a>
+					</div>
+				</div>
+
+				<!-- Right: visual element -->
+				<div
+					class="hidden md:block flex-none w-[420px] h-[420px] relative"
+					aria-hidden="true">
+					<!-- Light mode: CSS orb -->
+					<div class="block dark:hidden w-full h-full relative">
+						<div
+							class="absolute inset-0 rounded-full bg-gradient-to-br from-df-primary/30 to-df-accent/20 blur-3xl">
+						</div>
+						<div
+							class="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 shadow-2xl flex items-center justify-center border border-df-primary/20">
+							<div
+								class="absolute inset-0 bg-gradient-to-br from-df-primary/40 via-violet-900/60 to-df-accent/30">
+							</div>
+							<div
+								class="absolute w-52 h-52 rounded-full border border-df-accent/30">
+							</div>
+							<div
+								class="absolute w-36 h-36 rounded-full border border-df-primary/40">
+							</div>
+							<div
+								class="absolute w-14 h-14 rounded-full bg-df-accent/60 blur-xl">
+							</div>
+							<div
+								class="relative z-10 w-8 h-8 rounded-full bg-df-accent/90 shadow-lg shadow-df-accent/50 ring-4 ring-df-accent/20">
+							</div>
+						</div>
+						<div
+							class="absolute inset-4 rounded-full border border-df-primary/8">
+						</div>
+					</div>
+
+					<!-- Dark mode: atmospheric image -->
+					<div
+						class="hidden dark:block w-full h-full rounded-3xl overflow-hidden">
+						<img
+							src="/twilight_path.png"
+							alt=""
+							class="w-full h-full object-cover"
+							style="filter: sepia(0.4) hue-rotate(15deg) saturate(1.8) brightness(0.85);"
+							loading="eager"
+						/>
+						<div
+							class="absolute inset-0 bg-gradient-to-t from-df-bg-dark/80 via-df-bg-dark/20 to-transparent rounded-3xl">
+						</div>
+						<div
+							class="absolute inset-0 bg-gradient-to-r from-df-bg-dark/50 to-transparent rounded-3xl">
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ══════════════════════════════════════════
+         FEATURES
+    ══════════════════════════════════════════ -->
+		<section id="features" class="bg-df-bg dark:bg-df-bg-dark py-20 px-8">
+			<div class="max-w-5xl mx-auto">
+				<!-- Heading -->
+				<div class="mb-12">
+					<h2 class="text-3xl font-extrabold text-df-ink dark:text-df-ink-dark">
+						Todo el flujo para construir tu vision board
+					</h2>
+					<p
+						class="text-sm text-df-muted dark:text-df-muted-dark mt-2 max-w-md">
+						Explora imágenes, configura el tamaño del lienzo, diseña con
+						drag &amp; drop y exporta en formatos listos para compartir o imprimir.
+					</p>
+				</div>
+
+				<!-- 2×2 Bento cards -->
+				<div class="grid grid-cols-2 gap-4">
+					<!-- Card 1: Lienzo a tu medida -->
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-700/60 overflow-hidden">
+						<h3 class="font-bold text-df-ink dark:text-df-ink-dark mb-1">
+							Lienzo a tu medida
+						</h3>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark mb-4 leading-relaxed">
+							Define tamaño y formato del lienzo para tu board. Construye con
+							libertad y mantén todo ordenado.
+						</p>
+						<!-- Mini board mockup -->
+						<div
+							class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 aspect-video">
+							<div class="flex h-full">
+								<!-- Sidebar -->
+								<div
+									class="w-16 bg-gray-200 dark:bg-gray-900 shrink-0 flex flex-col gap-1 p-2">
+									{
+										["#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db"].map(
+											() => (
+												<div class="h-2 bg-gray-300 dark:bg-gray-700 rounded" />
+											),
+										)
+									}
+								</div>
+								<!-- Content: mini image grid -->
+								<div class="flex-1 grid grid-cols-2 gap-1 p-2">
+									<img
+										src="/minimal_serenity.png"
+										alt=""
+										class="rounded object-cover w-full h-full"
+									/>
+									<img
+										src="/ethereal_canyons.png"
+										alt=""
+										class="rounded object-cover w-full h-full"
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Card 2: Listo para imprimir (violet) -->
+					<div
+						class="bg-df-primary dark:bg-df-primary-dark rounded-2xl p-6 overflow-hidden relative">
+						<div
+							class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+							<svg
+								class="w-5 h-5 text-white"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+								aria-hidden="true">
+								<polyline points="6 9 6 2 18 2 18 9"></polyline><path
+									d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+								></path><rect x="6" y="14" width="12" height="8"></rect>
+							</svg>
+						</div>
+						<h3 class="font-bold text-white mb-1">Listo para imprimir</h3>
+						<p class="text-xs text-white/80 leading-relaxed mb-4">
+							Exporta en alta calidad y prepara tu board para impresión o PDF,
+							con control de DPI.
+						</p>
+						<p
+							class="text-[10px] font-bold tracking-[0.15em] uppercase text-white/50">
+							PDF / PNG / JPG
+						</p>
+						<!-- Decorative -->
+						<div
+							class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-white/10"
+							aria-hidden="true">
+						</div>
+					</div>
+
+					<!-- Card 3: Búsqueda Multiplataforma -->
+					<div
+						class="bg-amber-50 dark:bg-gray-800/60 rounded-2xl p-6 border border-amber-100 dark:border-gray-700/60">
+						<div
+							class="w-10 h-10 bg-df-surface dark:bg-gray-700 rounded-xl flex items-center justify-center mb-4">
+							<svg
+								class="w-5 h-5 text-df-muted dark:text-df-muted-dark"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+								aria-hidden="true">
+								<circle cx="11" cy="11" r="8"></circle><line
+									x1="21"
+									y1="21"
+									x2="16.65"
+									y2="16.65"></line>
+							</svg>
+						</div>
+						<h3 class="font-bold text-df-ink dark:text-df-ink-dark mb-1">
+							Búsqueda de imágenes
+						</h3>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed mb-4">
+							Busca inspiración en Unsplash y Pexels. Selecciona tus favoritas
+							y llévalas al editor.
+						</p>
+						<!-- Thumbnails -->
+						<div class="flex gap-2 mb-3">
+							<img
+								src="/ethereal_canyons.png"
+								alt=""
+								class="w-14 h-14 rounded-xl object-cover shadow-sm"
+							/>
+							<img
+								src="/digital_pulse.png"
+								alt=""
+								class="w-14 h-14 rounded-xl object-cover shadow-sm"
+							/>
+							<img
+								src="/crystal_ripples.png"
+								alt=""
+								class="w-14 h-14 rounded-xl object-cover shadow-sm"
+							/>
+						</div>
+						<!-- Provider dots -->
+						<div class="flex gap-2">
+							<div
+								class="w-5 h-5 rounded-full bg-df-accent dark:bg-df-accent-dark shadow-sm"
+								title="Unsplash">
+							</div>
+							<div
+								class="w-5 h-5 rounded-full bg-df-secondary dark:bg-df-secondary-dark shadow-sm"
+								title="Pexels">
+							</div>
+						</div>
+					</div>
+
+					<!-- Card 4: Diseñando Premium (dark) -->
+					<div
+						class="bg-gray-950 dark:bg-gray-950 rounded-2xl p-6 relative overflow-hidden">
+						<img
+							src="/tactile_form.png"
+							alt=""
+							class="absolute inset-0 w-full h-full object-cover opacity-15"
+							aria-hidden="true"
+						/>
+						<div class="relative z-10">
+							<div
+								class="w-10 h-10 bg-df-primary/30 rounded-xl flex items-center justify-center mb-4">
+								<svg
+									class="w-5 h-5 text-df-primary-dark"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									stroke-width="1.5"
+									aria-hidden="true">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
+									></path>
+								</svg>
+							</div>
+							<h3 class="font-bold text-white mb-1">Editor drag &amp; drop</h3>
+							<p class="text-xs text-gray-400 leading-relaxed">
+								Arrastra imágenes al lienzo, muévelas, redimensiónalas y
+								organiza tu composición con precisión.
+							</p>
+							<!-- Mini dark UI preview -->
+							<div
+								class="mt-4 rounded-lg bg-gray-900 border border-gray-800 p-2">
+								<div class="grid grid-cols-3 gap-1">
+									<img
+										src="/minimal_serenity.png"
+										alt=""
+										class="rounded aspect-square object-cover"
+									/>
+									<img
+										src="/twilight_path.png"
+										alt=""
+										class="rounded aspect-square object-cover"
+									/>
+									<img
+										src="/digital_pulse.png"
+										alt=""
+										class="rounded aspect-square object-cover"
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ══════════════════════════════════════════
+         SHOWCASE / PHONE MOCKUPS
+    ══════════════════════════════════════════ -->
+		<section
+			id="gallery"
+			class="py-20 px-8 bg-df-surface dark:bg-df-surface-dark">
+			<div class="max-w-5xl mx-auto">
+				<div class="text-center mb-14">
+					<h2 class="text-3xl font-extrabold text-df-ink dark:text-df-ink-dark">
+						Cómo funciona
+					</h2>
+					<div
+						class="w-12 h-1 rounded-full bg-df-primary dark:bg-df-primary-dark mx-auto mt-3">
+					</div>
+					<p
+						class="text-sm text-df-muted dark:text-df-muted-dark mt-3 max-w-md mx-auto">
+						Tres pasos simples: explora imágenes, diseña tu lienzo y exporta
+						en el formato que necesitas.
+					</p>
+				</div>
+
+				<!-- 3 phone mockups -->
+				<div class="flex gap-6 justify-center items-end">
+					<!-- Phone 1: smaller -->
+					<div class="text-center">
+						<div
+							class="w-36 mx-auto rounded-[28px] border-[5px] border-gray-900 dark:border-gray-600
+                     overflow-hidden shadow-2xl shadow-gray-900/30 bg-gray-900"
+							style="min-height: 280px;">
+							<img
+								src="/ethereal_canyons.png"
+								alt=""
+								class="w-full h-full object-cover"
+								style="min-height: 280px;"
+								loading="lazy"
+							/>
+						</div>
+						<h3
+							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
+							1) Explora
+						</h3>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[140px] mx-auto">
+							Busca y selecciona imágenes de Unsplash y Pexels.
+						</p>
+					</div>
+
+					<!-- Phone 2: taller / center -->
+					<div class="text-center -mt-10">
+						<div
+							class="w-44 mx-auto rounded-[32px] border-[6px] border-gray-900 dark:border-gray-700
+                     overflow-hidden shadow-2xl shadow-gray-900/40 bg-gray-900"
+							style="min-height: 360px;">
+							<img
+								src="/digital_pulse.png"
+								alt=""
+								class="w-full h-full object-cover"
+								style="min-height: 360px;"
+								loading="lazy"
+							/>
+						</div>
+						<h3
+							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
+							2) Diseña
+						</h3>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[160px] mx-auto">
+							Arrastra, ajusta y organiza elementos en tu lienzo.
+						</p>
+					</div>
+
+					<!-- Phone 3: smaller -->
+					<div class="text-center">
+						<div
+							class="w-36 mx-auto rounded-[28px] border-[5px] border-gray-900 dark:border-gray-600
+                     overflow-hidden shadow-2xl shadow-gray-900/30 bg-gray-900"
+							style="min-height: 280px;">
+							<img
+								src="/crystal_ripples.png"
+								alt=""
+								class="w-full h-full object-cover"
+								style="min-height: 280px;"
+								loading="lazy"
+							/>
+						</div>
+						<h3
+							class="mt-4 text-sm font-bold text-df-ink dark:text-df-ink-dark">
+							3) Exporta
+						</h3>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark mt-1 max-w-[140px] mx-auto">
+							Guarda como PDF, PNG, JPG o JSON, listo para imprimir.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ══════════════════════════════════════════
+         CTA
+    ══════════════════════════════════════════ -->
+		<section id="cta" class="py-20 px-8 bg-df-bg dark:bg-df-bg-dark">
+			<div class="max-w-5xl mx-auto">
+				<div
+					class="relative overflow-hidden rounded-3xl px-12 py-16 text-center
+                 bg-gradient-to-br from-df-primary via-violet-600 to-df-accent
+                 dark:from-df-primary-dark dark:via-violet-700 dark:to-df-accent-dark">
+					<!-- Background image subtle -->
+					<img
+						src="/minimal_serenity.png"
+						alt=""
+						class="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
+						aria-hidden="true"
+					/>
+
+					<div class="relative z-10">
+						<h2
+							class="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
+							Crea un board que puedas usar de verdad.
+						</h2>
+						<p
+							class="text-white/80 text-sm mb-8 max-w-md mx-auto leading-relaxed">
+							Explora imágenes, diseña tu lienzo y exporta en alta calidad para
+							compartir o imprimir.
+						</p>
+						<div class="flex gap-4 justify-center flex-wrap">
+							<a
+								href="/explore"
+								class="px-6 py-3 rounded-full bg-white text-df-primary font-bold text-sm
+                       hover:bg-gray-50 transition-colors shadow-lg">
+								Empezar ahora
+							</a>
+							<a
+								href="/export"
+								class="px-6 py-3 rounded-full border-2 border-white/50 text-white font-bold text-sm
+                       hover:bg-white/10 transition-colors">
+								Ver opciones de exportación
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ══════════════════════════════════════════
+         FOOTER
+    ══════════════════════════════════════════ -->
+		<footer
+			class="bg-df-surface dark:bg-df-surface-dark border-t border-gray-200 dark:border-gray-800 px-8 pt-12 pb-8">
+			<div class="max-w-5xl mx-auto">
+				<div class="grid grid-cols-4 gap-8 mb-10">
+					<!-- Brand -->
+					<div class="col-span-1">
+						<p class="font-extrabold text-df-ink dark:text-df-ink-dark mb-2">
+							<span class="text-df-primary dark:text-df-primary-dark"
+								>Ethereal</span
+							>Vision
+						</p>
+						<p
+							class="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed mb-4">
+							Explora imágenes, diseña tu lienzo y exporta en alta calidad para
+							compartir o imprimir.
+						</p>
+						<!-- Social icons -->
+						<div class="flex gap-3">
+							{
+								[
+									"M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z",
+									"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z M4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+								].map((d) => (
+									<a
+										href="#"
+										class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-df-muted dark:text-df-muted-dark hover:bg-df-primary/10 dark:hover:bg-df-primary-dark/10 hover:text-df-primary dark:hover:text-df-primary-dark transition-colors">
+										<svg
+											class="w-3.5 h-3.5"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											stroke-width="2"
+											aria-hidden="true">
+											<path d={d} />
+										</svg>
+									</a>
+								))
+							}
+						</div>
+					</div>
+
+					<!-- Product -->
+					<div>
+						<h3
+							class="text-[10px] font-bold tracking-[0.2em] uppercase text-df-muted dark:text-df-muted-dark mb-4">
+							Product
+						</h3>
+						<ul class="space-y-2.5">
+							{
+								[
+									{ label: "Explora", href: "/explore" },
+									{ label: "Lienzo", href: "/canvas" },
+									{ label: "Diseña", href: "/design" },
+									{ label: "Exporta", href: "/export" },
+								].map(({ label, href }) => (
+									<li>
+										<a
+											href={href}
+											class="text-xs text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+											{label}
+										</a>
+									</li>
+								))
+							}
+						</ul>
+					</div>
+
+					<!-- Resources -->
+					<div>
+						<h3
+							class="text-[10px] font-bold tracking-[0.2em] uppercase text-df-muted dark:text-df-muted-dark mb-4">
+							Resources
+						</h3>
+						<ul class="space-y-2.5">
+							{
+								["Help Centre", "Documentation", "Blog", "Status"].map(
+									(item) => (
+										<li>
+											<a
+												href="#"
+												class="text-xs text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+												{item}
+											</a>
+										</li>
+									),
+								)
+							}
+						</ul>
+					</div>
+
+					<!-- Legal -->
+					<div>
+						<h3
+							class="text-[10px] font-bold tracking-[0.2em] uppercase text-df-muted dark:text-df-muted-dark mb-4">
+							Legal
+						</h3>
+						<ul class="space-y-2.5">
+							{
+								[
+									"Privacy Policy",
+									"Terms of Use",
+									"Cookie Policy",
+									"Licences",
+								].map((item) => (
+									<li>
+										<a
+											href="#"
+											class="text-xs text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+											{item}
+										</a>
+									</li>
+								))
+							}
+						</ul>
+					</div>
+				</div>
+
+				<div
+					class="border-t border-gray-100 dark:border-gray-800 pt-6 flex items-center justify-between">
+					<small
+						class="text-[10px] font-semibold tracking-[0.15em] uppercase text-df-muted dark:text-df-muted-dark not-italic">
+						&copy; 2024 Vision Craft. All rights reserved.
+					</small>
+					<nav aria-label="Footer bottom">
+						<ul class="flex gap-5" role="list">
+							{
+								["Privacy Policy", "Terms"].map((item) => (
+									<li>
+										<a
+											href="#"
+											class="text-[10px] font-semibold tracking-[0.15em] uppercase text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+											{item}
+										</a>
+									</li>
+								))
+							}
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</footer>
+	</div><!-- end pt-14 wrapper -->
+
+	<!-- Theme toggle script -->
+	<script>
+		const btn = document.getElementById("landing-theme-toggle");
+		btn?.addEventListener("click", () => {
+			const isDark = document.documentElement.classList.toggle("dark");
+			localStorage.setItem("df-theme", isDark ? "dark" : "light");
+		});
+	</script>
+</Layout>

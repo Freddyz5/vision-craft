@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "astro": {
+      "source": "briantbr/astro-best-practices",
+      "sourceType": "github",
+      "computedHash": "9fe0108ab9578efa1540ba8015473b91caa4e7e35e1d409a8ad8398aca695fdd"
+    },
+    "semantic-html": {
+      "source": "schalkneethling/webdev-agent-skills",
+      "sourceType": "github",
+      "computedHash": "58d317c187d08adde62d342e70118c9926191ec66664597a8fb2e30b3c236867"
+    },
+    "tailwindcss": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "computedHash": "676d95536c3c4a64215535ff09128d6e8d5163eb3fc204ed2cfde61e87b5d892"
+    }
+  }
+}
