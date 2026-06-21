@@ -6,7 +6,6 @@ import {
 	Rect,
 	Image as KonvaImage,
 	Text as KonvaText,
-	Line,
 } from "react-konva";
 import {
 	activeCanvasConfigStore,
@@ -16,13 +15,18 @@ import {
 	saveCurrentCanvas,
 } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
+import type { ExportMode } from "../types";
 import { PRINT_PAPERS, buildPrintConfig } from "../types";
 import {
 	buildDirectPrintHtml,
 	buildTiledPrintHtml,
 } from "../utils/printHelpers";
 import { TiledPrintPreview } from "./TiledPrintPreview";
+import { TileGridOverlay } from "./TileGridOverlay";
+import { WallSizePreview } from "./WallSizePreview";
+import { TiledPagesGrid } from "./TiledPagesGrid";
 import ExportOptionsButton from "./ExportOptionsButton";
+import ExportModeSelector from "./ExportModeSelector";
 
 // SVG Icons
 const IconPrint = () => (
@@ -185,24 +189,51 @@ export default function ExportPanel() {
 	const logicalWidth = config.widthMm * MM_TO_PX;
 	const logicalHeight = config.heightMm * MM_TO_PX;
 
-	// Print / Export strategy
-	const [exportStrategy, setExportStrategy] = useState<
-		"original" | "transpose"
-	>("original");
+	// Export mode: which of the 4 mutually-exclusive export tracks is active.
+	const [exportMode, setExportMode] = useState<ExportMode>("fit-page");
 	const [paperId, setPaperId] = useState<"a4" | "a3" | "us-letter">("a4");
-	const selectedPaper = useMemo(
-		() => PRINT_PAPERS.find((p) => p.id === paperId) ?? PRINT_PAPERS[0],
-		[paperId],
-	);
+	const [paperOrientation, setPaperOrientation] = useState<"portrait" | "landscape">("portrait");
+	const selectedPaper = useMemo(() => {
+		const preset = PRINT_PAPERS.find((p) => p.id === paperId) ?? PRINT_PAPERS[0];
+		if (paperOrientation === "landscape") {
+			return { ...preset, widthMm: preset.heightMm, heightMm: preset.widthMm };
+		}
+		return preset;
+	}, [paperId, paperOrientation]);
 
-	const transposePrintConfig = useMemo(() => {
-		if (exportStrategy !== "transpose") return null;
-		return buildPrintConfig(config.widthMm, config.heightMm, paperId);
-	}, [exportStrategy, config.widthMm, config.heightMm, paperId]);
-
+	// Advanced poster-mode controls: pre-scale the canvas and shift where the
+	// cut-line grid starts, to avoid awkward sliver tiles at the edges.
 	const [transposeScale, setTransposeScale] = useState(1);
 	const [transposeShiftX, setTransposeShiftX] = useState(0);
 	const [transposeShiftY, setTransposeShiftY] = useState(0);
+
+	const transposePrintConfig = useMemo(() => {
+		if (exportMode !== "poster") return null;
+		return buildPrintConfig(config.widthMm, config.heightMm, paperId, {
+			orientation: paperOrientation,
+			canvasScale: transposeScale,
+			shiftXMm: transposeShiftX,
+			shiftYMm: transposeShiftY,
+		});
+	}, [
+		exportMode,
+		config.widthMm,
+		config.heightMm,
+		paperId,
+		paperOrientation,
+		transposeScale,
+		transposeShiftX,
+		transposeShiftY,
+	]);
+
+	// Auto-scale (≤ 100%) needed to fit the canvas inside the selected paper, used by "fit-page" mode.
+	const fitPageScale = useMemo(() => {
+		return Math.min(
+			selectedPaper.widthMm / config.widthMm,
+			selectedPaper.heightMm / config.heightMm,
+			1,
+		);
+	}, [selectedPaper, config.widthMm, config.heightMm]);
 
 	// Canvas scaling state
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -213,12 +244,7 @@ export default function ExportPanel() {
 	const [printModalHtml, setPrintModalHtml] = useState<string | null>(null);
 	const [printModalLoaded, setPrintModalLoaded] = useState(false);
 	const [printModalTitle, setPrintModalTitle] = useState("Imprimir / Guardar PDF");
-	const [printModalKind, setPrintModalKind] = useState<"original" | "transpose">(
-		"original",
-	);
 	const printIframeRef = useRef<HTMLIFrameElement>(null);
-	const transposePreviewRef = useRef<HTMLDivElement>(null);
-	const [transposePreviewFit, setTransposePreviewFit] = useState(1);
 
 	// Konva stage ref for PNG export
 	const stageRef = useRef<any>(null);
@@ -262,15 +288,10 @@ export default function ExportPanel() {
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
 
-	const openPrintModal = (
-		html: string,
-		title?: string,
-		kind?: "original" | "transpose",
-	) => {
+	const openPrintModal = (html: string, title?: string) => {
 		setPrintModalTitle(title ?? "Imprimir / Guardar PDF");
 		setPrintModalHtml(html);
 		setPrintModalLoaded(false);
-		setPrintModalKind(kind ?? "original");
 		setPrintModalOpen(true);
 	};
 
@@ -298,106 +319,30 @@ export default function ExportPanel() {
 	};
 
 	const handlePrintPreview = () => {
-		if (exportStrategy === "transpose") {
-			const printConfig = buildPrintConfig(
-				config.widthMm,
-				config.heightMm,
-				paperId,
-				{
-					canvasScale: transposeScale,
-					shiftXMm: transposeShiftX,
-					shiftYMm: transposeShiftY,
-				},
-			);
+		if (exportMode === "poster" && transposePrintConfig) {
 			openPrintModal(
-				buildTiledPrintHtml(config, items, printConfig, {
+				buildTiledPrintHtml(config, items, transposePrintConfig, {
 					autoPrint: false,
 					closeAfterPrint: false,
 				}),
-				"Imprimir (múltiples hojas)",
-				"transpose",
+				`Imprimir (${transposePrintConfig.tiles.length} hojas)`,
 			);
 			return;
 		}
-		openPrintModal(
-			buildDirectPrintHtml(config, items, {
-				mode: "trueSize",
-				autoPrint: false,
-				closeAfterPrint: false,
-			}),
-			"Imprimir (tamaño original)",
-			"original",
-		);
-	};
-
-	useEffect(() => {
-		if (!printModalOpen) return;
-		if (printModalKind !== "transpose") return;
-		const printConfig = buildPrintConfig(
-			config.widthMm,
-			config.heightMm,
-			paperId,
-			{
-				canvasScale: transposeScale,
-				shiftXMm: transposeShiftX,
-				shiftYMm: transposeShiftY,
-			},
-		);
-		setPrintModalHtml(
-			buildTiledPrintHtml(config, items, printConfig, {
-				autoPrint: false,
-				closeAfterPrint: false,
-			}),
-		);
-	}, [
-		printModalOpen,
-		printModalKind,
-		config,
-		items,
-		paperId,
-		transposeScale,
-		transposeShiftX,
-		transposeShiftY,
-	]);
-
-	useEffect(() => {
-		if (!printModalOpen) return;
-		if (printModalKind !== "transpose") return;
-		const el = transposePreviewRef.current;
-		if (!el) return;
-
-		const update = () => {
-			const w = el.clientWidth;
-			const h = el.clientHeight;
-			const pad = 32;
-			const docW = logicalWidth * transposeScale;
-			const docH = logicalHeight * transposeScale;
-			const fit = Math.min(
-				1,
-				(w - pad * 2) / docW,
-				(h - pad * 2) / docH,
+		if (exportMode === "fit-page") {
+			openPrintModal(
+				buildDirectPrintHtml(config, items, {
+					mode: "fitToPaper",
+					paperWidthMm: selectedPaper.widthMm,
+					paperHeightMm: selectedPaper.heightMm,
+					autoPrint: false,
+					closeAfterPrint: false,
+				}),
+				`Imprimir (ajustado a ${selectedPaper.label})`,
 			);
-			setTransposePreviewFit(Number.isFinite(fit) && fit > 0 ? fit : 1);
-		};
-
-		let ro: ResizeObserver | null = null;
-		if ("ResizeObserver" in window) {
-			ro = new ResizeObserver(() => update());
-			ro.observe(el);
+			return;
 		}
-		requestAnimationFrame(update);
-		window.addEventListener("resize", update);
-		return () => {
-			window.removeEventListener("resize", update);
-			if (ro) ro.disconnect();
-		};
-	}, [
-		printModalOpen,
-		printModalKind,
-		logicalWidth,
-		logicalHeight,
-		transposeScale,
-	]);
+	};
 
 	const handleExportJson = () => {
 		const currentCanvas = {
@@ -467,12 +412,12 @@ export default function ExportPanel() {
 		}
 	};
 
-	const handleDownloadPdf = () => {
-		handlePrintPreview();
-	};
-
 	const handleSaveToBrowser = () => {
-		saveCurrentCanvas();
+		let thumbnail: string | undefined;
+		if (stageRef.current) {
+			thumbnail = stageRef.current.toDataURL({ pixelRatio: 0.5 });
+		}
+		saveCurrentCanvas(thumbnail);
 		showToast("Guardado correctamente en Mis Lienzos.");
 	};
 
@@ -509,6 +454,24 @@ export default function ExportPanel() {
 				<div
 					className="flex-1 relative flex items-center justify-center overflow-hidden rounded-xl shadow-inner p-4 min-h-[520px] h-[calc(100vh-20rem)] bg-base-200/40 dark:bg-base-300/10 border border-base-300 dark:border-gray-800"
 					ref={containerRef}>
+					{exportMode === "poster" && transposePrintConfig && (
+						<div className="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-full bg-gray-900/80 dark:bg-black/80 text-white text-xs font-bold backdrop-blur-sm shadow-lg flex items-center gap-1.5">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="13"
+								height="13"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round">
+								<path d="M3 6h18M3 12h18M3 18h18" />
+							</svg>
+							{transposePrintConfig.tiles.length} hojas · {selectedPaper.label}{" "}
+							{paperOrientation === "landscape" ? "Horizontal" : "Vertical"}
+						</div>
+					)}
 					{mounted && (
 						<div
 							className="shadow-2xl rounded-sm overflow-hidden bg-white transition-all duration-300 border border-base-300"
@@ -557,6 +520,14 @@ export default function ExportPanel() {
 											/>
 										);
 									})}
+									{exportMode === "poster" && transposePrintConfig && (
+										<TileGridOverlay
+											printConfig={transposePrintConfig}
+											pxPerMm={MM_TO_PX * scaleFactor}
+											boundsWidthPx={logicalWidth * scaleFactor}
+											boundsHeightPx={logicalHeight * scaleFactor}
+										/>
+									)}
 								</Layer>
 							</Stage>
 						</div>
@@ -583,7 +554,7 @@ export default function ExportPanel() {
 								? `${config.widthMm} × ${config.heightMm} mm`
 								: `${config.widthMm} × ${config.heightMm} mm`}
 						</div>
-						{exportStrategy === "transpose" && transposePrintConfig && (
+						{exportMode === "poster" && transposePrintConfig && (
 							<div className="flex items-center gap-2">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -617,12 +588,25 @@ export default function ExportPanel() {
 						</div>
 				</div>
 
-				{exportStrategy === "transpose" && (
+				{exportMode === "poster" && transposePrintConfig && (
+					<div className="rounded-2xl border border-base-300 dark:border-gray-800 bg-base-200/40 dark:bg-base-300/10 p-5">
+						<p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark mb-3">
+							Tamaño final en la pared
+						</p>
+						<WallSizePreview
+							posterWidthMm={transposePrintConfig.cols * transposePrintConfig.paperWidthMm}
+							posterHeightMm={transposePrintConfig.rows * transposePrintConfig.paperHeightMm}
+						/>
+					</div>
+				)}
+
+				{exportMode === "poster" && (
 					<div className="pt-2">
 						<TiledPrintPreview
 							canvasW={config.widthMm}
 							canvasH={config.heightMm}
 							paperId={paperId}
+							orientation={paperOrientation}
 							containerWidth={
 								containerRef.current?.clientWidth
 									? containerRef.current.clientWidth - 32
@@ -636,93 +620,165 @@ export default function ExportPanel() {
 			{/* Right Area - Sidebar */}
 			<aside className="w-96 h-[calc(100vh-8rem)] overflow-y-scroll shrink-0 sticky top-24 -mt-65 bg-base-100/80 dark:bg-df-surface-dark/70 rounded-3xl p-5 space-y-4 border-2 border-df-primary/30 backdrop-blur-sm">
 				<div className="space-y-10">
-					{/* Print Settings */}
+					{/* Export Mode Selector */}
 					<article className="flex flex-col gap-4">
 						<p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark">
-							Cómo quieres imprimir
+							Cómo quieres exportar
 						</p>
 
-						<label
-							className={`flex-1 flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-150 border-2
-                ${
-									exportStrategy === "original"
-										? "bg-df-primary dark:bg-df-primary-dark text-white border-transparent shadow-md shadow-df-primary/25 dark:shadow-df-primary-dark/20"
-										: "border-gray-200 dark:border-gray-700 text-df-ink dark:text-df-ink-dark bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:shadow-sm"
-								}
-                `}>
-							<div>
-								<span className="font-semibold text-sm block">Tamaño original</span>
-								<span className="text-xs opacity-70">
-									Imprime el lienzo a tamaño real
-								</span>
-							</div>
-							<input
-								type="radio"
-								name="print-strategy"
-								className={`radio radio-sm
-                  ${
-										exportStrategy === "original"
-											? "bg-df-primary dark:bg-df-primary-dark"
-											: "bg-gray-200 dark:bg-gray-700"
-									}
-                `}
-								checked={exportStrategy === "original"}
-								onChange={() => setExportStrategy("original")}
-							/>
-						</label>
+						<ExportModeSelector value={exportMode} onChange={setExportMode} />
 
-						<label
-							className={`flex-1 flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-150 border-2
-                ${
-									exportStrategy === "transpose"
-										? "bg-df-primary dark:bg-df-primary-dark text-white border-transparent shadow-md shadow-df-primary/25 dark:shadow-df-primary-dark/20"
-										: "border-gray-200 dark:border-gray-700 text-df-ink dark:text-df-ink-dark bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:shadow-sm"
-								}`}>
-							<div>
-								<span className="font-semibold text-sm block">Transponer a hojas</span>
-								<span className="text-xs opacity-70">
-									Divide el lienzo en varias hojas para unir
-								</span>
-							</div>
-							<input
-								type="radio"
-								name="print-strategy"
-								className={`radio radio-sm
-                  ${
-										exportStrategy === "transpose"
-											? "bg-df-primary dark:bg-df-primary-dark"
-											: "bg-gray-200 dark:bg-gray-700"
-									}
-                `}
-								checked={exportStrategy === "transpose"}
-								onChange={() => setExportStrategy("transpose")}
-							/>
-						</label>
+						{(exportMode === "poster" || exportMode === "fit-page") && (
+							<div className="p-4 rounded-xl bg-df-primary dark:bg-df-primary-dark text-white border-transparent shadow-md shadow-df-primary/25 dark:shadow-df-primary-dark/20 space-y-3">
+								<div>
+									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+										PAPEL DE IMPRESORA
+									</label>
+									<select
+										className="w-full p-2 rounded-xl bg-white text-black dark:bg-gray-800/50 dark:text-white"
+										value={paperId}
+										onChange={(e) => setPaperId(e.target.value as any)}>
+										{PRINT_PAPERS.map((p) => (
+											<option key={p.id} value={p.id}>
+												{p.label} ({p.widthMm} × {p.heightMm} mm)
+											</option>
+										))}
+									</select>
+								</div>
 
-						{exportStrategy === "transpose" && (
-							<div className="p-4 rounded-xl bg-df-primary dark:bg-df-primary-dark text-white border-transparent shadow-md shadow-df-primary/25 dark:shadow-df-primary-dark/20">
-								<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
-									PAPEL DE IMPRESORA
-								</label>
-								<select
-									className="w-full p-2 rounded-xl bg-white text-black dark:bg-gray-800/50 dark:text-white"
-									value={paperId}
-									onChange={(e) => setPaperId(e.target.value as any)}>
-									{PRINT_PAPERS.map((p) => (
-										<option key={p.id} value={p.id}>
-											{p.label} ({p.widthMm} × {p.heightMm} mm)
-										</option>
-									))}
-								</select>
+								<div>
+									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+										ORIENTACIÓN
+									</label>
+									<div className="grid grid-cols-2 gap-2">
+										{(
+											[
+												{ value: "portrait" as const, label: "Vertical" },
+												{ value: "landscape" as const, label: "Horizontal" },
+											]
+										).map((opt) => (
+											<button
+												key={opt.value}
+												type="button"
+												onClick={() => setPaperOrientation(opt.value)}
+												className={`py-1.5 rounded-lg text-xs font-bold transition-all duration-150 ${
+													paperOrientation === opt.value
+														? "bg-white text-df-primary dark:text-df-primary-dark shadow-sm"
+														: "bg-white/15 text-white hover:bg-white/25"
+												}`}>
+												{opt.label}
+											</button>
+										))}
+									</div>
+								</div>
+
+								{exportMode === "fit-page" && (
+									<p className="text-[11px] opacity-80">
+										Escala automática: {Math.round(fitPageScale * 100)}%
+									</p>
+								)}
+
+								{exportMode === "poster" && transposePrintConfig && (
+									<p className="text-[11px] opacity-80">
+										{transposePrintConfig.cols} × {transposePrintConfig.rows} hojas ·{" "}
+										{transposePrintConfig.tiles.length} total
+									</p>
+								)}
 							</div>
 						)}
 
-						<button
-							onClick={handlePrintPreview}
-							className="w-full inline-flex items-center justify-center gap-3 px-8 py-2.5 rounded-full cursor-pointer font-bold text-base text-white bg-gradient-to-r from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark hover:opacity-90 active:scale-95 transition-all duration-150 shadow-md shadow-df-primary/30 dark:shadow-df-primary-dark/20">
-							Imprimir / Guardar PDF
-							<IconPrint />
-						</button>
+						{exportMode === "poster" && transposePrintConfig && (
+							<div className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark">
+								<p className="text-[10px] font-bold tracking-widest uppercase mb-3 text-df-muted dark:text-df-muted-dark">
+									Vista previa de páginas
+								</p>
+								<TiledPagesGrid
+									cols={transposePrintConfig.cols}
+									rows={transposePrintConfig.rows}
+									paperAspectRatio={selectedPaper.widthMm / selectedPaper.heightMm}
+								/>
+							</div>
+						)}
+
+						{exportMode === "poster" && (
+							<details className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark p-3">
+								<summary className="cursor-pointer list-none flex items-center justify-between text-xs font-bold text-df-ink dark:text-df-ink-dark">
+									Ajustes avanzados
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="14"
+										height="14"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										className="transition-transform duration-150 group-open:rotate-180">
+										<polyline points="6 9 12 15 18 9"></polyline>
+									</svg>
+								</summary>
+								<div className="mt-3 space-y-3">
+									<label className="flex flex-col gap-1">
+										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+											Escala ({Math.round(transposeScale * 100)}%)
+										</span>
+										<input
+											type="range"
+											min="0.5"
+											max="2"
+											step="0.05"
+											value={transposeScale}
+											onChange={(e) => setTransposeScale(parseFloat(e.target.value))}
+											className="range range-xs range-primary"
+										/>
+									</label>
+
+									<label className="flex flex-col gap-1">
+										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+											Corte X ({Math.round(transposeShiftX)} mm)
+										</span>
+										<input
+											type="range"
+											min="0"
+											max={selectedPaper.widthMm}
+											step="1"
+											value={transposeShiftX}
+											onChange={(e) => setTransposeShiftX(parseFloat(e.target.value))}
+											className="range range-xs range-primary"
+										/>
+									</label>
+
+									<label className="flex flex-col gap-1">
+										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+											Corte Y ({Math.round(transposeShiftY)} mm)
+										</span>
+										<input
+											type="range"
+											min="0"
+											max={selectedPaper.heightMm}
+											step="1"
+											value={transposeShiftY}
+											onChange={(e) => setTransposeShiftY(parseFloat(e.target.value))}
+											className="range range-xs range-primary"
+										/>
+									</label>
+								</div>
+							</details>
+						)}
+
+						{(exportMode === "poster" || exportMode === "fit-page") && (
+							<button
+								onClick={handlePrintPreview}
+								className="w-full inline-flex items-center justify-center gap-3 px-8 py-2.5 rounded-full cursor-pointer font-bold text-base text-white bg-gradient-to-r from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark hover:opacity-90 active:scale-95 transition-all duration-150 shadow-md shadow-df-primary/30 dark:shadow-df-primary-dark/20">
+								{exportMode === "poster"
+									? transposePrintConfig
+										? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
+										: "Imprimir (múltiples hojas)"
+									: `Imprimir en ${selectedPaper.label}`}
+								<IconPrint />
+							</button>
+						)}
 					</article>
 
 					{/* Export Options */}
@@ -731,87 +787,88 @@ export default function ExportPanel() {
 							Opciones de exportación
 						</p>
 
-						<div className="p-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark">
-							<div className="flex items-center justify-between">
-								<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
-									DPI de exportación
-								</span>
-								<select
-									className="select select-bordered select-sm bg-base-100 dark:bg-df-bg-dark"
-									value={exportDpi}
-									onChange={(e) =>
-										setExportDpi(parseInt(e.target.value) as any)
-									}>
-									<option value={150}>150</option>
-									<option value={300}>300</option>
-								</select>
-							</div>
-						</div>
+						{exportMode === "image" && (
+							<>
+								<div className="p-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark">
+									<div className="flex items-center justify-between">
+										<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
+											DPI de exportación
+										</span>
+										<select
+											className="select select-bordered select-sm bg-base-100 dark:bg-df-bg-dark"
+											value={exportDpi}
+											onChange={(e) =>
+												setExportDpi(parseInt(e.target.value) as any)
+											}>
+											<option value={150}>150</option>
+											<option value={300}>300</option>
+										</select>
+									</div>
+								</div>
 
-						<ExportOptionsButton
-							name="Descargar como PDF"
-							description="Diálogo de impresión (Guardar como PDF)"
-							icon={<IconPDF />}
-							onClick={handleDownloadPdf}
-						/>
+								<ExportOptionsButton
+									name="Descargar como PNG"
+									description="Imagen sin pérdida"
+									icon={<IconPNG />}
+									onClick={handleDownloadPng}
+								/>
 
-						<ExportOptionsButton
-							name="Descargar como PNG"
-							description="Imagen sin pérdida"
-							icon={<IconPNG />}
-							onClick={handleDownloadPng}
-						/>
+								<ExportOptionsButton
+									name="Descargar como JPG"
+									description="Más liviano para compartir"
+									icon={<IconJPG />}
+									onClick={handleDownloadJpg}
+								/>
+							</>
+						)}
 
-						<ExportOptionsButton
-							name="Descargar como JPG"
-							description="Más liviano para compartir"
-							icon={<IconJPG />}
-							onClick={handleDownloadJpg}
-						/>
+						{exportMode === "data" && (
+							<>
+								<ExportOptionsButton
+									name="Guardar en el Navegador"
+									description="Almacenamiento Local"
+									icon={<IconSave />}
+									onClick={handleSaveToBrowser}
+								/>
 
-						<ExportOptionsButton
-							name="Guardar en el Navegador"
-							description="Almacenamiento Local"
-							icon={<IconSave />}
-							onClick={handleSaveToBrowser}
-						/>
+								<div className="flex gap-2">
+									<ExportOptionsButton
+										name="Exportar como JSON"
+										description="Metadatos sin procesar"
+										icon={<IconJSON />}
+										onClick={handleExportJson}
+									/>
+									<button
+										title="Importar JSON"
+										className="w-14 flex items-center justify-center cursor-pointer rounded-2xl border-2 transition-all duration-200 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:-translate-y-0.5 hover:shadow-md"
+										onClick={handleImportClick}>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="20"
+											height="20"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="2"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											className="text-purple-600 dark:text-purple-400">
+											<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+											<polyline points="17 8 12 3 7 8"></polyline>
+											<line x1="12" y1="3" x2="12" y2="15"></line>
+										</svg>
+									</button>
+								</div>
 
-						<div className="flex gap-2">
-							<ExportOptionsButton
-								name="Exportar como JSON"
-								description="Metadatos sin procesar"
-								icon={<IconJSON />}
-								onClick={handleExportJson}
-							/>
-							<button
-								title="Importar JSON"
-								className="w-14 flex items-center justify-center cursor-pointer rounded-2xl border-2 transition-all duration-200 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:-translate-y-0.5 hover:shadow-md"
-								onClick={handleImportClick}>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									className="text-purple-600 dark:text-purple-400">
-									<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-									<polyline points="17 8 12 3 7 8"></polyline>
-									<line x1="12" y1="3" x2="12" y2="15"></line>
-								</svg>
-							</button>
-						</div>
-
-						<input
-							type="file"
-							accept="application/json"
-							ref={fileInputRef}
-							onChange={handleFileChange}
-							className="hidden"
-						/>
+								<input
+									type="file"
+									accept="application/json"
+									ref={fileInputRef}
+									onChange={handleFileChange}
+									className="hidden"
+								/>
+							</>
+						)}
 					</article>
 				</div>
 			</aside>
@@ -869,250 +926,12 @@ export default function ExportPanel() {
 						</div>
 
 						<div className="flex-1 bg-white dark:bg-gray-900 flex flex-col min-h-0">
-							{printModalKind === "transpose" && (
-								<div className="shrink-0 p-4 border-b border-df-border dark:border-df-border-dark bg-df-surface dark:bg-df-surface-dark">
-									<div className="grid grid-cols-3 gap-3">
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-												Escala
-											</span>
-											<input
-												type="range"
-												min="0.5"
-												max="2"
-												step="0.05"
-												value={transposeScale}
-												onChange={(e) =>
-													setTransposeScale(
-														parseFloat(e.target.value),
-													)
-												}
-												className="range range-xs range-primary"
-											/>
-											<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
-												{Math.round(transposeScale * 100)}%
-											</span>
-										</label>
-
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-												Corte X
-											</span>
-											<input
-												type="range"
-												min="0"
-												max={selectedPaper.widthMm}
-												step="1"
-												value={transposeShiftX}
-												onChange={(e) =>
-													setTransposeShiftX(
-														parseFloat(e.target.value),
-													)
-												}
-												className="range range-xs range-primary"
-											/>
-											<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
-												{Math.round(transposeShiftX)} mm
-											</span>
-										</label>
-
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-												Corte Y
-											</span>
-											<input
-												type="range"
-												min="0"
-												max={selectedPaper.heightMm}
-												step="1"
-												value={transposeShiftY}
-												onChange={(e) =>
-													setTransposeShiftY(
-														parseFloat(e.target.value),
-													)
-												}
-												className="range range-xs range-primary"
-											/>
-											<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
-												{Math.round(transposeShiftY)} mm
-											</span>
-										</label>
-									</div>
-								</div>
-							)}
-
 							<div className="flex-1 min-h-0 relative">
-								{printModalKind === "transpose" && (
-									<div
-										ref={transposePreviewRef}
-										className="absolute inset-0 overflow-hidden flex items-center justify-center p-6"
-									>
-										{(() => {
-											const printConfig = buildPrintConfig(
-												config.widthMm,
-												config.heightMm,
-												paperId,
-												{
-													canvasScale: transposeScale,
-													shiftXMm: transposeShiftX,
-													shiftYMm: transposeShiftY,
-												},
-											);
-
-											const canvasScale = printConfig.canvasScale ?? 1;
-											const docW = logicalWidth * canvasScale;
-											const docH = logicalHeight * canvasScale;
-											const stageW = docW * transposePreviewFit;
-											const stageH = docH * transposePreviewFit;
-											const itemScale = canvasScale * transposePreviewFit;
-
-											const paperWpx =
-												printConfig.paperWidthMm * MM_TO_PX;
-											const paperHpx =
-												printConfig.paperHeightMm * MM_TO_PX;
-											const startXPx = printConfig.startXMm * MM_TO_PX;
-											const startYPx = printConfig.startYMm * MM_TO_PX;
-
-											const verticalLines: number[] = [];
-											for (let c = 0; c <= printConfig.cols; c++) {
-												const x = startXPx + c * paperWpx;
-												if (x >= 0 && x <= docW) verticalLines.push(x);
-											}
-
-											const horizontalLines: number[] = [];
-											for (let r = 0; r <= printConfig.rows; r++) {
-												const y = startYPx + r * paperHpx;
-												if (y >= 0 && y <= docH) horizontalLines.push(y);
-											}
-
-											return (
-												<div className="rounded-2xl bg-base-200/60 dark:bg-base-300/10 border border-base-300 dark:border-gray-800 p-4 shadow-inner">
-													<Stage
-														width={stageW}
-														height={stageH}
-													>
-														<Layer>
-															<Rect
-																x={0}
-																y={0}
-																width={stageW}
-																height={stageH}
-																fill="white"
-															/>
-
-															{sortedItems.map((item) => {
-																if (
-																	item.type === "text" ||
-																	(!!item.text && !item.imageSrc)
-																) {
-																	return (
-																		<StaticText
-																			key={item.id}
-																			text={item.text}
-																			x={item.x}
-																			y={item.y}
-																			width={item.width}
-																			height={item.height}
-																			rotation={item.rotation}
-																			scaleFactor={itemScale}
-																			fontSize={item.fontSize}
-																			fillColor={item.fillColor}
-																			fontFamily={item.fontFamily}
-																			fontStyle={item.fontStyle}
-																		/>
-																	);
-																}
-																if (!item.imageSrc) return null;
-																return (
-																	<StaticImage
-																		key={item.id}
-																		src={item.imageSrc}
-																		x={item.x}
-																		y={item.y}
-																		width={item.width}
-																		height={item.height}
-																		rotation={item.rotation}
-																		scaleFactor={itemScale}
-																	/>
-																);
-															})}
-
-															{printConfig.tiles.map((tile, i) => {
-																const x =
-																	(tile.offsetXMm * MM_TO_PX) *
-																	transposePreviewFit;
-																const y =
-																	(tile.offsetYMm * MM_TO_PX) *
-																	transposePreviewFit;
-																const w = paperWpx * transposePreviewFit;
-																const h = paperHpx * transposePreviewFit;
-																if (x > stageW || y > stageH || x + w < 0 || y + h < 0)
-																	return null;
-																return (
-																	<Rect
-																		key={`tile-${i}`}
-																		x={x}
-																		y={y}
-																		width={w}
-																		height={h}
-																		stroke="#7C3AED"
-																		strokeWidth={1}
-																		dash={[6, 4]}
-																		opacity={0.85}
-																	/>
-																);
-															})}
-
-															{verticalLines.map((x, idx) => (
-																<Line
-																	key={`v-${idx}`}
-																	points={[
-																		x * transposePreviewFit,
-																		0,
-																		x * transposePreviewFit,
-																		stageH,
-																	]}
-																	stroke="#EF4444"
-																	strokeWidth={1}
-																	opacity={0.8}
-																/>
-															))}
-															{horizontalLines.map((y, idx) => (
-																<Line
-																	key={`h-${idx}`}
-																	points={[
-																		0,
-																		y * transposePreviewFit,
-																		stageW,
-																		y * transposePreviewFit,
-																	]}
-																	stroke="#EF4444"
-																	strokeWidth={1}
-																	opacity={0.8}
-																/>
-															))}
-														</Layer>
-													</Stage>
-													<div className="mt-3 flex items-center justify-between text-xs text-df-muted dark:text-df-muted-dark">
-														<span>
-															{printConfig.tiles.length} hojas • {selectedPaper.label}
-														</span>
-														<span>
-															{Math.round(config.widthMm * canvasScale)} ×{" "}
-															{Math.round(config.heightMm * canvasScale)} mm
-														</span>
-													</div>
-												</div>
-											);
-										})()}
-									</div>
-								)}
-
 								{printModalHtml && (
 									<iframe
 										ref={printIframeRef}
 										title="Vista previa de impresión"
-										className={printModalKind === "transpose" ? "hidden" : "w-full h-full"}
+										className="w-full h-full"
 										srcDoc={printModalHtml}
 										onLoad={() => setPrintModalLoaded(true)}
 									/>

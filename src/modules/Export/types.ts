@@ -5,6 +5,38 @@ export type {
   SavedCanvas,
 } from '../../shared/store/canvasStore';
 
+/**
+ * The 4 mutually-exclusive export tracks shown in the Export sidebar.
+ * - "poster": split the canvas across multiple sheets to print large
+ * - "fit-page": auto-scale the canvas to fit a single sheet
+ * - "image": download as PNG/JPG
+ * - "data": save locally / export-import JSON
+ */
+export type ExportMode = 'poster' | 'fit-page' | 'image' | 'data';
+
+export const EXPORT_MODE_OPTIONS: { mode: ExportMode; title: string; description: string }[] = [
+  {
+    mode: 'fit-page',
+    title: 'Imprimir en A4',
+    description: 'Escala el lienzo para caber en una sola hoja',
+  },
+  {
+    mode: 'poster',
+    title: 'Imprimir en grande',
+    description: 'Divide el lienzo en varias hojas para armar un póster',
+  },
+  {
+    mode: 'image',
+    title: 'Descargar imagen',
+    description: 'PNG o JPG en alta resolución',
+  },
+  {
+    mode: 'data',
+    title: 'Guardar / JSON',
+    description: 'Guarda localmente o exporta/importa como JSON',
+  },
+];
+
 /** A single tile in the tiled-print grid */
 export interface PrintTile {
   col: number;
@@ -47,9 +79,15 @@ export function buildPrintConfig(
     shiftXMm?: number;
     /** 0..paperHeightMm (moves the first cut line inside the canvas) */
     shiftYMm?: number;
+    /** Paper orientation. 'landscape' swaps the preset's width/height. Default: 'portrait' */
+    orientation?: 'portrait' | 'landscape';
   },
 ): PrintConfig {
-  const paper = PRINT_PAPERS.find((p) => p.id === paperId)!;
+  const preset = PRINT_PAPERS.find((p) => p.id === paperId)!;
+  const orientation = options?.orientation ?? 'portrait';
+  const paper = orientation === 'landscape'
+    ? { ...preset, widthMm: preset.heightMm, heightMm: preset.widthMm }
+    : preset;
   const canvasScale = options?.canvasScale ?? 1;
   const effectiveCanvasWidthMm = canvasWidthMm * canvasScale;
   const effectiveCanvasHeightMm = canvasHeightMm * canvasScale;
@@ -57,8 +95,8 @@ export function buildPrintConfig(
   const shiftXMm = options?.shiftXMm ?? 0;
   const shiftYMm = options?.shiftYMm ?? 0;
 
-  const startXMm = shiftXMm - paper.widthMm;
-  const startYMm = shiftYMm - paper.heightMm;
+  const startXMm = shiftXMm;
+  const startYMm = shiftYMm;
 
   const cols = Math.max(
     1,

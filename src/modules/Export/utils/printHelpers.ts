@@ -2,6 +2,17 @@ import type { CanvasConfig, CanvasItem } from '../../../shared/store/canvasStore
 import type { PrintConfig } from '../types';
 import { MM_TO_PX } from '../../Canvas/constants/presets';
 
+// Items in the store are positioned in "logical Stage pixels" on a 96dpi
+// basis (see CanvasItem doc-comment in canvasStore.ts). To render reliably
+// across browsers/printers we convert everything to mm ONCE here and emit
+// only mm-based CSS — never px — inside the printable HTML. px↔mm rounding
+// and DPI assumptions are what caused Bug 2 (wrong-sized / shifted prints).
+const PX_TO_MM = 1 / MM_TO_PX;
+
+function pxToMm(px: number): number {
+    return px * PX_TO_MM;
+}
+
 function escapeHtml(text: string): string {
     return text
         .replaceAll('&', '&amp;')
@@ -18,20 +29,25 @@ function escapeAttr(text: string): string {
 function getCanvasHtml(
     config: CanvasConfig,
     items: CanvasItem[],
-    offsetX = 0,
-    offsetY = 0,
+    offsetXMm = 0,
+    offsetYMm = 0,
     scale = 1,
 ): string {
-    const logicalWidth = config.widthMm * MM_TO_PX * scale;
-    const logicalHeight = config.heightMm * MM_TO_PX * scale;
+    const widthMm = config.widthMm * scale;
+    const heightMm = config.heightMm * scale;
     
     // Sort items by zIndex ascending so the highest zIndex is rendered last
     const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
 
     const itemsHtml = sortedItems.map((item) => {
+        const xMm = pxToMm(item.x) * scale;
+        const yMm = pxToMm(item.y) * scale;
+        const wMm = pxToMm(item.width) * scale;
+        const hMm = pxToMm(item.height) * scale;
+
         if (item.type === 'text' || (!!item.text && !item.imageSrc)) {
             const text = escapeHtml(item.text ?? '');
-            const fontSize = item.fontSize ?? 24;
+            const fontSizeMm = pxToMm(item.fontSize ?? 24) * scale;
             const fillColor = escapeAttr(item.fillColor ?? '#111827');
             const fontFamily = escapeAttr(item.fontFamily ?? 'Inter');
             const fontStyle = escapeAttr(item.fontStyle ?? 'normal');
@@ -39,13 +55,13 @@ function getCanvasHtml(
                 <div
                     style="
                         position: absolute;
-                        left: ${item.x * scale}px;
-                        top: ${item.y * scale}px;
-                        width: ${item.width * scale}px;
-                        height: ${item.height * scale}px;
+                        left: ${xMm}mm;
+                        top: ${yMm}mm;
+                        width: ${wMm}mm;
+                        height: ${hMm}mm;
                         transform: rotate(${item.rotation}deg);
                         transform-origin: center center;
-                        font-size: ${fontSize * scale}px;
+                        font-size: ${fontSizeMm}mm;
                         font-family: ${fontFamily};
                         font-style: ${fontStyle};
                         color: ${fillColor};
@@ -66,10 +82,10 @@ function getCanvasHtml(
                 alt="${alt}"
                 style="
                     position: absolute;
-                    left: ${item.x * scale}px;
-                    top: ${item.y * scale}px;
-                    width: ${item.width * scale}px;
-                    height: ${item.height * scale}px;
+                    left: ${xMm}mm;
+                    top: ${yMm}mm;
+                    width: ${wMm}mm;
+                    height: ${hMm}mm;
                     transform: rotate(${item.rotation}deg);
                     transform-origin: center center;
                     object-fit: contain;
@@ -81,10 +97,10 @@ function getCanvasHtml(
     return `
         <div style="
             position: absolute;
-            left: ${-offsetX}px;
-            top: ${-offsetY}px;
-            width: ${logicalWidth}px;
-            height: ${logicalHeight}px;
+            left: ${-offsetXMm}mm;
+            top: ${-offsetYMm}mm;
+            width: ${widthMm}mm;
+            height: ${heightMm}mm;
             background-color: white;
             overflow: hidden;
             pointer-events: none;
@@ -141,17 +157,17 @@ export function buildDirectPrintHtml(
     options: DirectPrintRenderOptions = {},
 ): string {
     const mode: DirectPrintMode = options.mode ?? 'trueSize';
-    const htmlCanvas = getCanvasHtml(config, items);
-    const logicalWidthPx = config.widthMm * MM_TO_PX;
-    const logicalHeightPx = config.heightMm * MM_TO_PX;
+    const htmlCanvas = getCanvasHtml(config, items, 0, 0, 1);
+
+    const canvasWidthMm = config.widthMm;
+    const canvasHeightMm = config.heightMm;
 
     const paperWidthMm = options.paperWidthMm ?? config.widthMm;
     const paperHeightMm = options.paperHeightMm ?? config.heightMm;
-    const paperWidthPx = paperWidthMm * MM_TO_PX;
-    const paperHeightPx = paperHeightMm * MM_TO_PX;
 
+    // fitToPaper scales the whole canvas down (never up) to fit a single sheet.
     const scale = mode === 'fitToPaper'
-        ? Math.min(paperWidthPx / logicalWidthPx, paperHeightPx / logicalHeightPx, 1)
+        ? Math.min(paperWidthMm / canvasWidthMm, paperHeightMm / canvasHeightMm, 1)
         : 1;
 
     const autoPrint = options.autoPrint ?? false;
@@ -193,8 +209,8 @@ export function buildDirectPrintHtml(
             <body>
                 <div style="
                     position: relative;
-                    width: ${paperWidthPx}px;
-                    height: ${paperHeightPx}px;
+                    width: ${paperWidthMm}mm;
+                    height: ${paperHeightMm}mm;
                     overflow: hidden;
                     background: white;
                 ">
@@ -202,8 +218,8 @@ export function buildDirectPrintHtml(
                         position: absolute;
                         left: 50%;
                         top: 50%;
-                        width: ${logicalWidthPx}px;
-                        height: ${logicalHeightPx}px;
+                        width: ${canvasWidthMm}mm;
+                        height: ${canvasHeightMm}mm;
                         transform: translate(-50%, -50%) scale(${scale});
                         transform-origin: center center;
                     ">
@@ -226,23 +242,25 @@ export function buildTiledPrintHtml(
 ): string {
     let pagesHtml = '';
 
-    const paperWidthPx = printConfig.paperWidthMm * MM_TO_PX;
-    const paperHeightPx = printConfig.paperHeightMm * MM_TO_PX;
+    const paperWidthMm = printConfig.paperWidthMm;
+    const paperHeightMm = printConfig.paperHeightMm;
     const canvasScale = printConfig.canvasScale ?? 1;
 
-    printConfig.tiles.forEach((tile, index) => {
-        const offsetXPx = tile.offsetXMm * MM_TO_PX;
-        const offsetYPx = tile.offsetYMm * MM_TO_PX;
+    // Only used for the on-screen preview viewport-fit math (JS reads
+    // window.innerWidth in px). Never used for the actual @page sizing.
+    const paperWidthPx = paperWidthMm * MM_TO_PX;
+    const paperHeightPx = paperHeightMm * MM_TO_PX;
 
+    printConfig.tiles.forEach((tile, index) => {
         const pageInner = `
             <div class="page" style="
-                width: ${paperWidthPx}px; 
-                height: ${paperHeightPx}px; 
+                width: ${paperWidthMm}mm; 
+                height: ${paperHeightMm}mm; 
                 overflow: hidden; 
                 position: relative;
                 background: white;
             ">
-                ${getCanvasHtml(config, items, offsetXPx, offsetYPx, canvasScale)}
+                ${getCanvasHtml(config, items, tile.offsetXMm, tile.offsetYMm, canvasScale)}
             </div>
         `;
 

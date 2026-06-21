@@ -7,10 +7,11 @@ interface TiledPrintPreviewProps {
     canvasH: number;
     paperId: 'a4' | 'a3' | 'us-letter';
     containerWidth: number;
+    orientation?: 'portrait' | 'landscape';
 }
 
-export function TiledPrintPreview({ canvasW, canvasH, paperId, containerWidth }: TiledPrintPreviewProps) {
-    const printConfig = buildPrintConfig(canvasW, canvasH, paperId);
+export function TiledPrintPreview({ canvasW, canvasH, paperId, containerWidth, orientation = 'portrait' }: TiledPrintPreviewProps) {
+    const printConfig = buildPrintConfig(canvasW, canvasH, paperId, { orientation });
     
     const logicalW = canvasW * MM_TO_PX;
     const logicalH = canvasH * MM_TO_PX;
