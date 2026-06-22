@@ -260,7 +260,13 @@ export function buildTiledPrintHtml(
                 position: relative;
                 background: white;
             ">
-                ${getCanvasHtml(config, items, tile.offsetXMm, tile.offsetYMm, canvasScale)}
+                ${getCanvasHtml(
+                    config,
+                    items,
+                    tile.offsetXMm * canvasScale,
+                    tile.offsetYMm * canvasScale,
+                    canvasScale,
+                )}
             </div>
         `;
 

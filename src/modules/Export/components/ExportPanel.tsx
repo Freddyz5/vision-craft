@@ -202,19 +202,28 @@ export default function ExportPanel() {
 		return preset;
 	}, [paperId, paperOrientation]);
 
-	// Advanced poster-mode controls: pre-scale the canvas and shift where the
-	// cut-line grid starts, to avoid awkward sliver tiles at the edges.
-	const [transposeScale, setTransposeScale] = useState(1);
-	const [transposeShiftX, setTransposeShiftX] = useState(0);
-	const [transposeShiftY, setTransposeShiftY] = useState(0);
+	const defaultPosterCols = useMemo(
+		() => Math.max(1, Math.ceil(config.widthMm / selectedPaper.widthMm)),
+		[config.widthMm, selectedPaper.widthMm],
+	);
+	const defaultPosterRows = useMemo(
+		() => Math.max(1, Math.ceil(config.heightMm / selectedPaper.heightMm)),
+		[config.heightMm, selectedPaper.heightMm],
+	);
+	const [posterCols, setPosterCols] = useState(defaultPosterCols);
+	const [posterRows, setPosterRows] = useState(defaultPosterRows);
+
+	useEffect(() => {
+		setPosterCols(defaultPosterCols);
+		setPosterRows(defaultPosterRows);
+	}, [defaultPosterCols, defaultPosterRows]);
 
 	const transposePrintConfig = useMemo(() => {
 		if (exportMode !== "poster") return null;
 		return buildPrintConfig(config.widthMm, config.heightMm, paperId, {
 			orientation: paperOrientation,
-			canvasScale: transposeScale,
-			shiftXMm: transposeShiftX,
-			shiftYMm: transposeShiftY,
+			cols: posterCols,
+			rows: posterRows,
 		});
 	}, [
 		exportMode,
@@ -222,9 +231,8 @@ export default function ExportPanel() {
 		config.heightMm,
 		paperId,
 		paperOrientation,
-		transposeScale,
-		transposeShiftX,
-		transposeShiftY,
+		posterCols,
+		posterRows,
 	]);
 
 	// Auto-scale (≤ 100%) needed to fit the canvas inside the selected paper, used by "fit-page" mode.
@@ -582,7 +590,7 @@ export default function ExportPanel() {
 									strokeLinejoin="round">
 									<path d="M3 6h18M3 12h18M3 18h18" />
 								</svg>
-								{transposePrintConfig.tiles.length} hojas ({selectedPaper.label})
+								{transposePrintConfig.cols} x {transposePrintConfig.rows} hojas ({selectedPaper.label})
 							</div>
 						)}
 						<div className="flex items-center gap-2">
@@ -608,8 +616,8 @@ export default function ExportPanel() {
 							Tamaño final en la pared
 						</p>
 						<WallSizePreview
-							posterWidthMm={transposePrintConfig.cols * transposePrintConfig.paperWidthMm}
-							posterHeightMm={transposePrintConfig.rows * transposePrintConfig.paperHeightMm}
+							posterWidthMm={transposePrintConfig.posterWidthMm}
+							posterHeightMm={transposePrintConfig.posterHeightMm}
 						/>
 					</div>
 				)}
@@ -701,7 +709,7 @@ export default function ExportPanel() {
 						{exportMode === "poster" && (
 							<details className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark p-3">
 								<summary className="cursor-pointer list-none flex items-center justify-between text-xs font-bold text-df-ink dark:text-df-ink-dark">
-									Ajustes avanzados
+									Tamaño del póster
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										width="14"
@@ -717,50 +725,57 @@ export default function ExportPanel() {
 									</svg>
 								</summary>
 								<div className="mt-3 space-y-3">
-									<label className="flex flex-col gap-1">
-										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-											Escala ({Math.round(transposeScale * 100)}%)
-										</span>
-										<input
-											type="range"
-											min="0.5"
-											max="2"
-											step="0.05"
-											value={transposeScale}
-											onChange={(e) => setTransposeScale(parseFloat(e.target.value))}
-											className="range range-xs range-primary"
-										/>
-									</label>
+									<p className="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed">
+										La cuadrícula se ajusta para llenar el lienzo con hojas completas.
+										Si aumentas columnas o filas, el póster crece; si las reduces, se recorta más.
+									</p>
 
-									<label className="flex flex-col gap-1">
-										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-											Corte X ({Math.round(transposeShiftX)} mm)
-										</span>
-										<input
-											type="range"
-											min="0"
-											max={selectedPaper.widthMm}
-											step="1"
-											value={transposeShiftX}
-											onChange={(e) => setTransposeShiftX(parseFloat(e.target.value))}
-											className="range range-xs range-primary"
-										/>
-									</label>
+									<div className="grid grid-cols-2 gap-3">
+										<label className="flex flex-col gap-1">
+											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+												Columnas
+											</span>
+											<input
+												type="number"
+												min="1"
+												max="12"
+												step="1"
+												value={posterCols}
+												onChange={(e) =>
+													setPosterCols(Math.max(1, parseInt(e.target.value || "1", 10)))
+												}
+												className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
+											/>
+										</label>
 
-									<label className="flex flex-col gap-1">
-										<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
-											Corte Y ({Math.round(transposeShiftY)} mm)
-										</span>
-										<input
-											type="range"
-											min="0"
-											max={selectedPaper.heightMm}
-											step="1"
-											value={transposeShiftY}
-											onChange={(e) => setTransposeShiftY(parseFloat(e.target.value))}
-											className="range range-xs range-primary"
-										/>
-									</label>
+										<label className="flex flex-col gap-1">
+											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+												Filas
+											</span>
+											<input
+												type="number"
+												min="1"
+												max="12"
+												step="1"
+												value={posterRows}
+												onChange={(e) =>
+													setPosterRows(Math.max(1, parseInt(e.target.value || "1", 10)))
+												}
+												className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
+											/>
+										</label>
+									</div>
+
+									{transposePrintConfig && (
+										<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs text-df-muted dark:text-df-muted-dark space-y-1">
+											<p>
+												Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x {Math.round(transposePrintConfig.posterHeightMm)} mm
+											</p>
+											<p>
+												Cobertura visible por hoja: {Math.round(transposePrintConfig.pageViewportWidthMm)} x {Math.round(transposePrintConfig.pageViewportHeightMm)} mm del lienzo
+											</p>
+										</div>
+									)}
 								</div>
 							</details>
 						)}

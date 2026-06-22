@@ -22,20 +22,20 @@ export function TileGridOverlay({
 	boundsWidthPx,
 	boundsHeightPx,
 }: TileGridOverlayProps) {
-	const paperWpx = printConfig.paperWidthMm * pxPerMm;
-	const paperHpx = printConfig.paperHeightMm * pxPerMm;
+	const pageWpx = printConfig.pageViewportWidthMm * pxPerMm;
+	const pageHpx = printConfig.pageViewportHeightMm * pxPerMm;
 	const startXPx = printConfig.startXMm * pxPerMm;
 	const startYPx = printConfig.startYMm * pxPerMm;
 
 	const verticalLines: number[] = [];
 	for (let c = 0; c <= printConfig.cols; c++) {
-		const x = startXPx + c * paperWpx;
+		const x = startXPx + c * pageWpx;
 		if (x >= 0 && x <= boundsWidthPx) verticalLines.push(x);
 	}
 
 	const horizontalLines: number[] = [];
 	for (let r = 0; r <= printConfig.rows; r++) {
-		const y = startYPx + r * paperHpx;
+		const y = startYPx + r * pageHpx;
 		if (y >= 0 && y <= boundsHeightPx) horizontalLines.push(y);
 	}
 
@@ -44,7 +44,7 @@ export function TileGridOverlay({
 			{printConfig.tiles.map((tile, i) => {
 				const x = tile.offsetXMm * pxPerMm;
 				const y = tile.offsetYMm * pxPerMm;
-				if (x > boundsWidthPx || y > boundsHeightPx || x + paperWpx < 0 || y + paperHpx < 0) {
+				if (x > boundsWidthPx || y > boundsHeightPx || x + pageWpx < 0 || y + pageHpx < 0) {
 					return null;
 				}
 				return (
@@ -52,8 +52,8 @@ export function TileGridOverlay({
 						key={`tile-${i}`}
 						x={x}
 						y={y}
-						width={paperWpx}
-						height={paperHpx}
+						width={pageWpx}
+						height={pageHpx}
 						stroke="#7C3AED"
 						strokeWidth={1}
 						dash={[6, 4]}
