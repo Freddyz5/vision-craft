@@ -359,50 +359,72 @@ export function buildTiledPrintHtml(
                     }
 
                     ${isPreview ? `
-                        body {
-                            background: #f3f4f6;
-                            padding: 24px;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            gap: 18px;
+                        /* ── Screen-only preview styles ─────────────────────────────────────────
+                           MUST be inside @media screen so they never bleed into printing.
+                           Bug: transform:scale + page-break-after:auto were leaking into
+                           the print stylesheet, causing shrunken tiles and missing page breaks.
+                        ─────────────────────────────────────────────────────────────────────── */
+                        @media screen {
+                            body {
+                                background: #f3f4f6;
+                                padding: 24px;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 18px;
+                            }
+
+                            .sheet {
+                                width: calc(var(--paper-w) * var(--preview-scale));
+                                height: calc(var(--paper-h) * var(--preview-scale));
+                                position: relative;
+                                border-radius: 12px;
+                                background: white;
+                                box-shadow: 0 18px 60px rgba(0,0,0,0.22);
+                                overflow: hidden;
+                                border: 1px solid rgba(0,0,0,0.12);
+                            }
+
+                            .sheet-label {
+                                position: absolute;
+                                top: 12px;
+                                left: 12px;
+                                z-index: 2;
+                                padding: 6px 10px;
+                                border-radius: 999px;
+                                background: rgba(17,24,39,0.85);
+                                color: white;
+                                font: 600 12px/1.1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+                                letter-spacing: 0.02em;
+                                backdrop-filter: blur(6px);
+                            }
+
+                            /* Scale page content to fit the viewport — screen preview only.        */
+                            /* This transform must NEVER apply during printing (would shrink tiles). */
+                            .sheet > .page {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                transform: scale(var(--preview-scale));
+                                transform-origin: top left;
+                                box-shadow: none;
+                            }
+
+                            /* Override page-break for scrollable screen preview only.              */
+                            /* During print, the non-media-queried rule above applies instead:      */
+                            /* .page { page-break-after: always; }                                  */
+                            .page { page-break-after: auto; }
                         }
 
-                        .sheet {
-                            width: calc(var(--paper-w) * var(--preview-scale));
-                            height: calc(var(--paper-h) * var(--preview-scale));
-                            position: relative;
-                            border-radius: 12px;
-                            background: white;
-                            box-shadow: 0 18px 60px rgba(0,0,0,0.22);
-                            overflow: hidden;
-                            border: 1px solid rgba(0,0,0,0.12);
+                        @media print {
+                            /* Hide the screen-only badges from the printed output. */
+                            .sheet-label { display: none; }
+                            /* Make the .sheet wrapper transparent so .page elements  */
+                            /* are logical children of body — page-break-after:always */
+                            /* only works reliably when the breakable element is a    */
+                            /* direct descendant of the block-formatting context.     */
+                            .sheet { display: contents; }
                         }
-
-                        .sheet-label {
-                            position: absolute;
-                            top: 12px;
-                            left: 12px;
-                            z-index: 2;
-                            padding: 6px 10px;
-                            border-radius: 999px;
-                            background: rgba(17,24,39,0.85);
-                            color: white;
-                            font: 600 12px/1.1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-                            letter-spacing: 0.02em;
-                            backdrop-filter: blur(6px);
-                        }
-
-                        .sheet > .page {
-                            position: absolute;
-                            left: 0;
-                            top: 0;
-                            transform: scale(var(--preview-scale));
-                            transform-origin: top left;
-                            box-shadow: none;
-                        }
-
-                        .page { page-break-after: auto; }
                     ` : ''}
                 </style>
             </head>

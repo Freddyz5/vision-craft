@@ -20,8 +20,9 @@ import { PRINT_PAPERS, buildPrintConfig } from "../types";
 import {
 	buildDirectPrintHtml,
 	buildTiledPrintHtml,
+	createDirectPrintIframe,
+	createTiledPrintIframe,
 } from "../utils/printHelpers";
-import { TiledPrintPreview } from "./TiledPrintPreview";
 import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
 import { TiledPagesGrid } from "./TiledPagesGrid";
@@ -302,6 +303,19 @@ export default function ExportPanel() {
 	};
 
 	const handleModalPrint = async () => {
+		const started =
+			exportMode === "poster" && transposePrintConfig
+				? createTiledPrintIframe(config, items, transposePrintConfig)
+				: exportMode === "fit-page"
+					? createDirectPrintIframe(config, items, {
+							mode: "fitToPaper",
+							paperWidthMm: selectedPaper.widthMm,
+							paperHeightMm: selectedPaper.heightMm,
+						})
+					: false;
+
+		if (started) return;
+
 		const win = printIframeRef.current?.contentWindow as any;
 		if (!win) {
 			showToast("No se pudo iniciar la impresión.");
@@ -596,22 +610,6 @@ export default function ExportPanel() {
 						<WallSizePreview
 							posterWidthMm={transposePrintConfig.cols * transposePrintConfig.paperWidthMm}
 							posterHeightMm={transposePrintConfig.rows * transposePrintConfig.paperHeightMm}
-						/>
-					</div>
-				)}
-
-				{exportMode === "poster" && (
-					<div className="pt-2">
-						<TiledPrintPreview
-							canvasW={config.widthMm}
-							canvasH={config.heightMm}
-							paperId={paperId}
-							orientation={paperOrientation}
-							containerWidth={
-								containerRef.current?.clientWidth
-									? containerRef.current.clientWidth - 32
-									: 400
-							}
 						/>
 					</div>
 				)}
