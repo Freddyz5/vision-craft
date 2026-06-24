@@ -1,4 +1,4 @@
-import { Rect, Line } from "react-konva";
+import { Group, Rect, Line } from "react-konva";
 import type { PrintConfig } from "../types";
 
 interface TileGridOverlayProps {
@@ -26,6 +26,10 @@ export function TileGridOverlay({
 	const pageHpx = printConfig.pageViewportHeightMm * pxPerMm;
 	const startXPx = printConfig.startXMm * pxPerMm;
 	const startYPx = printConfig.startYMm * pxPerMm;
+	const gridStartXPx = Math.max(0, startXPx);
+	const gridStartYPx = Math.max(0, startYPx);
+	const gridEndXPx = Math.min(boundsWidthPx, startXPx + printConfig.cols * pageWpx);
+	const gridEndYPx = Math.min(boundsHeightPx, startYPx + printConfig.rows * pageHpx);
 
 	const verticalLines: number[] = [];
 	for (let c = 0; c <= printConfig.cols; c++) {
@@ -40,7 +44,7 @@ export function TileGridOverlay({
 	}
 
 	return (
-		<>
+		<Group name="poster-grid-overlay">
 			{printConfig.tiles.map((tile, i) => {
 				const x = tile.offsetXMm * pxPerMm;
 				const y = tile.offsetYMm * pxPerMm;
@@ -55,7 +59,7 @@ export function TileGridOverlay({
 						width={pageWpx}
 						height={pageHpx}
 						stroke="#7C3AED"
-						strokeWidth={1}
+						strokeWidth={2}
 						dash={[6, 4]}
 						opacity={0.85}
 					/>
@@ -65,22 +69,20 @@ export function TileGridOverlay({
 			{verticalLines.map((x, idx) => (
 				<Line
 					key={`v-${idx}`}
-					points={[x, 0, x, boundsHeightPx]}
-					stroke="#EF4444"
-					strokeWidth={1}
-					opacity={0.8}
+					points={[x, gridStartYPx, x, gridEndYPx]}
+					stroke="#7042FC"
+					strokeWidth={2}
 				/>
 			))}
 
 			{horizontalLines.map((y, idx) => (
 				<Line
 					key={`h-${idx}`}
-					points={[0, y, boundsWidthPx, y]}
-					stroke="#EF4444"
-					strokeWidth={1}
-					opacity={0.8}
+					points={[gridStartXPx, y, gridEndXPx, y]}
+					stroke="#7042FC"
+					strokeWidth={2}
 				/>
 			))}
-		</>
+		</Group>
 	);
 }

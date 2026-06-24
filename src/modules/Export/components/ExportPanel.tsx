@@ -25,7 +25,6 @@ import {
 } from "../utils/printHelpers";
 import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
-import { TiledPagesGrid } from "./TiledPagesGrid";
 import ExportOptionsButton from "./ExportOptionsButton";
 import ExportModeSelector from "./ExportModeSelector";
 
@@ -257,6 +256,7 @@ export default function ExportPanel() {
 
 	// Konva stage ref for PNG export
 	const stageRef = useRef<any>(null);
+	const [wallPreviewSrc, setWallPreviewSrc] = useState<string | null>(null);
 
 	const showToast = (message: string) => {
 		setToastMessage(message);
@@ -294,6 +294,66 @@ export default function ExportPanel() {
 			if (ro) ro.disconnect();
 		};
 	}, [logicalWidth, logicalHeight]);
+
+	useEffect(() => {
+		if (!mounted || exportMode !== "poster" || !transposePrintConfig) {
+			setWallPreviewSrc(null);
+			return;
+		}
+
+		let cancelled = false;
+		const capturePreview = () => {
+			const stage = stageRef.current;
+			if (!stage) return;
+
+			const overlayNodes = stage.find(".poster-grid-overlay");
+			const previewScale = scaleFactor;
+			const posterX = transposePrintConfig.startXMm * MM_TO_PX * previewScale;
+			const posterY = transposePrintConfig.startYMm * MM_TO_PX * previewScale;
+			const posterWidth =
+				transposePrintConfig.pageViewportWidthMm *
+				transposePrintConfig.cols *
+				MM_TO_PX *
+				previewScale;
+			const posterHeight =
+				transposePrintConfig.pageViewportHeightMm *
+				transposePrintConfig.rows *
+				MM_TO_PX *
+				previewScale;
+
+			try {
+				overlayNodes.forEach((node: any) => node.visible(false));
+				stage.batchDraw();
+
+				const dataURL = stage.toDataURL({
+					x: posterX,
+					y: posterY,
+					width: posterWidth,
+					height: posterHeight,
+					pixelRatio: Math.max(1, 1 / Math.max(previewScale, 0.01)),
+				});
+				if (!cancelled) {
+					setWallPreviewSrc(dataURL);
+				}
+			} catch {
+				if (!cancelled) {
+					setWallPreviewSrc(null);
+				}
+			} finally {
+				overlayNodes.forEach((node: any) => node.visible(true));
+				stage.batchDraw();
+			}
+		};
+
+		const frameId = requestAnimationFrame(capturePreview);
+		const timeoutId = window.setTimeout(capturePreview, 500);
+
+		return () => {
+			cancelled = true;
+			window.cancelAnimationFrame(frameId);
+			window.clearTimeout(timeoutId);
+		};
+	}, [mounted, exportMode, transposePrintConfig, scaleFactor, items]);
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
 
@@ -618,6 +678,9 @@ export default function ExportPanel() {
 						<WallSizePreview
 							posterWidthMm={transposePrintConfig.posterWidthMm}
 							posterHeightMm={transposePrintConfig.posterHeightMm}
+							previewSrc={wallPreviewSrc}
+							cols={transposePrintConfig.cols}
+							rows={transposePrintConfig.rows}
 						/>
 					</div>
 				)}
@@ -678,61 +741,17 @@ export default function ExportPanel() {
 									</div>
 								</div>
 
-								{exportMode === "fit-page" && (
-									<p className="text-[11px] opacity-80">
-										Escala automática: {Math.round(fitPageScale * 100)}%
-									</p>
-								)}
-
-								{exportMode === "poster" && transposePrintConfig && (
-									<p className="text-[11px] opacity-80">
-										{transposePrintConfig.cols} × {transposePrintConfig.rows} hojas ·{" "}
-										{transposePrintConfig.tiles.length} total
-									</p>
-								)}
-							</div>
-						)}
-
-						{exportMode === "poster" && transposePrintConfig && (
-							<div className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark">
-								<p className="text-[10px] font-bold tracking-widest uppercase mb-3 text-df-muted dark:text-df-muted-dark">
-									Vista previa de páginas
-								</p>
-								<TiledPagesGrid
-									cols={transposePrintConfig.cols}
-									rows={transposePrintConfig.rows}
-									paperAspectRatio={selectedPaper.widthMm / selectedPaper.heightMm}
-								/>
-							</div>
-						)}
-
-						{exportMode === "poster" && (
-							<details className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark p-3">
-								<summary className="cursor-pointer list-none flex items-center justify-between text-xs font-bold text-df-ink dark:text-df-ink-dark">
-									Tamaño del póster
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="14"
-										height="14"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="transition-transform duration-150 group-open:rotate-180">
-										<polyline points="6 9 12 15 18 9"></polyline>
-									</svg>
-								</summary>
 								<div className="mt-3 space-y-3">
-									<p className="text-xs text-df-muted dark:text-df-muted-dark leading-relaxed">
+									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+										Tamaño del póster
+									</label>
+									<p className="text-xs leading-relaxed">
 										La cuadrícula se ajusta para llenar el lienzo con hojas completas.
 										Si aumentas columnas o filas, el póster crece; si las reduces, se recorta más.
 									</p>
-
 									<div className="grid grid-cols-2 gap-3">
 										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+											<span className="text-[10px] font-bold tracking-widest uppercase">
 												Columnas
 											</span>
 											<input
@@ -749,7 +768,7 @@ export default function ExportPanel() {
 										</label>
 
 										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase text-df-muted dark:text-df-muted-dark">
+											<span className="text-[10px] font-bold tracking-widest uppercase">
 												Filas
 											</span>
 											<input
@@ -765,9 +784,8 @@ export default function ExportPanel() {
 											/>
 										</label>
 									</div>
-
 									{transposePrintConfig && (
-										<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs text-df-muted dark:text-df-muted-dark space-y-1">
+										<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs space-y-1">
 											<p>
 												Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x {Math.round(transposePrintConfig.posterHeightMm)} mm
 											</p>
@@ -777,7 +795,20 @@ export default function ExportPanel() {
 										</div>
 									)}
 								</div>
-							</details>
+
+								{exportMode === "fit-page" && (
+									<p className="text-[11px] opacity-80">
+										Escala automática: {Math.round(fitPageScale * 100)}%
+									</p>
+								)}
+
+								{exportMode === "poster" && transposePrintConfig && (
+									<p className="text-[11px] opacity-80">
+										{transposePrintConfig.cols} × {transposePrintConfig.rows} hojas ·{" "}
+										{transposePrintConfig.tiles.length} total
+									</p>
+								)}
+							</div>
 						)}
 
 						{(exportMode === "poster" || exportMode === "fit-page") && (

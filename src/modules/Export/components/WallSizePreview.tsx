@@ -3,6 +3,11 @@ interface WallSizePreviewProps {
 	posterWidthMm: number;
 	/** Total assembled poster height, in mm (rows * paperHeightMm) */
 	posterHeightMm: number;
+	/** Optional canvas preview image used to show the actual poster artwork */
+	previewSrc?: string | null;
+	/** Grid subdivision used to visualize the tiled poster layout */
+	cols?: number;
+	rows?: number;
 }
 
 const DOOR_HEIGHT_MM = 2000;
@@ -17,7 +22,13 @@ const MAX_DIMENSION_PX = 180;
  * a standard 2m door next to the assembled poster, both drawn to the same
  * real-world scale, with the poster's physical size printed underneath.
  */
-export function WallSizePreview({ posterWidthMm, posterHeightMm }: WallSizePreviewProps) {
+export function WallSizePreview({
+	posterWidthMm,
+	posterHeightMm,
+	previewSrc,
+	cols = 1,
+	rows = 1,
+}: WallSizePreviewProps) {
 	const largestMm = Math.max(DOOR_HEIGHT_MM, posterWidthMm, posterHeightMm);
 	const pxPerMm = MAX_DIMENSION_PX / largestMm;
 
@@ -30,15 +41,16 @@ export function WallSizePreview({ posterWidthMm, posterHeightMm }: WallSizePrevi
 	const padX = 20;
 	const padTop = 16;
 	const labelHeight = 30;
-	const baseY = padTop + Math.max(doorHpx, posterHpx);
+	const topY = padTop;
+	const baseY = topY + Math.max(doorHpx, posterHpx);
 
 	const svgWidth = padX * 2 + doorWpx + gap + posterWpx;
 	const svgHeight = baseY + labelHeight;
 
 	const doorX = padX;
-	const doorY = baseY - doorHpx;
+	const doorY = topY;
 	const posterX = padX + doorWpx + gap;
-	const posterY = baseY - posterHpx;
+	const posterY = topY;
 
 	const posterWidthCm = Math.round(posterWidthMm / 10);
 	const posterHeightCm = Math.round(posterHeightMm / 10);
@@ -57,6 +69,9 @@ export function WallSizePreview({ posterWidthMm, posterHeightMm }: WallSizePrevi
 						<stop offset="0%" stopColor="#A78BFA" stopOpacity={0.65} />
 						<stop offset="100%" stopColor="#7C3AED" stopOpacity={0.5} />
 					</linearGradient>
+					<clipPath id="wallPosterClip">
+						<rect x={posterX} y={posterY} width={posterWpx} height={posterHpx} />
+					</clipPath>
 				</defs>
 
 				{/* floor line */}
@@ -83,15 +98,55 @@ export function WallSizePreview({ posterWidthMm, posterHeightMm }: WallSizePrevi
 				/>
 
 				{/* poster */}
-				<rect
-					x={posterX}
-					y={posterY}
-					width={posterWpx}
-					height={posterHpx}
-					fill="url(#wallPosterGradient)"
-					stroke="#7C3AED"
-					strokeWidth={1.5}
-				/>
+				{previewSrc ? (
+					<image
+						href={previewSrc}
+						x={posterX}
+						y={posterY}
+						width={posterWpx}
+						height={posterHpx}
+						preserveAspectRatio="none"
+						clipPath="url(#wallPosterClip)"
+					/>
+				) : (
+					<rect
+						x={posterX}
+						y={posterY}
+						width={posterWpx}
+						height={posterHpx}
+						fill="url(#wallPosterGradient)"
+					/>
+				)}
+				{Array.from({ length: Math.max(0, cols - 1) }, (_, index) => {
+					const x = posterX + ((index + 1) * posterWpx) / cols;
+					return (
+						<line
+							key={`poster-v-${index}`}
+							x1={x}
+							y1={posterY}
+							x2={x}
+							y2={posterY + posterHpx}
+							stroke="white"
+							strokeOpacity={0.7}
+							strokeWidth={1.2}
+						/>
+					);
+				})}
+				{Array.from({ length: Math.max(0, rows - 1) }, (_, index) => {
+					const y = posterY + ((index + 1) * posterHpx) / rows;
+					return (
+						<line
+							key={`poster-h-${index}`}
+							x1={posterX}
+							y1={y}
+							x2={posterX + posterWpx}
+							y2={y}
+							stroke="white"
+							strokeOpacity={0.7}
+							strokeWidth={1.2}
+						/>
+					);
+				})}
 
 				{/* labels */}
 				<text
