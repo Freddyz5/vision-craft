@@ -741,60 +741,62 @@ export default function ExportPanel() {
 									</div>
 								</div>
 
-								<div className="mt-3 space-y-3">
-									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
-										Tamaño del póster
-									</label>
-									<p className="text-xs leading-relaxed">
-										La cuadrícula se ajusta para llenar el lienzo con hojas completas.
-										Si aumentas columnas o filas, el póster crece; si las reduces, se recorta más.
-									</p>
-									<div className="grid grid-cols-2 gap-3">
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase">
-												Columnas
-											</span>
-											<input
-												type="number"
-												min="1"
-												max="12"
-												step="1"
-												value={posterCols}
-												onChange={(e) =>
-													setPosterCols(Math.max(1, parseInt(e.target.value || "1", 10)))
-												}
-												className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
-											/>
+								{exportMode === "poster" && (
+									<div className="mt-3 space-y-3">
+										<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+											Tamaño del póster
 										</label>
+										<p className="text-xs leading-relaxed">
+											La cuadrícula se ajusta para llenar el lienzo con hojas completas.
+											Si aumentas columnas o filas, el póster crece; si las reduces, se recorta más.
+										</p>
+										<div className="grid grid-cols-2 gap-3">
+											<label className="flex flex-col gap-1">
+												<span className="text-[10px] font-bold tracking-widest uppercase">
+													Columnas
+												</span>
+												<input
+													type="number"
+													min="1"
+													max="12"
+													step="1"
+													value={posterCols}
+													onChange={(e) =>
+														setPosterCols(Math.max(1, parseInt(e.target.value || "1", 10)))
+													}
+													className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
+												/>
+											</label>
 
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-bold tracking-widest uppercase">
-												Filas
-											</span>
-											<input
-												type="number"
-												min="1"
-												max="12"
-												step="1"
-												value={posterRows}
-												onChange={(e) =>
-													setPosterRows(Math.max(1, parseInt(e.target.value || "1", 10)))
-												}
-												className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
-											/>
-										</label>
-									</div>
-									{transposePrintConfig && (
-										<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs space-y-1">
-											<p>
-												Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x {Math.round(transposePrintConfig.posterHeightMm)} mm
-											</p>
-											<p>
-												Cobertura visible por hoja: {Math.round(transposePrintConfig.pageViewportWidthMm)} x {Math.round(transposePrintConfig.pageViewportHeightMm)} mm del lienzo
-											</p>
+											<label className="flex flex-col gap-1">
+												<span className="text-[10px] font-bold tracking-widest uppercase">
+													Filas
+												</span>
+												<input
+													type="number"
+													min="1"
+													max="12"
+													step="1"
+													value={posterRows}
+													onChange={(e) =>
+														setPosterRows(Math.max(1, parseInt(e.target.value || "1", 10)))
+													}
+													className="input input-sm input-bordered bg-base-100 dark:bg-df-bg-dark"
+												/>
+											</label>
 										</div>
-									)}
-								</div>
+										{transposePrintConfig && (
+											<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs space-y-1">
+												<p>
+													Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x {Math.round(transposePrintConfig.posterHeightMm)} mm
+												</p>
+												<p>
+													Cobertura visible por hoja: {Math.round(transposePrintConfig.pageViewportWidthMm)} x {Math.round(transposePrintConfig.pageViewportHeightMm)} mm del lienzo
+												</p>
+											</div>
+										)}
+									</div>
+								)}
 
 								{exportMode === "fit-page" && (
 									<p className="text-[11px] opacity-80">
