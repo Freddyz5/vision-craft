@@ -1,3 +1,5 @@
+import { Check } from "lucide-react";
+
 interface Props {
 	imageSrc: string;
 	alt: string;
@@ -52,16 +54,11 @@ export default function ImageCard({
 							className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/15"
 						>
 							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 opacity-0 shadow-md backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
-								<svg
+								<Check
 									className="text-df-primary dark:text-df-primary-dark h-4 w-4"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth="2.5"
+									strokeWidth={2.5}
 									aria-hidden="true"
-								>
-									<polyline points="20 6 9 17 4 12" />
-								</svg>
+								/>
 							</div>
 						</div>
 					)}
@@ -71,16 +68,7 @@ export default function ImageCard({
 							aria-hidden="true"
 							className="bg-df-primary dark:bg-df-primary-dark absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full shadow-md"
 						>
-							<svg
-								className="h-3.5 w-3.5 text-white"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth="3"
-								aria-hidden="true"
-							>
-								<polyline points="20 6 9 17 4 12" />
-							</svg>
+							<Check className="h-3.5 w-3.5 text-white" strokeWidth={3} aria-hidden="true" />
 						</div>
 					)}
 				</div>

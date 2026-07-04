@@ -1,8 +1,5 @@
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
-import Compass from "../icons/Compass.astro";
-import Proportions from "../icons/Proportions.astro";
-import Wallpaper from "../icons/Wallpaper.astro";
-import ImageDown from "../icons/ImageDown.astro";
+import { Compass, Proportions, Wallpaper, ImageDown } from "lucide-astro";
 
 export type Link = {
 	id: string;

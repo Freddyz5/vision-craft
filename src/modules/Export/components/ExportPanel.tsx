@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "@nanostores/react";
-import {
-	Stage,
-	Layer,
-	Rect,
-	Image as KonvaImage,
-	Text as KonvaText,
-} from "react-konva";
+import { Stage, Layer, Rect, Image as KonvaImage, Text as KonvaText } from "react-konva";
 import {
 	activeCanvasConfigStore,
 	activeCanvasItemsStore,
@@ -27,110 +21,17 @@ import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
 import ExportOptionsButton from "./ExportOptionsButton";
 import ExportModeSelector from "./ExportModeSelector";
-
-// SVG Icons
-const IconPrint = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<polyline points="6 9 6 2 18 2 18 9"></polyline>
-		<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-		<rect x="6" y="14" width="12" height="8"></rect>
-	</svg>
-);
-const IconPDF = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-		<polyline points="14 2 14 8 20 8"></polyline>
-		<path d="M16 13H8"></path>
-		<path d="M16 17H8"></path>
-		<polyline points="10 9 9 9 8 9"></polyline>
-	</svg>
-);
-const IconPNG = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-    className="text-[#20d4a4]"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-		<circle cx="8.5" cy="8.5" r="1.5"></circle>
-		<polyline points="21 15 16 10 5 21"></polyline>
-	</svg>
-);
-const IconJSON = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-    className="text-gray-400"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<polyline points="16 18 22 12 16 6"></polyline>
-		<polyline points="8 6 2 12 8 18"></polyline>
-	</svg>
-);
-const IconSave = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-    className="text-blue-600"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-		<polyline points="17 21 17 13 7 13 7 21"></polyline>
-		<polyline points="7 3 7 8 15 8"></polyline>
-	</svg>
-);
-
-const IconJPG = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		className="text-amber-500"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-		<path d="M7 15h2a2 2 0 0 0 2-2V9"></path>
-		<path d="M13 15h2a2 2 0 0 0 2-2V9h-2"></path>
-	</svg>
-);
+import {
+	Printer,
+	Image as ImageIcon,
+	FileJson,
+	Save,
+	Upload,
+	X,
+	CircleCheck,
+	Layers,
+	Gauge,
+} from "lucide-react";
 
 function StaticImage({ src, x, y, width, height, rotation, scaleFactor }: any) {
 	const [image, setImage] = useState<HTMLImageElement | undefined>();
@@ -212,10 +113,21 @@ export default function ExportPanel() {
 	const [posterCols, setPosterCols] = useState(defaultPosterCols);
 	const [posterRows, setPosterRows] = useState(defaultPosterRows);
 
-	useEffect(() => {
+	// Re-sincroniza columnas/filas cuando cambia el papel o el tamaño del lienzo.
+	// Ajustado durante el render (patrón recomendado por React) en vez de en un
+	// useEffect, para evitar el setState síncrono dentro de un efecto.
+	const [prevPosterDefaults, setPrevPosterDefaults] = useState({
+		cols: defaultPosterCols,
+		rows: defaultPosterRows,
+	});
+	if (
+		prevPosterDefaults.cols !== defaultPosterCols ||
+		prevPosterDefaults.rows !== defaultPosterRows
+	) {
+		setPrevPosterDefaults({ cols: defaultPosterCols, rows: defaultPosterRows });
 		setPosterCols(defaultPosterCols);
 		setPosterRows(defaultPosterRows);
-	}, [defaultPosterCols, defaultPosterRows]);
+	}
 
 	const transposePrintConfig = useMemo(() => {
 		if (exportMode !== "poster") return null;
@@ -246,7 +158,7 @@ export default function ExportPanel() {
 	// Canvas scaling state
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [scaleFactor, setScaleFactor] = useState(1);
-	const [mounted, setMounted] = useState(false);
+	const [mounted] = useState(true);
 	const [toastMessage, setToastMessage] = useState<string | null>(null);
 	const [printModalOpen, setPrintModalOpen] = useState(false);
 	const [printModalHtml, setPrintModalHtml] = useState<string | null>(null);
@@ -265,7 +177,6 @@ export default function ExportPanel() {
 
 	// Calculate scale factor for canvas preview
 	useEffect(() => {
-		setMounted(true);
 		const resize = () => {
 			if (!containerRef.current) return;
 			const width = containerRef.current.clientWidth;
@@ -295,11 +206,22 @@ export default function ExportPanel() {
 		};
 	}, [logicalWidth, logicalHeight]);
 
-	useEffect(() => {
-		if (!mounted || exportMode !== "poster" || !transposePrintConfig) {
+	// Se muestra la vista previa del póster solo en modo "poster" con config válida.
+	const showPosterPreview = mounted && exportMode === "poster" && !!transposePrintConfig;
+
+	// Si dejamos de cumplir la condición de arriba, limpiamos la preview anterior.
+	// Ajustado durante el render en vez de al inicio del efecto de abajo, para
+	// evitar el setState síncrono dentro del cuerpo del efecto.
+	const [prevShowPosterPreview, setPrevShowPosterPreview] = useState(showPosterPreview);
+	if (showPosterPreview !== prevShowPosterPreview) {
+		setPrevShowPosterPreview(showPosterPreview);
+		if (!showPosterPreview) {
 			setWallPreviewSrc(null);
-			return;
 		}
+	}
+
+	useEffect(() => {
+		if (!showPosterPreview || !transposePrintConfig) return;
 
 		let cancelled = false;
 		const capturePreview = () => {
@@ -353,7 +275,7 @@ export default function ExportPanel() {
 			window.cancelAnimationFrame(frameId);
 			window.clearTimeout(timeoutId);
 		};
-	}, [mounted, exportMode, transposePrintConfig, scaleFactor, items]);
+	}, [showPosterPreview, transposePrintConfig, scaleFactor, items]);
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
 
@@ -521,43 +443,29 @@ export default function ExportPanel() {
 	};
 
 	return (
-		<section className="flex-1 flex gap-8 px-8 pb-10 items-start">
+		<section className="flex flex-1 items-start gap-8 px-8 pb-10">
 			{/* Left Area - Canvas Preview */}
-			<div className="flex-1 min-w-0 space-y-8">
+			<div className="min-w-0 flex-1 space-y-8">
 				<header>
-					<p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-2">
+					<p className="text-primary mb-2 text-xs font-bold tracking-[0.2em] uppercase">
 						Vista Previa
 					</p>
-					<h2 className="text-4xl font-extrabold ">
-						{config.name || "Untitled Vision"}
-					</h2>
+					<h2 className="text-4xl font-extrabold">{config.name || "Untitled Vision"}</h2>
 				</header>
 
 				<div
-					className="flex-1 relative flex items-center justify-center overflow-hidden rounded-xl shadow-inner p-4 min-h-[520px] h-[calc(100vh-20rem)] bg-base-200/40 dark:bg-base-300/10 border border-base-300 dark:border-gray-800"
-					ref={containerRef}>
+					className="bg-base-200/40 dark:bg-base-300/10 border-base-300 relative flex h-[calc(100vh-20rem)] min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-xl border p-4 shadow-inner dark:border-gray-800"
+					ref={containerRef}
+				>
 					{exportMode === "poster" && transposePrintConfig && (
-						<div className="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-full bg-gray-900/80 dark:bg-black/80 text-white text-xs font-bold backdrop-blur-sm shadow-lg flex items-center gap-1.5">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="13"
-								height="13"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round">
-								<path d="M3 6h18M3 12h18M3 18h18" />
-							</svg>
+						<div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-gray-900/80 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm dark:bg-black/80">
+							<Layers className="h-3.5 w-3.5" aria-hidden="true" />
 							{transposePrintConfig.tiles.length} hojas · {selectedPaper.label}{" "}
 							{paperOrientation === "landscape" ? "Horizontal" : "Vertical"}
 						</div>
 					)}
 					{mounted && (
-						<div
-							className="shadow-2xl rounded-sm overflow-hidden bg-white transition-all duration-300 border border-base-300"
-						>
+						<div className="border-base-300 overflow-hidden rounded-sm border bg-white shadow-2xl transition-all duration-300">
 							<Stage
 								width={logicalWidth * scaleFactor}
 								height={logicalHeight * scaleFactor}
@@ -616,63 +524,29 @@ export default function ExportPanel() {
 					)}
 				</div>
 
-				<div className="mt-6 flex items-center gap-6 text-sm font-semibold text-base-content/60">
+				<div className="text-base-content/60 mt-6 flex items-center gap-6 text-sm font-semibold">
+					<div className="flex items-center gap-2">
+						<ImageIcon className="h-4 w-4" aria-hidden="true" />
+						{config.orientation === "landscape"
+							? `${config.widthMm} × ${config.heightMm} mm`
+							: `${config.widthMm} × ${config.heightMm} mm`}
+					</div>
+					{exportMode === "poster" && transposePrintConfig && (
 						<div className="flex items-center gap-2">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round">
-								<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-								<circle cx="8.5" cy="8.5" r="1.5"></circle>
-								<polyline points="21 15 16 10 5 21"></polyline>
-							</svg>
-							{config.orientation === "landscape"
-								? `${config.widthMm} × ${config.heightMm} mm`
-								: `${config.widthMm} × ${config.heightMm} mm`}
+							<Layers className="h-4 w-4" aria-hidden="true" />
+							{transposePrintConfig.cols} x {transposePrintConfig.rows} hojas ({selectedPaper.label}
+							)
 						</div>
-						{exportMode === "poster" && transposePrintConfig && (
-							<div className="flex items-center gap-2">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round">
-									<path d="M3 6h18M3 12h18M3 18h18" />
-								</svg>
-								{transposePrintConfig.cols} x {transposePrintConfig.rows} hojas ({selectedPaper.label})
-							</div>
-						)}
-						<div className="flex items-center gap-2">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round">
-								<path d="M2 12h4l3-9 5 18 3-9h5"></path>
-							</svg>
-							{exportDpi} DPI export
-						</div>
+					)}
+					<div className="flex items-center gap-2">
+						<Gauge className="h-4 w-4" aria-hidden="true" />
+						{exportDpi} DPI export
+					</div>
 				</div>
 
 				{exportMode === "poster" && transposePrintConfig && (
-					<div className="rounded-2xl border border-base-300 dark:border-gray-800 bg-base-200/40 dark:bg-base-300/10 p-5">
-						<p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark mb-3">
+					<div className="border-base-300 bg-base-200/40 dark:bg-base-300/10 rounded-2xl border p-5 dark:border-gray-800">
+						<p className="text-df-muted dark:text-df-muted-dark mb-3 text-center text-[9px] font-bold tracking-[0.22em] uppercase">
 							Tamaño final en la pared
 						</p>
 						<WallSizePreview
@@ -687,26 +561,31 @@ export default function ExportPanel() {
 			</div>
 
 			{/* Right Area - Sidebar */}
-			<aside className="w-96 h-[calc(100vh-8rem)] overflow-y-scroll shrink-0 sticky top-24 -mt-65 bg-base-100/80 dark:bg-df-surface-dark/70 rounded-3xl p-5 space-y-4 border-2 border-df-primary/30 backdrop-blur-sm">
+			<aside className="bg-base-100/80 dark:bg-df-surface-dark/70 border-df-primary/30 sticky top-24 -mt-65 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-scroll rounded-3xl border-2 p-5 backdrop-blur-sm">
 				<div className="space-y-10">
 					{/* Export Mode Selector */}
 					<article className="flex flex-col gap-4">
-						<p className="text-[9px] font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark">
+						<p className="text-df-muted dark:text-df-muted-dark text-center text-[9px] font-bold tracking-[0.22em] uppercase">
 							Cómo quieres exportar
 						</p>
 
 						<ExportModeSelector value={exportMode} onChange={setExportMode} />
 
 						{(exportMode === "poster" || exportMode === "fit-page") && (
-							<div className="p-4 rounded-xl bg-df-primary dark:bg-df-primary-dark text-white border-transparent shadow-md shadow-df-primary/25 dark:shadow-df-primary-dark/20 space-y-3">
+							<div className="bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 space-y-3 rounded-xl border-transparent p-4 text-white shadow-md">
 								<div>
-									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+									<label
+										htmlFor="export-paper-size"
+										className="mb-2 block text-[10px] font-bold tracking-widest uppercase"
+									>
 										PAPEL DE IMPRESORA
 									</label>
 									<select
-										className="w-full p-2 rounded-xl bg-white text-black dark:bg-gray-800/50 dark:text-white"
+										id="export-paper-size"
+										className="w-full rounded-xl bg-white p-2 text-black dark:bg-gray-800/50 dark:text-white"
 										value={paperId}
-										onChange={(e) => setPaperId(e.target.value as any)}>
+										onChange={(e) => setPaperId(e.target.value as any)}
+									>
 										{PRINT_PAPERS.map((p) => (
 											<option key={p.id} value={p.id}>
 												{p.label} ({p.widthMm} × {p.heightMm} mm)
@@ -715,40 +594,39 @@ export default function ExportPanel() {
 									</select>
 								</div>
 
-								<div>
-									<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+								<fieldset>
+									<legend className="mb-2 block text-[10px] font-bold tracking-widest uppercase">
 										ORIENTACIÓN
-									</label>
-									<div className="grid grid-cols-2 gap-2">
-										{(
-											[
-												{ value: "portrait" as const, label: "Vertical" },
-												{ value: "landscape" as const, label: "Horizontal" },
-											]
-										).map((opt) => (
+									</legend>
+									<div className="grid grid-cols-2 gap-2" role="group">
+										{[
+											{ value: "portrait" as const, label: "Vertical" },
+											{ value: "landscape" as const, label: "Horizontal" },
+										].map((opt) => (
 											<button
 												key={opt.value}
 												type="button"
 												onClick={() => setPaperOrientation(opt.value)}
-												className={`py-1.5 rounded-lg text-xs font-bold transition-all duration-150 ${
+												className={`rounded-lg py-1.5 text-xs font-bold transition-all duration-150 ${
 													paperOrientation === opt.value
-														? "bg-white text-df-primary dark:text-df-primary-dark shadow-sm"
+														? "text-df-primary dark:text-df-primary-dark bg-white shadow-sm"
 														: "bg-white/15 text-white hover:bg-white/25"
-												}`}>
+												}`}
+											>
 												{opt.label}
 											</button>
 										))}
 									</div>
-								</div>
+								</fieldset>
 
 								{exportMode === "poster" && (
-									<div className="mt-3 space-y-3">
-										<label className="text-[10px] font-bold tracking-widest uppercase mb-2 block">
+									<fieldset className="mt-3 space-y-3">
+										<legend className="mb-2 block text-[10px] font-bold tracking-widest uppercase">
 											Tamaño del póster
-										</label>
+										</legend>
 										<p className="text-xs leading-relaxed">
-											La cuadrícula se ajusta para llenar el lienzo con hojas completas.
-											Si aumentas columnas o filas, el póster crece; si las reduces, se recorta más.
+											La cuadrícula se ajusta para llenar el lienzo con hojas completas. Si aumentas
+											columnas o filas, el póster crece; si las reduces, se recorta más.
 										</p>
 										<div className="grid grid-cols-2 gap-3">
 											<label className="flex flex-col gap-1">
@@ -786,16 +664,19 @@ export default function ExportPanel() {
 											</label>
 										</div>
 										{transposePrintConfig && (
-											<div className="rounded-xl bg-base-200/70 dark:bg-base-300/10 px-3 py-2 text-xs space-y-1">
+											<div className="bg-base-200/70 dark:bg-base-300/10 space-y-1 rounded-xl px-3 py-2 text-xs">
 												<p>
-													Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x {Math.round(transposePrintConfig.posterHeightMm)} mm
+													Poster final: {Math.round(transposePrintConfig.posterWidthMm)} x{" "}
+													{Math.round(transposePrintConfig.posterHeightMm)} mm
 												</p>
 												<p>
-													Cobertura visible por hoja: {Math.round(transposePrintConfig.pageViewportWidthMm)} x {Math.round(transposePrintConfig.pageViewportHeightMm)} mm del lienzo
+													Cobertura visible por hoja:{" "}
+													{Math.round(transposePrintConfig.pageViewportWidthMm)} x{" "}
+													{Math.round(transposePrintConfig.pageViewportHeightMm)} mm del lienzo
 												</p>
 											</div>
 										)}
-									</div>
+									</fieldset>
 								)}
 
 								{exportMode === "fit-page" && (
@@ -816,36 +697,36 @@ export default function ExportPanel() {
 						{(exportMode === "poster" || exportMode === "fit-page") && (
 							<button
 								onClick={handlePrintPreview}
-								className="w-full inline-flex items-center justify-center gap-3 px-8 py-2.5 rounded-full cursor-pointer font-bold text-base text-white bg-gradient-to-r from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark hover:opacity-90 active:scale-95 transition-all duration-150 shadow-md shadow-df-primary/30 dark:shadow-df-primary-dark/20">
+								className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+							>
 								{exportMode === "poster"
 									? transposePrintConfig
 										? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
 										: "Imprimir (múltiples hojas)"
 									: `Imprimir en ${selectedPaper.label}`}
-								<IconPrint />
+								<Printer className="h-5 w-5" aria-hidden="true" />
 							</button>
 						)}
 					</article>
 
 					{/* Export Options */}
 					<article className="flex flex-col gap-2">
-						<p className="text-[9px] pb-2 font-bold tracking-[0.22em] uppercase text-center text-df-muted dark:text-df-muted-dark">
+						<p className="text-df-muted dark:text-df-muted-dark pb-2 text-center text-[9px] font-bold tracking-[0.22em] uppercase">
 							Opciones de exportación
 						</p>
 
 						{exportMode === "image" && (
 							<>
-								<div className="p-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark">
+								<div className="bg-df-surface dark:bg-df-surface-dark rounded-2xl border-2 border-gray-200 p-4 dark:border-gray-700">
 									<div className="flex items-center justify-between">
-										<span className="text-xs font-semibold text-df-ink dark:text-df-ink-dark">
+										<span className="text-df-ink dark:text-df-ink-dark text-xs font-semibold">
 											DPI de exportación
 										</span>
 										<select
 											className="select select-bordered select-sm bg-base-100 dark:bg-df-bg-dark"
 											value={exportDpi}
-											onChange={(e) =>
-												setExportDpi(parseInt(e.target.value) as any)
-											}>
+											onChange={(e) => setExportDpi(parseInt(e.target.value) as any)}
+										>
 											<option value={150}>150</option>
 											<option value={300}>300</option>
 										</select>
@@ -855,14 +736,14 @@ export default function ExportPanel() {
 								<ExportOptionsButton
 									name="Descargar como PNG"
 									description="Imagen sin pérdida"
-									icon={<IconPNG />}
+									icon={<ImageIcon className="h-5 w-5 text-[#20d4a4]" aria-hidden="true" />}
 									onClick={handleDownloadPng}
 								/>
 
 								<ExportOptionsButton
 									name="Descargar como JPG"
 									description="Más liviano para compartir"
-									icon={<IconJPG />}
+									icon={<ImageIcon className="h-5 w-5 text-amber-500" aria-hidden="true" />}
 									onClick={handleDownloadJpg}
 								/>
 							</>
@@ -873,7 +754,7 @@ export default function ExportPanel() {
 								<ExportOptionsButton
 									name="Guardar en el Navegador"
 									description="Almacenamiento Local"
-									icon={<IconSave />}
+									icon={<Save className="h-5 w-5 text-blue-600" aria-hidden="true" />}
 									onClick={handleSaveToBrowser}
 								/>
 
@@ -881,28 +762,18 @@ export default function ExportPanel() {
 									<ExportOptionsButton
 										name="Exportar como JSON"
 										description="Metadatos sin procesar"
-										icon={<IconJSON />}
+										icon={<FileJson className="h-5 w-5 text-gray-400" aria-hidden="true" />}
 										onClick={handleExportJson}
 									/>
 									<button
 										title="Importar JSON"
-										className="w-14 flex items-center justify-center cursor-pointer rounded-2xl border-2 transition-all duration-200 border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:-translate-y-0.5 hover:shadow-md"
-										onClick={handleImportClick}>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="20"
-											height="20"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											strokeWidth="2"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											className="text-purple-600 dark:text-purple-400">
-											<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-											<polyline points="17 8 12 3 7 8"></polyline>
-											<line x1="12" y1="3" x2="12" y2="15"></line>
-										</svg>
+										className="bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 flex w-14 cursor-pointer items-center justify-center rounded-2xl border-2 border-gray-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700"
+										onClick={handleImportClick}
+									>
+										<Upload
+											className="h-5 w-5 text-purple-600 dark:text-purple-400"
+											aria-hidden="true"
+										/>
 									</button>
 								</div>
 
@@ -921,33 +792,22 @@ export default function ExportPanel() {
 
 			{toastMessage && (
 				<div className="toast toast-end toast-bottom z-50">
-					<div className="alert alert-success shadow-lg text-white font-semibold flex items-center gap-2">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							className="stroke-current shrink-0 h-5 w-5"
-							fill="none"
-							viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth="2"
-								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
+					<div className="alert alert-success flex items-center gap-2 font-semibold text-white shadow-lg">
+						<CircleCheck className="h-5 w-5 shrink-0 stroke-current" aria-hidden="true" />
 						<span>{toastMessage}</span>
 					</div>
 				</div>
 			)}
 
 			{printModalOpen && (
-				<div className="fixed inset-0 z-[120] bg-df-bg/80 dark:bg-df-bg-dark/80 backdrop-blur-sm flex justify-center items-center p-4">
-					<div className="bg-df-surface dark:bg-df-surface-dark w-full max-w-5xl h-[85vh] flex flex-col rounded-3xl shadow-2xl border border-df-border dark:border-df-border-dark overflow-hidden">
-						<div className="flex justify-between items-center p-6 border-b border-df-border dark:border-df-border-dark shrink-0">
+				<div className="bg-df-bg/80 dark:bg-df-bg-dark/80 fixed inset-0 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
+					<div className="bg-df-surface dark:bg-df-surface-dark border-df-border dark:border-df-border-dark flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl">
+						<div className="border-df-border dark:border-df-border-dark flex shrink-0 items-center justify-between border-b p-6">
 							<div className="min-w-0">
-								<h2 className="text-xl font-bold text-df-ink dark:text-df-ink-dark truncate">
+								<h2 className="text-df-ink dark:text-df-ink-dark truncate text-xl font-bold">
 									{printModalTitle}
 								</h2>
-								<p className="text-sm text-df-muted dark:text-df-muted-dark mt-1">
+								<p className="text-df-muted dark:text-df-muted-dark mt-1 text-sm">
 									Revisa la vista previa y luego imprime o guarda como PDF.
 								</p>
 							</div>
@@ -955,29 +815,27 @@ export default function ExportPanel() {
 								<button
 									onClick={handleModalPrint}
 									disabled={!printModalLoaded}
-									className="px-4 py-2 rounded-full font-bold text-white bg-gradient-to-r from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark hover:opacity-90 active:scale-95 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+									className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark rounded-full bg-gradient-to-r px-4 py-2 font-bold text-white transition-all duration-150 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
 								>
 									Imprimir / Guardar PDF
 								</button>
 								<button
 									onClick={closePrintModal}
-									className="p-2.5 bg-df-surface-alt dark:bg-df-surface-alt-dark hover:bg-df-border dark:hover:bg-df-border-dark rounded-full transition-colors text-df-ink dark:text-df-ink-dark"
+									className="bg-df-surface-alt dark:bg-df-surface-alt-dark hover:bg-df-border dark:hover:bg-df-border-dark text-df-ink dark:text-df-ink-dark rounded-full p-2.5 transition-colors"
 									aria-label="Cerrar modal"
 								>
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-									</svg>
+									<X className="h-5 w-5" strokeWidth={2.5} />
 								</button>
 							</div>
 						</div>
 
-						<div className="flex-1 bg-white dark:bg-gray-900 flex flex-col min-h-0">
-							<div className="flex-1 min-h-0 relative">
+						<div className="flex min-h-0 flex-1 flex-col bg-white dark:bg-gray-900">
+							<div className="relative min-h-0 flex-1">
 								{printModalHtml && (
 									<iframe
 										ref={printIframeRef}
 										title="Vista previa de impresión"
-										className="w-full h-full"
+										className="h-full w-full"
 										srcDoc={printModalHtml}
 										onLoad={() => setPrintModalLoaded(true)}
 									/>

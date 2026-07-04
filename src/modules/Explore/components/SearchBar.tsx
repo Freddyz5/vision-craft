@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Search } from "lucide-react";
 
 interface Props {
 	initialQuery: string;
@@ -50,17 +51,10 @@ export default function SearchBar({
 		>
 			{/* Search input */}
 			<search className="flex min-w-0 flex-1 items-center gap-3">
-				<svg
+				<Search
 					className="text-df-muted dark:text-df-muted-dark h-4.5 w-4.5 shrink-0"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					strokeWidth="2"
 					aria-hidden="true"
-				>
-					<circle cx="11" cy="11" r="8"></circle>
-					<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-				</svg>
+				/>
 				<label htmlFor="inspiration-search" className="sr-only">
 					Busca tu inspiración
 				</label>

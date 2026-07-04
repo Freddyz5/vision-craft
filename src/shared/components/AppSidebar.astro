@@ -44,7 +44,7 @@ function linkClass(id: string): string {
 							aria-current={activeItem === link.id ? "page" : undefined}
 							class={linkClass(link.id)}
 						>
-							<link.icon />
+							<link.icon class="h-4 w-4 shrink-0" aria-hidden="true" />
 							{link.name}
 						</a>
 					</li>

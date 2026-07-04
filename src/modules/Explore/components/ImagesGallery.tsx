@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { ChevronsRight } from "lucide-react";
 import ImageCard from "./ImageCard";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
@@ -311,16 +312,7 @@ export default function ImagesGallery() {
 							aria-label="Ir a canvas para armar el board con las imágenes seleccionadas"
 						>
 							Armar Board
-							<svg
-								className="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth="2.5"
-								aria-hidden="true"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-							</svg>
+							<ChevronsRight className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
 						</a>
 					</nav>
 				</div>

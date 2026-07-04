@@ -1,7 +1,6 @@
 ---
 import TopNav from "../../shared/components/TopNav.astro";
 import AppSidebar from "../../shared/components/AppSidebar.astro";
-// import Upload from "../../shared/icons/Upload.astro";
 import ImagesGallery from "./components/ImagesGallery";
 ---
 
@@ -9,25 +8,20 @@ import ImagesGallery from "./components/ImagesGallery";
 	<TopNav />
 	<AppSidebar activeItem="explore" />
 
-	<main
-		class="ml-44 pt-14 min-h-screen flex flex-col bg-df-bg dark:bg-df-bg-dark">
+	<main class="bg-df-bg dark:bg-df-bg-dark ml-44 flex min-h-screen flex-col pt-14">
 		<div class="flex-1 px-8 py-10">
 			<!-- ── Page header ────────────────────────────── -->
-			<div
-				class="flex flex-col md:flex-row items-start justify-between gap-6 mb-10">
+			<div class="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row">
 				<!-- Left: step label + heading -->
 				<header>
 					<p
-						class="text-[10px] font-bold tracking-[0.2em] uppercase
-                   text-df-muted dark:text-df-muted-dark mb-3">
+						class="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+					>
 						Paso 01 / Selección
 					</p>
-					<h1
-						class="text-5xl font-extrabold leading-[1.1] text-df-ink dark:text-df-ink-dark">
+					<h1 class="text-df-ink dark:text-df-ink-dark text-5xl leading-[1.1] font-extrabold">
 						Selecciona tus<br />
-						<span class="text-df-primary dark:text-df-primary-dark">
-							Imágenes.
-						</span>
+						<span class="text-df-primary dark:text-df-primary-dark"> Imágenes. </span>
 					</h1>
 				</header>
 
@@ -59,11 +53,11 @@ import ImagesGallery from "./components/ImagesGallery";
 
 		<!-- ── Footer ──────────────────────────────────── -->
 		<footer
-			class="border-t border-gray-200 dark:border-gray-800 px-8 py-4
-             flex items-center justify-between gap-4">
+			class="flex items-center justify-between gap-4 border-t border-gray-200 px-8 py-4 dark:border-gray-800"
+		>
 			<small
-				class="text-[10px] font-semibold tracking-[0.18em] uppercase
-               text-df-muted dark:text-df-muted-dark not-italic">
+				class="text-df-muted dark:text-df-muted-dark text-[10px] font-semibold tracking-[0.18em] uppercase not-italic"
+			>
 				&copy; 2024 Vision Craft. All rights reserved.
 			</small>
 			<nav aria-label="Footer">
@@ -71,18 +65,16 @@ import ImagesGallery from "./components/ImagesGallery";
 					<li>
 						<a
 							href="#"
-							class="text-[10px] font-semibold tracking-[0.18em] uppercase
-                     text-df-muted dark:text-df-muted-dark
-                     hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+							class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors"
+						>
 							Privacy Policy
 						</a>
 					</li>
 					<li>
 						<a
 							href="#"
-							class="text-[10px] font-semibold tracking-[0.18em] uppercase
-                     text-df-muted dark:text-df-muted-dark
-                     hover:text-df-ink dark:hover:text-df-ink-dark transition-colors">
+							class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors"
+						>
 							Terms
 						</a>
 					</li>
