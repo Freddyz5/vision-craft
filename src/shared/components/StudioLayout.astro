@@ -1,0 +1,17 @@
+---
+import TopNav from "./TopNav.astro";
+import AppSidebar from "./AppSidebar.astro";
+
+interface Props {
+	activeItem: string;
+}
+
+const { activeItem } = Astro.props;
+---
+
+<TopNav />
+<AppSidebar activeItem={activeItem} />
+
+<main class="bg-df-bg dark:bg-df-bg-dark ml-44 flex min-h-screen flex-col pt-14">
+	<slot />
+</main>
