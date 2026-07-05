@@ -72,9 +72,9 @@ Tracking a broader "professionalize the codebase" effort, done incrementally, ph
 
 - [x] **Quick wins**: `lang="es"` fix, dead code archived as `.bak`, `contants/likns` typo → `constants/links`, `SearcBar` typo fixed, ESLint (flat config) + Prettier + Husky/lint-staged set up.
 - [x] **Icons**: migrated everything to `lucide-react`/`lucide-astro` (see Icons section above).
-- [ ] **Componentización** (next up): split `Export/components/ExportPanel.tsx` and `Design/components/DesignEditor.tsx` into smaller subcomponents + hooks; unify the duplicated logic in `KonvaImageItem.tsx`/`KonvaTextItem.tsx` (keyboard handling, `onTransformEnd`) into a shared hook. Suggested first step: extract a `useCanvasItemInteractions` hook for the Konva items (smallest, most isolated change) before tackling the two large components. `Canvas/components/` (`CanvasSetup`/`PresetCard`/`CustomDimensions`/`CanvasLivePreview`) is the reference for the componentization granularity to aim for.
-- [ ] **Shared layout**: extract `StudioLayout.astro` + `PageHeader`/`PageFooter` reused by the 4 module `index.astro` shells (Canvas/Design/Explore/Export), which currently duplicate the TopNav+AppSidebar+header+footer boilerplate with small, already-diverging differences.
-- [ ] **Docs**: update `README.md` (currently references Zustand instead of nanostores, and an outdated folder structure) and write down naming/export conventions.
+- [x] **Componentización**: `useCanvasItemInteractions` unifies `KonvaImageItem`/`KonvaTextItem`; `DesignEditor` split into `ZoomControls`/`ItemInspector`/`DesignActionBar`; `ExportPanel` split into `ExportCanvasPreview`/`ExportPrintOptions`/`ExportDownloadOptions`/`PrintPreviewModal`/`StaticCanvasItems` plus `usePosterPrintConfig`/`useWallPreviewCapture`/`usePrintModal` hooks. Shared `useToast`/`useContainerScale`/`Toast` de-duplicate what DesignEditor and ExportPanel both had inline.
+- [x] **Shared layout**: `StudioLayout.astro` + `PageHeader`/`PageFooter` now used by all 4 module `index.astro` shells (Canvas/Design/Explore/Export).
+- [x] **Docs**: README.md updated (nanostores, real folder structure, real data model, Unsplash+Pexels) and a "Convenciones de código" section written (naming, exports, design tokens).
 
 ## Code-quality conventions established during this pass
 
