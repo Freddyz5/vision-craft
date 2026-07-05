@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 
 interface Props {
 	imageSrc: string;
@@ -16,63 +17,48 @@ export default function ImageCard({
 	width,
 	height,
 	onClick,
-	onDragStart
+	onDragStart,
 }: Props) {
-
 	const large = Number(height) > Number(width);
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLTitleElement>) => {
-		// Activar con Enter o Space
-		if ((e.key === 'Enter' || e.key === ' ') && onClick) {
-			e.preventDefault();
-			onClick();
-		}
-	};
-
 	return (
-		<li className={large ? "row-span-2 h-full" : "row-span-1 col-span-2 h-full"}>
-			<article
+		<li className={large ? "row-span-2 h-full" : "col-span-2 row-span-1 h-full"}>
+			<button
+				type="button"
 				onClick={onClick}
-				onKeyDown={handleKeyDown}
 				className={[
-					"group relative flex flex-col rounded-2xl overflow-hidden cursor-pointer h-full",
+					"group relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl",
 					"transition-all duration-200 ease-out",
 					"bg-df-surface dark:bg-df-surface-dark",
-					"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark",
+					"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2",
 					selected
-						? "ring-2 ring-df-primary dark:ring-df-primary-dark shadow-lg shadow-df-primary/10 dark:shadow-df-primary-dark/10 -translate-y-0.5 z-10"
-						: "ring-1 ring-df-muted dark:ring-df-muted-dark hover:ring-df-primary/40 dark:hover:ring-df-primary-dark/40 hover:-translate-y-1 hover:shadow-lg hover:z-10",
+						? "ring-df-primary dark:ring-df-primary-dark shadow-df-primary/10 dark:shadow-df-primary-dark/10 z-10 -translate-y-0.5 shadow-lg ring-2"
+						: "ring-df-muted dark:ring-df-muted-dark hover:ring-df-primary/40 dark:hover:ring-df-primary-dark/40 ring-1 hover:z-10 hover:-translate-y-1 hover:shadow-lg",
 				].join(" ")}
-				role="button"
-				tabIndex={0}
-				aria-selected={selected}
-				aria-label={`${alt} ${selected ? '- seleccionada' : ''}`}
+				aria-pressed={selected}
+				aria-label={`${alt}${selected ? " - seleccionada" : ""}`}
 				draggable={onDragStart ? true : false}
 				onDragStart={onDragStart}
 			>
-				<div className="flex-1 w-full h-full overflow-hidden relative bg-df-surface dark:bg-df-surface-dark">
+				<div className="bg-df-surface dark:bg-df-surface-dark relative h-full w-full flex-1 overflow-hidden">
 					<img
 						src={imageSrc}
 						alt={alt}
-						className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+						className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
 						loading="lazy"
 						decoding="async"
 					/>
 					{!selected && (
 						<div
 							aria-hidden="true"
-							className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-200 flex items-center justify-center"
+							className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/15"
 						>
-							<div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md">
-								<svg
-									className="w-4 h-4 text-df-primary dark:text-df-primary-dark"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									strokeWidth="2.5"
-									aria-hidden="true">
-									<polyline points="20 6 9 17 4 12" />
-								</svg>
+							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 opacity-0 shadow-md backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
+								<Check
+									className="text-df-primary dark:text-df-primary-dark h-4 w-4"
+									strokeWidth={2.5}
+									aria-hidden="true"
+								/>
 							</div>
 						</div>
 					)}
@@ -80,24 +66,13 @@ export default function ImageCard({
 					{selected && (
 						<div
 							aria-hidden="true"
-							className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full
-									bg-df-primary dark:bg-df-primary-dark
-									flex items-center justify-center shadow-md"
+							className="bg-df-primary dark:bg-df-primary-dark absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full shadow-md"
 						>
-							<svg
-								className="w-3.5 h-3.5 text-white"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth="3"
-								aria-hidden="true">
-								<polyline points="20 6 9 17 4 12" />
-							</svg>
+							<Check className="h-3.5 w-3.5 text-white" strokeWidth={3} aria-hidden="true" />
 						</div>
 					)}
 				</div>
-			</article>
+			</button>
 		</li>
-	)
+	);
 }
-

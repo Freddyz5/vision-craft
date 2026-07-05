@@ -1,26 +1,21 @@
 "use client";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronsRight } from "lucide-react";
 import ImageCard from "./ImageCard";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
 import type { NormalizedImage } from "../types";
 import { providers } from "../constants/providers";
-import SearcBar from "./SearchBar";
+import SearchBar from "./SearchBar";
 import { useStore } from "@nanostores/react";
-import {
-	selectedImagesStore,
-	toggleImageSelection,
-} from "../../../shared/store/boardStore";
+import { selectedImagesStore, toggleImageSelection } from "../../../shared/store/boardStore";
 import SelectedImagesModal from "./SelectedImagesModal";
 import { errorLogger } from "../../../shared/utils/errorLogger";
 import { imageCache } from "../../../shared/utils/imageCache";
 import { useDebounce } from "../../../shared/hooks/useDebounce";
 
 export default function ImagesGallery() {
-	const [selectedProviders, setSelectedProviders] = useState<string[]>([
-		"unsplash",
-		"pexels",
-	]);
+	const [selectedProviders, setSelectedProviders] = useState<string[]>(["unsplash", "pexels"]);
 	const [images, setImages] = useState<NormalizedImage[]>([]);
 	const [query, setQuery] = useState("");
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,11 +26,16 @@ export default function ImagesGallery() {
 
 	const selectedImages = useStore(selectedImagesStore);
 
-	useEffect(() => {
+	// Cierra el modal si la selección queda vacía. Se ajusta durante el render
+	// (patrón recomendado por React: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+	// en vez de en un useEffect, para evitar el setState síncrono dentro de un efecto.
+	const [prevSelectedCount, setPrevSelectedCount] = useState(selectedImages.length);
+	if (selectedImages.length !== prevSelectedCount) {
+		setPrevSelectedCount(selectedImages.length);
 		if (selectedImages.length === 0) {
 			setIsModalOpen(false);
 		}
-	}, [selectedImages.length]);
+	}
 
 	const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -57,9 +57,8 @@ export default function ImagesGallery() {
 
 				// Check cache first (only for page 1)
 				if (page === 1) {
-					const cacheKey = `${selectedProviders.join(',')}:${query}`;
-					const cachedImages = imageCache.get(query, page, selectedProviders.join(','));
-					
+					const cachedImages = imageCache.get(query, page, selectedProviders.join(","));
+
 					if (cachedImages && cachedImages.length > 0) {
 						if (!isMounted) return;
 						setImages(cachedImages);
@@ -81,7 +80,7 @@ export default function ImagesGallery() {
 				const failedProviders: string[] = [];
 
 				results.forEach((result, idx) => {
-					if (result.status === 'fulfilled') {
+					if (result.status === "fulfilled") {
 						images.push(...result.value);
 					} else {
 						failedProviders.push(filterProviders[idx].label);
@@ -92,39 +91,40 @@ export default function ImagesGallery() {
 
 				// Cache the results for page 1
 				if (page === 1 && newImages.length > 0) {
-					imageCache.set(query, newImages, page, selectedProviders.join(','));
+					imageCache.set(query, newImages, page, selectedProviders.join(","));
 				}
 
 				// Mostrar error solo si TODOS los proveedores fallaron
 				if (failedProviders.length === filterProviders.length) {
 					setImages([]);
 					setError(
-						`No se pudieron cargar imágenes de los proveedores: ${failedProviders.join(', ')}`
+						`No se pudieron cargar imágenes de los proveedores: ${failedProviders.join(", ")}`,
 					);
 				} else if (failedProviders.length > 0 && page === 1) {
 					// Si algunos fallan pero otros funcionan, mostrar warning
 					setImages(newImages);
 					setError(null); // No es error crítico
 				} else {
-					setImages((prev) =>
-						page === 1 ? newImages : [...prev, ...newImages],
-					);
+					setImages((prev) => (page === 1 ? newImages : [...prev, ...newImages]));
 					setError(null);
 				}
 			} catch (err) {
 				if (!isMounted) return;
 
-				const errorMessage =
-					err instanceof Error ? err.message : "Error al cargar imágenes";
+				const errorMessage = err instanceof Error ? err.message : "Error al cargar imágenes";
 				setError(errorMessage);
-				
+
 				// Log error with context
-				errorLogger.error("ImagesGallery fetch failed", {
-					query,
-					page,
-					selectedProviders,
-					message: errorMessage,
-				}, err instanceof Error ? err : undefined);
+				errorLogger.error(
+					"ImagesGallery fetch failed",
+					{
+						query,
+						page,
+						selectedProviders,
+						message: errorMessage,
+					},
+					err instanceof Error ? err : undefined,
+				);
 			} finally {
 				if (isMounted) {
 					if (page === 1) setLoading(false);
@@ -145,12 +145,7 @@ export default function ImagesGallery() {
 		const observer = new IntersectionObserver(
 			(entries) => {
 				const target = entries[0];
-				if (
-					target.isIntersecting &&
-					!loading &&
-					!loadingMore &&
-					images.length > 0
-				) {
+				if (target.isIntersecting && !loading && !loadingMore && images.length > 0) {
 					setPage((prev) => prev + 1);
 				}
 			},
@@ -179,9 +174,7 @@ export default function ImagesGallery() {
 	// Debounced search handler
 	const debouncedSearch = useDebounce(handleSearch, 500);
 
-	const handleProvidersChange: React.Dispatch<
-		React.SetStateAction<string[]>
-	> = (val) => {
+	const handleProvidersChange: React.Dispatch<React.SetStateAction<string[]>> = (val) => {
 		setPage(1);
 		setSelectedProviders(val);
 		setError(null);
@@ -197,14 +190,13 @@ export default function ImagesGallery() {
 		};
 
 		window.addEventListener("suggestSearch", handleSuggestedSearch);
-		return () =>
-			window.removeEventListener("suggestSearch", handleSuggestedSearch);
+		return () => window.removeEventListener("suggestSearch", handleSuggestedSearch);
 	}, []);
 
 	return (
 		<section className="space-y-8">
 			<div className="mb-8">
-				<SearcBar
+				<SearchBar
 					providers={providers}
 					selectedProviders={selectedProviders}
 					setSelectedProviders={handleProvidersChange}
@@ -230,9 +222,11 @@ export default function ImagesGallery() {
 			{/* Gallery */}
 			{!loading && !error && images.length > 0 && (
 				<>
+					{/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Tailwind resetea list-style en todos los ul/ol; sin el rol explícito, Safari/VoiceOver deja de anunciar la semantica de lista. */}
 					<ul
 						role="list"
-						className="grid grid-flow-row-dense grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 auto-rows-[140px] md:auto-rows-[130px] gap-4">
+						className="grid grid-flow-row-dense auto-rows-[140px] grid-cols-2 gap-4 md:auto-rows-[130px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+					>
 						{images.map((img, index) => {
 							const isSelected = selectedImages.some(
 								(selected) => selected.imageSrc === img.imageSrc,
@@ -255,13 +249,12 @@ export default function ImagesGallery() {
 					{images.length > 0 && (
 						<div
 							ref={loaderRef}
-							className="flex justify-center items-center h-24 mt-4"
+							className="mt-4 flex h-24 items-center justify-center"
 							role="status"
 							aria-live="polite"
-							aria-label="Cargando más imágenes">
-							{loadingMore && (
-								<LoadingState message="Cargando más imágenes..." />
-							)}
+							aria-label="Cargando más imágenes"
+						>
+							{loadingMore && <LoadingState message="Cargando más imágenes..." />}
 						</div>
 					)}
 				</>
@@ -269,76 +262,63 @@ export default function ImagesGallery() {
 
 			{/* Floating Bottom Bar for Selected Images */}
 			{selectedImages.length > 0 && (
-				<div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
+				<div className="animate-fade-in-up fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
 					<nav
-						className="bg-df-surface dark:bg-df-surface-dark shadow-2xl dark:shadow-df-primary-dark/10 ring-1 ring-df-border dark:ring-df-border-dark rounded-full py-3 px-4 flex items-center gap-4 transition-all duration-300"
-						aria-label="Imágenes seleccionadas">
+						className="bg-df-surface dark:bg-df-surface-dark dark:shadow-df-primary-dark/10 ring-df-border dark:ring-df-border-dark flex items-center gap-4 rounded-full px-4 py-3 shadow-2xl ring-1 transition-all duration-300"
+						aria-label="Imágenes seleccionadas"
+					>
 						<button
 							onClick={() => setIsModalOpen(true)}
-							className="flex items-center gap-4 group cursor-pointer outline-none hover:opacity-80 transition-opacity"
-							aria-label={`Ver todas las ${selectedImages.length} imágenes seleccionadas`}>
-							<div className="flex -space-x-2 mr-2" aria-hidden="true">
+							className="group flex cursor-pointer items-center gap-4 transition-opacity outline-none hover:opacity-80"
+							aria-label={`Ver todas las ${selectedImages.length} imágenes seleccionadas`}
+						>
+							<div className="mr-2 flex -space-x-2" aria-hidden="true">
 								{selectedImages.slice(0, 3).map((img, idx) => (
 									<img
 										key={idx}
 										src={img.imageSrc}
 										alt=""
-										className="w-10 h-10 rounded-full border-2 border-df-surface dark:border-df-surface-dark object-cover"
+										className="border-df-surface dark:border-df-surface-dark h-10 w-10 rounded-full border-2 object-cover"
 									/>
 								))}
 								{selectedImages.length > 3 && (
 									<div
-										className="w-10 h-10 rounded-full border-2 border-df-surface dark:border-df-surface-dark bg-df-surface-alt dark:bg-df-surface-alt-dark flex items-center justify-center text-[10px] font-bold text-df-ink dark:text-df-ink-dark"
-										aria-label={`${selectedImages.length - 3} imágenes más`}>
+										className="border-df-surface dark:border-df-surface-dark bg-df-surface-alt dark:bg-df-surface-alt-dark text-df-ink dark:text-df-ink-dark flex h-10 w-10 items-center justify-center rounded-full border-2 text-[10px] font-bold"
+										aria-label={`${selectedImages.length - 3} imágenes más`}
+									>
 										+{selectedImages.length - 3}
 									</div>
 								)}
 							</div>
 
 							<div className="shrink-0">
-								<p className="text-xs font-bold text-df-ink dark:text-df-ink-dark uppercase tracking-widest leading-none">
-									{selectedImages.length}{" "}
-									{selectedImages.length === 1 ? "imagen" : "imágenes"}
+								<p className="text-df-ink dark:text-df-ink-dark text-xs leading-none font-bold tracking-widest uppercase">
+									{selectedImages.length} {selectedImages.length === 1 ? "imagen" : "imágenes"}
 								</p>
-								<p className="text-[10px] font-semibold text-df-muted dark:text-df-muted-dark uppercase tracking-widest mt-0.5">
-									{selectedImages.length === 1
-										? "seleccionada"
-										: "seleccionadas"}
+								<p className="text-df-muted dark:text-df-muted-dark mt-0.5 text-[10px] font-semibold tracking-widest uppercase">
+									{selectedImages.length === 1 ? "seleccionada" : "seleccionadas"}
 								</p>
 							</div>
 						</button>
 
 						<div
-							className="h-6 w-px bg-df-muted dark:bg-df-muted-dark mx-2"
-							aria-hidden="true"></div>
+							className="bg-df-muted dark:bg-df-muted-dark mx-2 h-6 w-px"
+							aria-hidden="true"
+						></div>
 
 						<a
 							href="/canvas"
-							className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-linear-to-r from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark hover:opacity-90 active:scale-95 transition-all duration-150 shadow-md shadow-df-primary/30 dark:shadow-df-primary-dark/20"
-							aria-label="Ir a canvas para armar el board con las imágenes seleccionadas">
+							className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 flex items-center gap-2 rounded-full bg-linear-to-r px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+							aria-label="Ir a canvas para armar el board con las imágenes seleccionadas"
+						>
 							Armar Board
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth="2.5"
-								aria-hidden="true">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M13 5l7 7-7 7M5 5l7 7-7 7"
-								/>
-							</svg>
+							<ChevronsRight className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
 						</a>
 					</nav>
 				</div>
 			)}
 
-			<SelectedImagesModal
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
-			/>
+			<SelectedImagesModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 		</section>
 	);
 }

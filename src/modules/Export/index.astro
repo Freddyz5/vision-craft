@@ -1,41 +1,19 @@
 ---
-import TopNav from "../../shared/components/TopNav.astro";
-import AppSidebar from "../../shared/components/AppSidebar.astro";
+import StudioLayout from "../../shared/components/StudioLayout.astro";
+import PageHeader from "../../shared/components/PageHeader.astro";
+import PageFooter from "../../shared/components/PageFooter.astro";
 import ExportPanel from "./components/ExportPanel";
 ---
 
-<>
-	<TopNav />
-	<AppSidebar activeItem="export" />
-	<main
-		class="ml-44 pt-14 min-h-screen flex flex-col bg-df-bg dark:bg-df-bg-dark">
-		<!-- ── Page header ────────────────────────────── -->
-		<header class="px-8 py-10 pb-0 mb-8">
-			<p
-				class="text-[10px] font-bold tracking-[0.2em] uppercase text-df-muted dark:text-df-muted-dark mb-3">
-				Paso 04 / Exportar
-			</p>
-			<h1
-				class="text-5xl font-extrabold leading-[1.1] text-df-ink dark:text-df-ink-dark">
-				Exporta tu <br />
-				<span class="text-df-primary dark:text-df-primary-dark"> Lienzo. </span>
-			</h1>
-			<p
-				class="mt-3 text-sm text-df-muted dark:text-df-muted-dark max-w-sm leading-relaxed">
-				Exporta tu visión board en formato PDF para imprimir, JSON para guardar
-				o PNG/JPG para compartir. Todas las opciones mantienen la calidad y
-				proporciones originales de tu lienzo.
-			</p>
-		</header>
+<StudioLayout activeItem="export">
+	<PageHeader
+		step="Paso 04 / Exportar"
+		title="Exporta tu"
+		highlight="Lienzo."
+		description="Exporta tu visión board en formato PDF para imprimir, JSON para guardar o PNG/JPG para compartir. Todas las opciones mantienen la calidad y proporciones originales de tu lienzo."
+	/>
 
-		<ExportPanel client:only="react" />
+	<ExportPanel client:only="react" />
 
-		<footer
-			class="mt-auto border-t border-gray-200 dark:border-gray-800 px-8 py-4 flex items-center justify-between gap-4">
-			<small
-				class="text-[10px] font-semibold tracking-[0.18em] uppercase text-df-muted dark:text-df-muted-dark not-italic">
-				© 2024 Vision Craft. All rights reserved.
-			</small>
-		</footer>
-	</main>
-</>
+	<PageFooter />
+</StudioLayout>

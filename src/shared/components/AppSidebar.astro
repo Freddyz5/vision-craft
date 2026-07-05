@@ -1,5 +1,5 @@
 ---
-import { LINKS, type Link } from "../contants/likns";
+import { LINKS, type Link } from "../constants/links";
 
 interface Props {
 	activeItem?: string;
@@ -18,17 +18,17 @@ function linkClass(id: string): string {
 ---
 
 <aside
-	class="fixed left-0 top-14 bottom-0 w-44 flex flex-col py-6 px-3
-         bg-df-surface dark:bg-df-surface-dark
-         border-r border-gray-200 dark:border-gray-800"
-	aria-label="Studio sidebar">
+	class="bg-df-surface dark:bg-df-surface-dark fixed top-14 bottom-0 left-0 flex w-44 flex-col border-r border-gray-200 px-3 py-6 dark:border-gray-800"
+	aria-label="Studio sidebar"
+>
 	<!-- Brand identity -->
-	<div class="px-3 mb-7">
-		<p class="font-bold text-df-ink dark:text-df-ink-dark text-sm leading-none">
+	<div class="mb-7 px-3">
+		<p class="text-df-ink dark:text-df-ink-dark text-sm leading-none font-bold">
 			Zona de construcción
 		</p>
 		<p
-			class="text-[9px] font-bold tracking-[0.2em] uppercase text-df-muted dark:text-df-muted-dark mt-1">
+			class="text-df-muted dark:text-df-muted-dark mt-1 text-[9px] font-bold tracking-[0.2em] uppercase"
+		>
 			Sueña &amp; enfócate
 		</p>
 	</div>
@@ -42,8 +42,9 @@ function linkClass(id: string): string {
 						<a
 							href={link.href}
 							aria-current={activeItem === link.id ? "page" : undefined}
-							class={linkClass(link.id)}>
-							<link.icon />
+							class={linkClass(link.id)}
+						>
+							<link.icon class="h-4 w-4 shrink-0" aria-hidden="true" />
 							{link.name}
 						</a>
 					</li>
