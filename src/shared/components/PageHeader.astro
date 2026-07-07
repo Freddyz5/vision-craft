@@ -1,7 +1,9 @@
 ---
+import { LINKS } from "../constants/links";
+
 interface Props {
-	/** Small uppercase step label, e.g. "Paso 02 / Lienzo" */
-	step: string;
+	/** Same id used across the flow, e.g. "canvas" — matches LINKS[].id */
+	activeItem: string;
 	/** First line of the heading */
 	title: string;
 	/** Second, accent-colored line of the heading */
@@ -11,12 +13,15 @@ interface Props {
 }
 
 const {
-	step,
+	activeItem,
 	title,
 	highlight,
 	description,
 	class: className = "mb-8 px-8 py-10 pb-0",
 } = Astro.props;
+
+const stepIndex = LINKS.findIndex((link) => link.id === activeItem);
+const step = `Paso ${String(stepIndex + 1).padStart(2, "0")} / ${LINKS[stepIndex].name}`;
 ---
 
 <header class={className}>

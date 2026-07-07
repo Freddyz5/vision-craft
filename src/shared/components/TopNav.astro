@@ -1,5 +1,8 @@
 ---
 import { Sun, Moon } from "lucide-astro";
+import StepperNav from "./StepperNav";
+
+const { activeItem } = Astro.props;
 ---
 
 <header
@@ -14,6 +17,8 @@ import { Sun, Moon } from "lucide-astro";
 		Vision Craft
 	</a>
 
+	<StepperNav activeItem={activeItem} client:load />
+
 	<!-- Right-side actions -->
 	<div class="ml-auto flex items-center gap-1">
 		<!-- Theme toggle -->
@@ -27,15 +32,6 @@ import { Sun, Moon } from "lucide-astro";
 			<!-- Moon (visible in light mode) -->
 			<Moon class="block h-5 w-5 dark:hidden" aria-hidden="true" />
 		</button>
-
-		<!-- Avatar -->
-		<!-- <button
-			aria-label="Open user profile"
-			class="ml-1 w-8 h-8 rounded-full overflow-hidden ring-2 ring-df-primary/30 dark:ring-df-primary-dark/30
-             bg-gradient-to-br from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark
-             flex items-center justify-center text-white text-sm font-bold">
-			F
-		</button> -->
 	</div>
 </header>
 

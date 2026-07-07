@@ -1,11 +1,31 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
+import {
+	Sun,
+	Moon,
+	CirclePlay,
+	Compass,
+	Proportions,
+	Wallpaper,
+	ImageDown,
+	Lock,
+	HardDrive,
+	FileJson,
+	Cloud,
+	ShieldCheck,
+	Share2,
+	LayoutTemplate,
+	Wand2,
+	Users2,
+	Github,
+} from "lucide-astro";
+
+const year = new Date().getFullYear();
 ---
 
 <Layout
 	title="Vision Craft — Crea vision boards y expórtalos en alta calidad"
-	description="Busca imágenes en Unsplash y Pexels, diseña tu lienzo con drag & drop y exporta a PDF, PNG, JPG o JSON (listo para imprimir)."
+	description="Busca imágenes en Unsplash y Pexels, diseña tu lienzo con drag & drop y exporta a PNG, JPG o imprime como póster — todo en tu navegador, sin cuenta."
 >
 	<!-- ══ MARKETING NAV ══ -->
 	<nav
@@ -22,7 +42,7 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 					{ href: "#inicio", label: "Inicio", active: true },
 					{ href: "#features", label: "Funciones" },
 					{ href: "#gallery", label: "Cómo funciona" },
-					{ href: "#cta", label: "Exporta" },
+					{ href: "#roadmap", label: "Roadmap" },
 				].map(({ href, label, active }) => (
 					<a
 						href={href}
@@ -63,8 +83,8 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 
 	<div class="pt-14">
 		<!-- ══════════════════════════════════════════
-         HERO
-    ══════════════════════════════════════════ -->
+	         HERO
+	    ══════════════════════════════════════════ -->
 		<section
 			id="inicio"
 			class="bg-df-bg dark:bg-df-bg-dark relative flex min-h-[82vh] items-center overflow-hidden"
@@ -87,7 +107,7 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 					<p
 						class="text-df-accent dark:text-df-accent-dark border-df-accent/30 dark:border-df-accent-dark/30 mb-5 inline-block rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.25em] uppercase"
 					>
-						Explora / Diseña / Exporta
+						Explora · Lienzo · Diseña · Exporta
 					</p>
 					<h1
 						class="text-df-ink dark:text-df-ink-dark mb-5 text-5xl leading-[1.05] font-black md:text-6xl"
@@ -96,9 +116,10 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						<span class="text-df-primary dark:text-df-primary-dark">vision board</span><br />
 						listo para imprimir.
 					</h1>
-					<p class="text-df-muted dark:text-df-muted-dark mb-8 max-w-md text-base leading-relaxed">
-						Encuentra imágenes en Unsplash y Pexels, arrástralas al lienzo y ajústalas a tu estilo.
-						Exporta tu vision board en alta calidad: PDF, PNG, JPG o JSON — listo para imprimir.
+					<p class="text-df-muted dark:text-df-muted-dark mb-6 max-w-md text-base leading-relaxed">
+						Busca imágenes en Unsplash y Pexels, elige el tamaño de tu lienzo y arrástralas para
+						componer tu board. Exporta en PNG o JPG en alta resolución, o imprímelo como póster en
+						varias hojas.
 					</p>
 					<div class="flex flex-wrap items-center gap-3">
 						<a
@@ -115,6 +136,15 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 							Ver cómo funciona
 						</a>
 					</div>
+					<p
+						class="text-df-muted dark:text-df-muted-dark mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+					>
+						<span>Sin registro</span>
+						<span aria-hidden="true">·</span>
+						<span>Todo se guarda en tu navegador</span>
+						<span aria-hidden="true">·</span>
+						<span>Unsplash &amp; Pexels</span>
+					</p>
 				</div>
 
 				<!-- Right: visual element -->
@@ -166,8 +196,8 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 		</section>
 
 		<!-- ══════════════════════════════════════════
-         FEATURES
-    ══════════════════════════════════════════ -->
+	         FEATURES
+	    ══════════════════════════════════════════ -->
 		<section id="features" class="bg-df-bg dark:bg-df-bg-dark px-8 py-20">
 			<div class="mx-auto max-w-5xl">
 				<!-- Heading -->
@@ -176,82 +206,21 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						Todo el flujo para construir tu vision board
 					</h2>
 					<p class="text-df-muted dark:text-df-muted-dark mt-2 max-w-md text-sm">
-						Explora imágenes, configura el tamaño del lienzo, diseña con drag &amp; drop y exporta
-						en formatos listos para compartir o imprimir.
+						Explora imágenes, define el tamaño de tu lienzo, diseña con drag &amp; drop y exporta en
+						el formato que necesites.
 					</p>
 				</div>
 
 				<!-- 2×2 Bento cards -->
 				<div class="grid grid-cols-2 gap-4">
-					<!-- Card 1: Lienzo a tu medida -->
-					<div
-						class="bg-df-surface dark:bg-df-surface-dark overflow-hidden rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
-					>
-						<h3 class="text-df-ink dark:text-df-ink-dark mb-1 font-bold">Lienzo a tu medida</h3>
-						<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
-							Define tamaño y formato del lienzo para tu board. Construye con libertad y mantén todo
-							ordenado.
-						</p>
-						<!-- Mini board mockup -->
-						<div
-							class="aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
-						>
-							<div class="flex h-full">
-								<!-- Sidebar -->
-								<div class="flex w-16 shrink-0 flex-col gap-1 bg-gray-200 p-2 dark:bg-gray-900">
-									{
-										["#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db"].map(() => (
-											<div class="h-2 rounded bg-gray-300 dark:bg-gray-700" />
-										))
-									}
-								</div>
-								<!-- Content: mini image grid -->
-								<div class="grid flex-1 grid-cols-2 gap-1 p-2">
-									<img
-										src="/minimal_serenity.png"
-										alt=""
-										class="h-full w-full rounded object-cover"
-									/>
-									<img
-										src="/ethereal_canyons.png"
-										alt=""
-										class="h-full w-full rounded object-cover"
-									/>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Card 2: Listo para imprimir (violet) -->
-					<div
-						class="bg-df-primary dark:bg-df-primary-dark relative overflow-hidden rounded-2xl p-6"
-					>
-						<div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-							<Printer class="h-5 w-5 text-white" aria-hidden="true" />
-						</div>
-						<h3 class="mb-1 font-bold text-white">Listo para imprimir</h3>
-						<p class="mb-4 text-xs leading-relaxed text-white/80">
-							Exporta en alta calidad y prepara tu board para impresión o PDF, con control de DPI.
-						</p>
-						<p class="text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
-							PDF / PNG / JPG
-						</p>
-						<!-- Decorative -->
-						<div
-							class="absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-white/10"
-							aria-hidden="true"
-						>
-						</div>
-					</div>
-
-					<!-- Card 3: Búsqueda Multiplataforma -->
+					<!-- Card 1: Búsqueda de imágenes (Explora) -->
 					<div
 						class="rounded-2xl border border-amber-100 bg-amber-50 p-6 dark:border-gray-700/60 dark:bg-gray-800/60"
 					>
 						<div
 							class="bg-df-surface mb-4 flex h-10 w-10 items-center justify-center rounded-xl dark:bg-gray-700"
 						>
-							<Search class="text-df-muted dark:text-df-muted-dark h-5 w-5" aria-hidden="true" />
+							<Compass class="text-df-muted dark:text-df-muted-dark h-5 w-5" aria-hidden="true" />
 						</div>
 						<h3 class="text-df-ink dark:text-df-ink-dark mb-1 font-bold">Búsqueda de imágenes</h3>
 						<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
@@ -290,7 +259,53 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						</div>
 					</div>
 
-					<!-- Card 4: Diseñando Premium (dark) -->
+					<!-- Card 2: Lienzo a tu medida -->
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark overflow-hidden rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+					>
+						<div
+							class="bg-df-bg mb-4 flex h-10 w-10 items-center justify-center rounded-xl dark:bg-gray-700"
+						>
+							<Proportions
+								class="text-df-muted dark:text-df-muted-dark h-5 w-5"
+								aria-hidden="true"
+							/>
+						</div>
+						<h3 class="text-df-ink dark:text-df-ink-dark mb-1 font-bold">Lienzo a tu medida</h3>
+						<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
+							Elige un preset (A4, A3, carta US) u orientación, o define un tamaño personalizado.
+						</p>
+						<!-- Mini board mockup -->
+						<div
+							class="aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+						>
+							<div class="flex h-full">
+								<!-- Sidebar -->
+								<div class="flex w-16 shrink-0 flex-col gap-1 bg-gray-200 p-2 dark:bg-gray-900">
+									{
+										["#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db"].map(() => (
+											<div class="h-2 rounded bg-gray-300 dark:bg-gray-700" />
+										))
+									}
+								</div>
+								<!-- Content: mini image grid -->
+								<div class="grid flex-1 grid-cols-2 gap-1 p-2">
+									<img
+										src="/minimal_serenity.png"
+										alt=""
+										class="h-full w-full rounded object-cover"
+									/>
+									<img
+										src="/ethereal_canyons.png"
+										alt=""
+										class="h-full w-full rounded object-cover"
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Card 3: Editor drag & drop (dark) -->
 					<div class="relative overflow-hidden rounded-2xl bg-gray-950 p-6 dark:bg-gray-950">
 						<img
 							src="/tactile_form.png"
@@ -302,11 +317,11 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 							<div
 								class="bg-df-primary/30 mb-4 flex h-10 w-10 items-center justify-center rounded-xl"
 							>
-								<Sparkles class="text-df-primary-dark h-5 w-5" aria-hidden="true" />
+								<Wallpaper class="text-df-primary-dark h-5 w-5" aria-hidden="true" />
 							</div>
 							<h3 class="mb-1 font-bold text-white">Editor drag &amp; drop</h3>
 							<p class="text-xs leading-relaxed text-gray-400">
-								Arrastra imágenes al lienzo, muévelas, redimensiónalas y organiza tu composición con
+								Arrastra imágenes y añade texto a tu lienzo. Redimensiona, rota y ordena capas con
 								precisión.
 							</p>
 							<!-- Mini dark UI preview -->
@@ -323,13 +338,82 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 							</div>
 						</div>
 					</div>
+
+					<!-- Card 4: Exporta e imprime (violet) -->
+					<div
+						class="bg-df-primary dark:bg-df-primary-dark relative overflow-hidden rounded-2xl p-6"
+					>
+						<div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+							<ImageDown class="h-5 w-5 text-white" aria-hidden="true" />
+						</div>
+						<h3 class="mb-1 font-bold text-white">Exporta e imprime</h3>
+						<p class="mb-4 text-xs leading-relaxed text-white/80">
+							Descarga en PNG o JPG con DPI ajustable (150/300), o imprime tu board como póster en
+							varias hojas.
+						</p>
+						<p class="text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+							PNG / JPG / Póster
+						</p>
+						<!-- Decorative -->
+						<div
+							class="absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-white/10"
+							aria-hidden="true"
+						>
+						</div>
+					</div>
+				</div>
+
+				<!-- Quick facts: local-first & data ownership -->
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark flex items-start gap-3 rounded-2xl border border-gray-200 p-4 dark:border-gray-700/60"
+					>
+						<Lock
+							class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+							aria-hidden="true"
+						/>
+						<div>
+							<p class="text-df-ink dark:text-df-ink-dark text-xs font-bold">Sin registro</p>
+							<p class="text-df-muted dark:text-df-muted-dark mt-0.5 text-xs leading-relaxed">
+								Empieza a crear sin cuentas ni contraseñas.
+							</p>
+						</div>
+					</div>
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark flex items-start gap-3 rounded-2xl border border-gray-200 p-4 dark:border-gray-700/60"
+					>
+						<HardDrive
+							class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+							aria-hidden="true"
+						/>
+						<div>
+							<p class="text-df-ink dark:text-df-ink-dark text-xs font-bold">Guardado local</p>
+							<p class="text-df-muted dark:text-df-muted-dark mt-0.5 text-xs leading-relaxed">
+								Hasta 20 boards guardados en tu navegador.
+							</p>
+						</div>
+					</div>
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark flex items-start gap-3 rounded-2xl border border-gray-200 p-4 dark:border-gray-700/60"
+					>
+						<FileJson
+							class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+							aria-hidden="true"
+						/>
+						<div>
+							<p class="text-df-ink dark:text-df-ink-dark text-xs font-bold">Backup en JSON</p>
+							<p class="text-df-muted dark:text-df-muted-dark mt-0.5 text-xs leading-relaxed">
+								Exporta e importa tus boards cuando quieras.
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</section>
 
 		<!-- ══════════════════════════════════════════
-         SHOWCASE / PHONE MOCKUPS
-    ══════════════════════════════════════════ -->
+	         SHOWCASE / PHONE MOCKUPS
+	    ══════════════════════════════════════════ -->
 		<section id="gallery" class="bg-df-surface dark:bg-df-surface-dark px-8 py-20">
 			<div class="mx-auto max-w-5xl">
 				<div class="mb-14 text-center">
@@ -337,24 +421,24 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 					<div class="bg-df-primary dark:bg-df-primary-dark mx-auto mt-3 h-1 w-12 rounded-full">
 					</div>
 					<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-3 max-w-md text-sm">
-						Tres pasos simples: explora imágenes, diseña tu lienzo y exporta en el formato que
-						necesitas.
+						Cuatro pasos simples: explora imágenes, elige el tamaño de tu lienzo, diseña y exporta
+						en el formato que necesites.
 					</p>
 				</div>
 
-				<!-- 3 phone mockups -->
-				<div class="flex items-end justify-center gap-6">
-					<!-- Phone 1: smaller -->
+				<!-- 4 phone mockups -->
+				<div class="flex flex-wrap items-end justify-center gap-6">
+					<!-- Step 1: Explora -->
 					<div class="text-center">
 						<div
-							class="mx-auto w-36 overflow-hidden rounded-[28px] border-[5px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/30 dark:border-gray-600"
-							style="min-height: 280px;"
+							class="mx-auto w-32 overflow-hidden rounded-[24px] border-[5px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/30 dark:border-gray-600"
+							style="min-height: 260px;"
 						>
 							<img
 								src="/ethereal_canyons.png"
 								alt=""
 								class="h-full w-full object-cover"
-								style="min-height: 280px;"
+								style="min-height: 260px;"
 								loading="lazy"
 							/>
 						</div>
@@ -364,7 +448,27 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						</p>
 					</div>
 
-					<!-- Phone 2: taller / center -->
+					<!-- Step 2: Lienzo -->
+					<div class="-mt-5 text-center">
+						<div
+							class="mx-auto w-36 overflow-hidden rounded-[26px] border-[5px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/35 dark:border-gray-600"
+							style="min-height: 300px;"
+						>
+							<img
+								src="/tactile_form.png"
+								alt=""
+								class="h-full w-full object-cover"
+								style="min-height: 300px;"
+								loading="lazy"
+							/>
+						</div>
+						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">2) Lienzo</h3>
+						<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-1 max-w-[150px] text-xs">
+							Define el tamaño y formato de tu board.
+						</p>
+					</div>
+
+					<!-- Step 3: Diseña (tallest / center) -->
 					<div class="-mt-10 text-center">
 						<div
 							class="mx-auto w-44 overflow-hidden rounded-[32px] border-[6px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/40 dark:border-gray-700"
@@ -378,29 +482,29 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 								loading="lazy"
 							/>
 						</div>
-						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">2) Diseña</h3>
+						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">3) Diseña</h3>
 						<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-1 max-w-[160px] text-xs">
 							Arrastra, ajusta y organiza elementos en tu lienzo.
 						</p>
 					</div>
 
-					<!-- Phone 3: smaller -->
+					<!-- Step 4: Exporta -->
 					<div class="text-center">
 						<div
-							class="mx-auto w-36 overflow-hidden rounded-[28px] border-[5px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/30 dark:border-gray-600"
-							style="min-height: 280px;"
+							class="mx-auto w-32 overflow-hidden rounded-[24px] border-[5px] border-gray-900 bg-gray-900 shadow-2xl shadow-gray-900/30 dark:border-gray-600"
+							style="min-height: 260px;"
 						>
 							<img
 								src="/crystal_ripples.png"
 								alt=""
 								class="h-full w-full object-cover"
-								style="min-height: 280px;"
+								style="min-height: 260px;"
 								loading="lazy"
 							/>
 						</div>
-						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">3) Exporta</h3>
+						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">4) Exporta</h3>
 						<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-1 max-w-[140px] text-xs">
-							Guarda como PDF, PNG, JPG o JSON, listo para imprimir.
+							Guarda como PNG, JPG o imprime como póster.
 						</p>
 					</div>
 				</div>
@@ -408,8 +512,114 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 		</section>
 
 		<!-- ══════════════════════════════════════════
-         CTA
-    ══════════════════════════════════════════ -->
+	         ROADMAP
+	    ══════════════════════════════════════════ -->
+		<section id="roadmap" class="bg-df-bg dark:bg-df-bg-dark px-8 py-20">
+			<div class="mx-auto max-w-5xl">
+				<div class="mb-12 max-w-lg">
+					<p
+						class="text-df-accent dark:text-df-accent-dark mb-3 text-[10px] font-bold tracking-[0.25em] uppercase"
+					>
+						Hacia dónde vamos
+					</p>
+					<h2 class="text-df-ink dark:text-df-ink-dark text-3xl font-extrabold">
+						Hoy es 100% local. Esto es lo que viene.
+					</h2>
+					<p class="text-df-muted dark:text-df-muted-dark mt-2 text-sm leading-relaxed">
+						Vision Craft todavía no tiene backend: no hay cuentas ni nube, todo vive en el
+						almacenamiento de tu navegador. Así seguimos construyendo el producto.
+					</p>
+				</div>
+
+				<div class="grid gap-4 md:grid-cols-2">
+					<!-- V2: cuentas y nube -->
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+					>
+						<span
+							class="bg-df-primary/10 text-df-primary dark:bg-df-primary-dark/15 dark:text-df-primary-dark mb-4 inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase"
+						>
+							Próximamente
+						</span>
+						<h3 class="text-df-ink dark:text-df-ink-dark mb-3 font-bold">Cuentas y nube</h3>
+						<ul class="space-y-2.5">
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<Cloud
+									class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Backend propio con guardado en la nube
+							</li>
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<ShieldCheck
+									class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Autenticación de usuarios
+							</li>
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<Share2
+									class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Compartir tableros con un enlace
+							</li>
+						</ul>
+					</div>
+
+					<!-- V3: plantillas e IA -->
+					<div
+						class="bg-df-surface dark:bg-df-surface-dark rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+					>
+						<span
+							class="bg-df-accent/10 text-df-accent dark:bg-df-accent-dark/15 dark:text-df-accent-dark mb-4 inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase"
+						>
+							En el radar
+						</span>
+						<h3 class="text-df-ink dark:text-df-ink-dark mb-3 font-bold">Plantillas e IA</h3>
+						<ul class="space-y-2.5">
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<LayoutTemplate
+									class="text-df-accent dark:text-df-accent-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Plantillas predefinidas de vision boards
+							</li>
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<Wand2
+									class="text-df-accent dark:text-df-accent-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Generación de imágenes con IA
+							</li>
+							<li
+								class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed"
+							>
+								<Users2
+									class="text-df-accent dark:text-df-accent-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Vision boards guiados y comunidad
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ══════════════════════════════════════════
+	         CTA
+	    ══════════════════════════════════════════ -->
 		<section id="cta" class="bg-df-bg dark:bg-df-bg-dark px-8 py-20">
 			<div class="mx-auto max-w-5xl">
 				<div
@@ -428,8 +638,8 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 							Crea un board que puedas usar de verdad.
 						</h2>
 						<p class="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/80">
-							Explora imágenes, diseña tu lienzo y exporta en alta calidad para compartir o
-							imprimir.
+							Explora imágenes, diseña tu lienzo y exporta en alta calidad para compartir o imprimir
+							— sin crear una cuenta.
 						</p>
 						<div class="flex flex-wrap justify-center gap-4">
 							<a
@@ -451,47 +661,33 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 		</section>
 
 		<!-- ══════════════════════════════════════════
-         FOOTER
-    ══════════════════════════════════════════ -->
+	         FOOTER
+	    ══════════════════════════════════════════ -->
 		<footer
 			class="bg-df-surface dark:bg-df-surface-dark border-t border-gray-200 px-8 pt-12 pb-8 dark:border-gray-800"
 		>
 			<div class="mx-auto max-w-5xl">
-				<div class="mb-10 grid grid-cols-4 gap-8">
+				<div class="mb-10 grid grid-cols-1 gap-8 sm:grid-cols-3">
 					<!-- Brand -->
 					<div class="col-span-1">
-						<p class="text-df-ink dark:text-df-ink-dark mb-2 font-extrabold">
-							<span class="text-df-primary dark:text-df-primary-dark">Ethereal</span>Vision
+						<p class="mb-2 text-base font-extrabold">
+							<span class="text-df-primary dark:text-df-primary-dark">Vision</span><span
+								class="text-df-ink dark:text-df-ink-dark">Craft</span
+							>
 						</p>
 						<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
 							Explora imágenes, diseña tu lienzo y exporta en alta calidad para compartir o
 							imprimir.
 						</p>
-						<!-- Social icons -->
-						<div class="flex gap-3">
-							{
-								[
-									"M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z",
-									"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z M4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
-								].map((d) => (
-									<a
-										href="#"
-										class="text-df-muted dark:text-df-muted-dark hover:bg-df-primary/10 dark:hover:bg-df-primary-dark/10 hover:text-df-primary dark:hover:text-df-primary-dark flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors dark:bg-gray-800"
-									>
-										<svg
-											class="h-3.5 w-3.5"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-											stroke-width="2"
-											aria-hidden="true"
-										>
-											<path d={d} />
-										</svg>
-									</a>
-								))
-							}
-						</div>
+						<a
+							href="https://github.com/Freddyz5/vision-craft"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-df-muted dark:text-df-muted-dark hover:bg-df-primary/10 dark:hover:bg-df-primary-dark/10 hover:text-df-primary dark:hover:text-df-primary-dark flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors dark:bg-gray-800"
+							aria-label="Código fuente en GitHub"
+						>
+							<Github class="h-3.5 w-3.5" aria-hidden="true" />
+						</a>
 					</div>
 
 					<!-- Product -->
@@ -499,7 +695,7 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						<h3
 							class="text-df-muted dark:text-df-muted-dark mb-4 text-[10px] font-bold tracking-[0.2em] uppercase"
 						>
-							Product
+							Producto
 						</h3>
 						<ul class="space-y-2.5">
 							{
@@ -522,45 +718,27 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 						</ul>
 					</div>
 
-					<!-- Resources -->
+					<!-- About the project -->
 					<div>
 						<h3
 							class="text-df-muted dark:text-df-muted-dark mb-4 text-[10px] font-bold tracking-[0.2em] uppercase"
 						>
-							Resources
+							Proyecto
 						</h3>
 						<ul class="space-y-2.5">
 							{
-								["Help Centre", "Documentation", "Blog", "Status"].map((item) => (
+								[
+									{ label: "Funciones", href: "#features" },
+									{ label: "Cómo funciona", href: "#gallery" },
+									{ label: "Roadmap", href: "#roadmap" },
+									{ label: "Código fuente", href: "https://github.com/Freddyz5/vision-craft" },
+								].map(({ label, href }) => (
 									<li>
 										<a
-											href="#"
+											href={href}
 											class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-xs transition-colors"
 										>
-											{item}
-										</a>
-									</li>
-								))
-							}
-						</ul>
-					</div>
-
-					<!-- Legal -->
-					<div>
-						<h3
-							class="text-df-muted dark:text-df-muted-dark mb-4 text-[10px] font-bold tracking-[0.2em] uppercase"
-						>
-							Legal
-						</h3>
-						<ul class="space-y-2.5">
-							{
-								["Privacy Policy", "Terms of Use", "Cookie Policy", "Licences"].map((item) => (
-									<li>
-										<a
-											href="#"
-											class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-xs transition-colors"
-										>
-											{item}
+											{label}
 										</a>
 									</li>
 								))
@@ -570,29 +748,18 @@ import { Sun, Moon, CirclePlay, Printer, Search, Sparkles } from "lucide-astro";
 				</div>
 
 				<div
-					class="flex items-center justify-between border-t border-gray-100 pt-6 dark:border-gray-800"
+					class="flex flex-col items-center justify-between gap-3 border-t border-gray-100 pt-6 sm:flex-row dark:border-gray-800"
 				>
 					<small
 						class="text-df-muted dark:text-df-muted-dark text-[10px] font-semibold tracking-[0.15em] uppercase not-italic"
 					>
-						&copy; 2024 Vision Craft. All rights reserved.
+						&copy; {year} Vision Craft. Proyecto en desarrollo activo.
 					</small>
-					<nav aria-label="Footer bottom">
-						<ul class="flex gap-5" role="list">
-							{
-								["Privacy Policy", "Terms"].map((item) => (
-									<li>
-										<a
-											href="#"
-											class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors"
-										>
-											{item}
-										</a>
-									</li>
-								))
-							}
-						</ul>
-					</nav>
+					<p
+						class="text-df-muted dark:text-df-muted-dark text-[10px] font-semibold tracking-[0.15em] uppercase"
+					>
+						Astro · React · Konva
+					</p>
 				</div>
 			</div>
 		</footer>
