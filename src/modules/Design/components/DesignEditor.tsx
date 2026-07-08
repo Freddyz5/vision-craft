@@ -107,7 +107,7 @@ export default function DesignEditor() {
 			<div className="relative min-w-0 flex-1 space-y-8">
 				<article
 					ref={containerRef}
-					className="bg-base-200/50 dark:bg-base-300/20 border-df-primary/10 relative flex min-h-120 flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-8"
+					className="bg-df-surface dark:bg-base-300/20 border-df-primary/10 relative flex min-h-120 flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-8"
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}
 				>
