@@ -107,7 +107,7 @@ export default function DesignEditor() {
 			<div className="relative min-w-0 flex-1 space-y-8">
 				<article
 					ref={containerRef}
-					className="bg-base-200/50 dark:bg-base-300/20 border-df-primary/10 relative flex min-h-[480px] flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-8"
+					className="bg-base-200/50 dark:bg-base-300/20 border-df-primary/10 relative flex min-h-120 flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-8"
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}
 				>
@@ -117,27 +117,6 @@ export default function DesignEditor() {
 						onZoomIn={() => setZoom((prev) => Math.min(3, parseFloat((prev + 0.1).toFixed(1))))}
 						onReset={() => setZoom(1)}
 					/>
-
-					{selectedId && selectedItem && (
-						<ItemInspector
-							item={selectedItem}
-							onClose={() => setSelectedId(null)}
-							onUpdate={(patch) => updateItem(selectedItem.id, patch)}
-							onBringToFront={() => {
-								bringToFront(selectedItem.id);
-								showToast("Elemento traído al frente");
-							}}
-							onSendToBack={() => {
-								sendToBack(selectedItem.id);
-								showToast("Elemento enviado al fondo");
-							}}
-							onDelete={() => {
-								removeItem(selectedItem.id);
-								setSelectedId(null);
-								showToast("Elemento eliminado.");
-							}}
-						/>
-					)}
 
 					<div className="border-base-300 overflow-hidden rounded-sm border bg-white shadow-2xl dark:border-gray-800">
 						<KonvaCanvas
@@ -159,8 +138,29 @@ export default function DesignEditor() {
 				/>
 			</div>
 
-			{/* ════ RIGHT: Images Tray ════ */}
-			<ImagesTray viewMode={viewMode} selectedId={selectedId} setSelectedId={setSelectedId} />
+			{/* ════ RIGHT: Item Inspector (when selected) or Images Tray ════ */}
+			{selectedId && selectedItem ? (
+				<ItemInspector
+					item={selectedItem}
+					onClose={() => setSelectedId(null)}
+					onUpdate={(patch) => updateItem(selectedItem.id, patch)}
+					onBringToFront={() => {
+						bringToFront(selectedItem.id);
+						showToast("Elemento traído al frente");
+					}}
+					onSendToBack={() => {
+						sendToBack(selectedItem.id);
+						showToast("Elemento enviado al fondo");
+					}}
+					onDelete={() => {
+						removeItem(selectedItem.id);
+						setSelectedId(null);
+						showToast("Elemento eliminado.");
+					}}
+				/>
+			) : (
+				<ImagesTray viewMode={viewMode} selectedId={selectedId} setSelectedId={setSelectedId} />
+			)}
 
 			<Toast message={toastMessage} />
 		</section>
