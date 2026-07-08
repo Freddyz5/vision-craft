@@ -1,0 +1,86 @@
+---
+import { Cloud, ShieldCheck, Share2, LayoutTemplate, Wand2, Users2 } from "lucide-astro";
+
+const v2Items = [
+	{ icon: Cloud, label: "Backend propio con guardado en la nube" },
+	{ icon: ShieldCheck, label: "Autenticación de usuarios" },
+	{ icon: Share2, label: "Compartir tableros con un enlace" },
+];
+
+const v3Items = [
+	{ icon: LayoutTemplate, label: "Plantillas predefinidas de vision boards" },
+	{ icon: Wand2, label: "Generación de imágenes con IA" },
+	{ icon: Users2, label: "Vision boards guiados y comunidad" },
+];
+---
+
+<section id="roadmap" class="bg-df-bg dark:bg-df-bg-dark px-8 py-20">
+	<div class="mx-auto max-w-5xl">
+		<div class="mb-12 max-w-lg">
+			<p
+				class="text-df-accent dark:text-df-accent-dark mb-3 text-[10px] font-bold tracking-[0.25em] uppercase"
+			>
+				Hacia dónde vamos
+			</p>
+			<h2 class="text-df-ink dark:text-df-ink-dark text-3xl font-extrabold">
+				Hoy es 100% local. Esto es lo que viene.
+			</h2>
+			<p class="text-df-muted dark:text-df-muted-dark mt-2 text-sm leading-relaxed">
+				Vision Craft todavía no tiene backend: no hay cuentas ni nube, todo vive en el
+				almacenamiento de tu navegador. Así seguimos construyendo el producto.
+			</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2">
+			<!-- V2: cuentas y nube -->
+			<div
+				class="bg-df-surface dark:bg-df-surface-dark rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+			>
+				<span
+					class="bg-df-primary/10 text-df-primary dark:bg-df-primary-dark/15 dark:text-df-primary-dark mb-4 inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase"
+				>
+					Próximamente
+				</span>
+				<h3 class="text-df-ink dark:text-df-ink-dark mb-3 font-bold">Cuentas y nube</h3>
+				<ul class="space-y-2.5">
+					{
+						v2Items.map(({ icon: Icon, label }) => (
+							<li class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed">
+								<Icon
+									class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								{label}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			<!-- V3: plantillas e IA -->
+			<div
+				class="bg-df-surface dark:bg-df-surface-dark rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+			>
+				<span
+					class="bg-df-accent/10 text-df-accent dark:bg-df-accent-dark/15 dark:text-df-accent-dark mb-4 inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase"
+				>
+					En el radar
+				</span>
+				<h3 class="text-df-ink dark:text-df-ink-dark mb-3 font-bold">Plantillas e IA</h3>
+				<ul class="space-y-2.5">
+					{
+						v3Items.map(({ icon: Icon, label }) => (
+							<li class="text-df-muted dark:text-df-muted-dark flex items-start gap-2.5 text-xs leading-relaxed">
+								<Icon
+									class="text-df-accent dark:text-df-accent-dark mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								{label}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>

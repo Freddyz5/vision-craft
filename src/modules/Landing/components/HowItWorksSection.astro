@@ -1,0 +1,76 @@
+---
+const steps = [
+	{
+		step: "1) Explora",
+		description: "Busca y selecciona imágenes de Unsplash y Pexels.",
+		light: "/explore_light.png",
+		dark: "/explore_dark.png",
+	},
+	{
+		step: "2) Lienzo",
+		description: "Define el tamaño y formato de tu board.",
+		light: "/canvas_light.png",
+		dark: "/canvas_dark.png",
+	},
+	{
+		step: "3) Diseña",
+		description: "Arrastra, ajusta y organiza elementos en tu lienzo.",
+		light: "/design_light.png",
+		dark: "/design_dark.png",
+	},
+	{
+		step: "4) Exporta",
+		description: "Guarda como PNG, JPG o imprime como póster.",
+		light: "/export_light.png",
+		dark: "/export_dark.png",
+	},
+];
+---
+
+<section id="gallery" class="bg-df-surface dark:bg-df-surface-dark px-8 py-20">
+	<div class="mx-auto max-w-5xl">
+		<div class="mb-14 text-center">
+			<h2 class="text-df-ink dark:text-df-ink-dark text-3xl font-extrabold">Cómo funciona</h2>
+			<div class="bg-df-primary dark:bg-df-primary-dark mx-auto mt-3 h-1 w-12 rounded-full"></div>
+			<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-3 max-w-md text-sm">
+				Cuatro pasos simples: explora imágenes, elige el tamaño de tu lienzo, diseña y exporta en el
+				formato que necesites.
+			</p>
+		</div>
+
+		<!-- 4 browser-window mockups -->
+		<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+			{
+				steps.map(({ step, description, light, dark }) => (
+					<div class="text-center">
+						<div class="overflow-hidden rounded-xl border border-gray-200 bg-gray-100 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+							<div class="flex items-center gap-1.5 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+								<span class="h-2 w-2 rounded-full bg-red-400" />
+								<span class="h-2 w-2 rounded-full bg-amber-400" />
+								<span class="h-2 w-2 rounded-full bg-green-400" />
+							</div>
+							<div class="aspect-video overflow-hidden">
+								<img
+									src={light}
+									alt={`Captura del paso ${step} en Vision Craft`}
+									class="block h-full w-full object-cover object-top dark:hidden"
+									loading="lazy"
+								/>
+								<img
+									src={dark}
+									alt={`Captura del paso ${step} en Vision Craft`}
+									class="hidden h-full w-full object-cover object-top dark:block"
+									loading="lazy"
+								/>
+							</div>
+						</div>
+						<h3 class="text-df-ink dark:text-df-ink-dark mt-4 text-sm font-bold">{step}</h3>
+						<p class="text-df-muted dark:text-df-muted-dark mx-auto mt-1 max-w-[160px] text-xs">
+							{description}
+						</p>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>
