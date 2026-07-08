@@ -1,0 +1,5 @@
+{
+	"permissions": {
+		"allow": ["Bash(bun run lint *)", "Bash(bun run build *)", "Bash(curl -s * http://localhost:*)"]
+	}
+}

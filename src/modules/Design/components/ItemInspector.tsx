@@ -21,7 +21,7 @@ export function ItemInspector({
 	return (
 		<aside
 			aria-label="Inspector del elemento"
-			className="bg-base-100/95 dark:bg-df-surface-dark/95 border-base-200 animate-fade-in text-df-ink dark:text-df-ink-dark absolute top-4 right-4 z-20 w-64 space-y-4 rounded-2xl border p-4 shadow-xl backdrop-blur-xs dark:border-gray-800"
+			className="bg-base-100 dark:bg-df-surface-dark border-df-primary/20 animate-fade-in text-df-ink dark:text-df-ink-dark sticky top-24 -mt-55 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-auto rounded-3xl border-2 p-5 shadow-md"
 		>
 			<header className="border-base-200 flex items-center justify-between border-b pb-2 dark:border-gray-800">
 				<h2 className="text-df-muted dark:text-df-muted-dark text-xs font-bold tracking-wider uppercase">
@@ -78,7 +78,7 @@ export function ItemInspector({
 							id="item-text-content"
 							value={item.text || ""}
 							onChange={(e) => onUpdate({ text: e.target.value })}
-							className="textarea textarea-bordered textarea-xs bg-base-100 dark:bg-df-bg-dark min-h-[60px] w-full"
+							className="textarea textarea-bordered textarea-xs bg-base-100 dark:bg-df-bg-dark min-h-15 w-full"
 							rows={2}
 						/>
 					</div>
