@@ -239,7 +239,7 @@ export default function ExportPanel() {
 			/>
 
 			{/* Right Area - Sidebar */}
-			<aside className="bg-base-100/80 dark:bg-df-surface-dark/70 border-df-primary/30 sticky top-24 -mt-65 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-scroll rounded-3xl border-2 p-5 backdrop-blur-sm">
+			<aside className="bg-df-surface dark:bg-df-surface-dark/70 border-df-primary/30 sticky top-24 -mt-65 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-scroll rounded-3xl border-2 p-5 backdrop-blur-sm">
 				<div className="space-y-10">
 					<ExportPrintOptions
 						exportMode={exportMode}

@@ -53,7 +53,7 @@ export function ExportCanvasPreview({
 			</header>
 
 			<div
-				className="bg-base-200/40 dark:bg-base-300/10 border-base-300 relative flex h-[calc(100vh-20rem)] min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-xl border p-4 shadow-inner dark:border-gray-800"
+				className="bg-df-surface dark:bg-base-300/10 border-base-300 relative flex h-[calc(100vh-20rem)] min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-xl border p-4 shadow-inner dark:border-gray-800"
 				ref={containerRef}
 			>
 				{showPosterMeta && (

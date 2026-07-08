@@ -1,0 +1,180 @@
+---
+import {
+	Compass,
+	Proportions,
+	Wallpaper,
+	ImageDown,
+	Lock,
+	HardDrive,
+	FileJson,
+} from "lucide-astro";
+
+const quickFacts = [
+	{
+		icon: Lock,
+		title: "Sin registro",
+		description: "Empieza a crear sin cuentas ni contraseñas.",
+	},
+	{
+		icon: HardDrive,
+		title: "Guardado local",
+		description: "Hasta 20 boards guardados en tu navegador.",
+	},
+	{
+		icon: FileJson,
+		title: "Backup en JSON",
+		description: "Exporta e importa tus boards cuando quieras.",
+	},
+];
+---
+
+<section id="features" class="bg-df-bg dark:bg-df-bg-dark px-8 py-20">
+	<div class="mx-auto max-w-5xl">
+		<!-- Heading -->
+		<div class="mb-12">
+			<h2 class="text-df-ink dark:text-df-ink-dark text-3xl font-extrabold">
+				Todo el flujo para construir tu vision board
+			</h2>
+			<p class="text-df-muted dark:text-df-muted-dark mt-2 max-w-md text-sm">
+				Explora imágenes, define el tamaño de tu lienzo, diseña con drag &amp; drop y exporta en el
+				formato que necesites.
+			</p>
+		</div>
+
+		<!-- 2×2 Bento cards -->
+		<div class="grid grid-cols-2 gap-4">
+			<!-- Card 1: Búsqueda de imágenes (Explora) -->
+			<div class="bg-accent/30 border-df-accent rounded-2xl border p-6">
+				<div
+					class="bg-df-accent mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-white shadow-2xl"
+				>
+					<Compass class="h-5 w-5 text-white" aria-hidden="true" />
+				</div>
+				<h3 class="text-df-ink dark:text-df-ink-dark mb-1 font-bold">Búsqueda de imágenes</h3>
+				<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
+					Busca inspiración en Unsplash y Pexels. Selecciona tus favoritas y llévalas al editor.
+				</p>
+				<!-- App screenshot -->
+				<div class="border-df-accent aspect-video overflow-hidden rounded-xl border">
+					<img
+						src="/explore_light.png"
+						alt="Captura del paso Explora en Vision Craft"
+						class="block h-full w-full object-cover dark:hidden"
+					/>
+					<img
+						src="/explore_dark.png"
+						alt="Captura del paso Explora en Vision Craft"
+						class="hidden h-full w-full object-cover dark:block"
+					/>
+				</div>
+			</div>
+
+			<!-- Card 2: Lienzo a tu medida -->
+			<div
+				class="bg-df-surface dark:bg-df-surface-dark overflow-hidden rounded-2xl border border-gray-200 p-6 dark:border-gray-700/60"
+			>
+				<div
+					class="border-df-ink dark:border-df-ink-dark dark:bg-df-surface-dark mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-2xl"
+				>
+					<Proportions class="text-df-ink dark:text-df-ink-dark h-5 w-5" aria-hidden="true" />
+				</div>
+				<h3 class="text-df-ink dark:text-df-ink-dark mb-1 font-bold">Lienzo a tu medida</h3>
+				<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
+					Elige un preset (A4, A3, carta US) u orientación, o define un tamaño personalizado.
+				</p>
+				<!-- App screenshot -->
+				<div
+					class="aspect-video overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700"
+				>
+					<img
+						src="/canvas_light.png"
+						alt="Captura del paso Lienzo en Vision Craft"
+						class="block h-full w-full object-cover dark:hidden"
+					/>
+					<img
+						src="/canvas_dark.png"
+						alt="Captura del paso Lienzo en Vision Craft"
+						class="hidden h-full w-full object-cover dark:block"
+					/>
+				</div>
+			</div>
+
+			<!-- Card 3: Editor drag & drop (dark) -->
+			<div class="overflow-hidden rounded-2xl bg-gray-800 p-6 dark:bg-gray-950">
+				<div
+					class="bg-df-primary/10 dark:bg-df-primary/40 border-df-primary-dark mb-4 flex h-10 w-10 items-center justify-center rounded-full border"
+				>
+					<Wallpaper class="text-df-primary-dark h-5 w-5" aria-hidden="true" />
+				</div>
+				<h3 class="mb-1 font-bold text-white">Editor drag &amp; drop</h3>
+				<p class="mb-4 text-xs leading-relaxed text-gray-400">
+					Arrastra imágenes y añade texto a tu lienzo. Redimensiona, rota y ordena capas con
+					precisión.
+				</p>
+				<!-- App screenshot -->
+				<div class="aspect-video overflow-hidden rounded-xl border border-gray-800">
+					<img
+						src="/design_light.png"
+						alt="Captura del paso Diseña en Vision Craft"
+						class="block h-full w-full object-cover dark:hidden"
+					/>
+					<img
+						src="/design_dark.png"
+						alt="Captura del paso Diseña en Vision Craft"
+						class="hidden h-full w-full object-cover dark:block"
+					/>
+				</div>
+			</div>
+
+			<!-- Card 4: Exporta e imprime (violet) -->
+			<div class="bg-df-primary dark:bg-df-primary-dark overflow-hidden rounded-2xl p-6">
+				<div
+					class="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/20"
+				>
+					<ImageDown class="h-5 w-5 text-white" aria-hidden="true" />
+				</div>
+				<h3 class="mb-1 font-bold text-white">Exporta e imprime</h3>
+				<p class="mb-4 text-xs leading-relaxed text-white/80">
+					Descarga en PNG o JPG con DPI ajustable (150/300), o imprime tu board como póster en
+					varias hojas.
+				</p>
+				<p class="mb-4 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+					PNG / JPG / Póster
+				</p>
+				<!-- App screenshot -->
+				<div class="aspect-video overflow-hidden rounded-xl border border-white/20">
+					<img
+						src="/export_light.png"
+						alt="Captura del paso Exporta en Vision Craft"
+						class="block h-full w-full object-cover dark:hidden"
+					/>
+					<img
+						src="/export_dark.png"
+						alt="Captura del paso Exporta en Vision Craft"
+						class="hidden h-full w-full object-cover dark:block"
+					/>
+				</div>
+			</div>
+		</div>
+
+		<!-- Quick facts: local-first & data ownership -->
+		<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+			{
+				quickFacts.map(({ icon: Icon, title, description }) => (
+					<div class="bg-df-surface dark:bg-df-surface-dark flex items-start gap-3 rounded-2xl border border-gray-200 p-4 dark:border-gray-700/60">
+						<Icon
+							class="text-df-primary dark:text-df-primary-dark mt-0.5 h-4 w-4 shrink-0"
+							aria-hidden="true"
+						/>
+						<div>
+							<p class="text-df-ink dark:text-df-ink-dark text-xs font-bold">{title}</p>
+							<p class="text-df-muted dark:text-df-muted-dark mt-0.5 text-xs leading-relaxed">
+								{description}
+							</p>
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>

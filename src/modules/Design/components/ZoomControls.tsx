@@ -11,7 +11,7 @@ export function ZoomControls({ zoom, onZoomOut, onZoomIn, onReset }: ZoomControl
 	return (
 		<nav
 			aria-label="Zoom del lienzo"
-			className="bg-base-100/90 dark:bg-df-surface-dark/95 border-base-200 absolute top-4 left-4 z-20 flex items-center gap-1.5 rounded-xl border p-1.5 shadow-md backdrop-blur-xs dark:border-gray-800"
+			className="bg-df-surface dark:bg-df-surface-dark/95 border-base-200 absolute top-4 left-4 z-20 flex items-center gap-1.5 rounded-xl border p-1.5 shadow-md backdrop-blur-xs dark:border-gray-800"
 		>
 			<button
 				type="button"
