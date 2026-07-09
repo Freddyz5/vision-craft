@@ -45,6 +45,7 @@ Construir una primera versión funcional sin backend que permita:
 ### 🔍 Imágenes
 
 - **Unsplash** y **Pexels**, vía un endpoint propio (`/api/images`) que guarda las API keys en el servidor — el frontend nunca llama a los proveedores directamente
+- **Cloudinary** para imágenes propias del usuario: subida _unsigned_ directo desde el navegador (sin backend propio), normalizada al mismo formato que Unsplash/Pexels
 
 ---
 
@@ -191,7 +192,7 @@ Permite:
 
 - No hay autenticación
 - No hay sincronización en la nube
-- Dependencia de APIs externas (Unsplash, Pexels)
+- Dependencia de APIs externas (Unsplash, Pexels, Cloudinary)
 - Límite de almacenamiento (~5MB en localStorage)
 
 ---
