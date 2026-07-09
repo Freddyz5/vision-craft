@@ -225,7 +225,7 @@ export default function ImagesGallery() {
 					{/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Tailwind resetea list-style en todos los ul/ol; sin el rol explícito, Safari/VoiceOver deja de anunciar la semantica de lista. */}
 					<ul
 						role="list"
-						className="grid grid-flow-row-dense auto-rows-[140px] grid-cols-2 gap-4 md:auto-rows-[130px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+						className="grid grid-flow-row-dense auto-rows-35 grid-cols-2 gap-4 md:auto-rows-32.5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
 					>
 						{images.map((img, index) => {
 							const isSelected = selectedImages.some(
