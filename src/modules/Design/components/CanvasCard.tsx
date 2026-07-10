@@ -1,5 +1,6 @@
 import React from "react";
 import { loadCanvas, duplicateCanvas, deleteCanvas } from "../../../shared/store/canvasStore";
+import { resetHistory } from "../../../shared/store/canvasHistory";
 import { Copy, Trash2 } from "lucide-react";
 import type { SavedCanvas } from "../../../shared/store/canvasStore";
 
@@ -29,7 +30,10 @@ const CanvasCard = ({ canvas }: Props) => {
 
 				<div className="flex items-center justify-center gap-2">
 					<button
-						onClick={() => loadCanvas(canvas.id)}
+						onClick={() => {
+							loadCanvas(canvas.id);
+							resetHistory();
+						}}
 						className="bg-df-primary flex w-full cursor-pointer items-center justify-center rounded-full px-6 py-2.5 font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
 					>
 						Cargar

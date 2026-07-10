@@ -93,13 +93,22 @@ export function useCanvasItemInteractions({
 		node.scaleX(1);
 		node.scaleY(1);
 
-		updateItem(item.id, {
+		const patch: Partial<CanvasItem> = {
 			x: node.x() / scaleFactor,
 			y: node.y() / scaleFactor,
 			rotation: node.rotation(),
 			width: item.width * scaleX,
 			height: item.height * scaleY,
-		});
+		};
+
+		// Grow/shrink the font size along with its box so resizing a text item
+		// scales the text instead of just re-wrapping it inside a bigger box.
+		if (item.type === "text") {
+			const growth = (scaleX + scaleY) / 2;
+			patch.fontSize = Math.max(8, Math.round((item.fontSize || 24) * growth));
+		}
+
+		updateItem(item.id, patch);
 	};
 
 	return { trRef, handleSelect, handleDragMove, handleDragEnd, handleTransformEnd };
