@@ -19,7 +19,7 @@ bun run format:check # prettier --check .
 
 There is no test suite yet — the `Run tests` step in `.github/workflows/release-prod.yml` is commented out.
 
-Requires Node >= 22.12.0. Two env vars back the image-search API and must be set locally (`.env`) and in Vercel: `PEXELS_API_KEY`, `UNSPLASH_CLIENT_ID`.
+Requires Node >= 22.12.0. Two env vars back the image-search API and must be set locally (`.env`) and in Vercel: `PEXELS_API_KEY`, `UNSPLASH_CLIENT_ID`. Two more back Cloudinary image uploads, `PUBLIC_CLOUDINARY_CLOUD_NAME` and `PUBLIC_CLOUDINARY_UPLOAD_PRESET` — unlike the two above these are client-exposed (`PUBLIC_` prefix, required by Astro/Vite to reach the browser bundle) and unsigned, no API secret involved.
 
 Pre-commit runs `lint-staged` via Husky (`eslint --fix` + `prettier` on staged `.js/.jsx/.ts/.tsx/.astro`, `prettier` on `.json/.md/.css`).
 
@@ -57,6 +57,8 @@ Canvas geometry note: stores keep dimensions in millimetres; components convert 
 ### Image providers proxy through a server API route
 
 `src/modules/Explore/services/{unsplash,pexels}.ts` never call the third-party APIs directly — they fetch `/api/images?provider=...` (`src/pages/api/images.ts`), an Astro server route that holds the API keys server-side via `import.meta.env` and normalizes both providers' responses into the shared `NormalizedImage` shape. `Explore/constants/providers.ts` is the registry mapping a provider id to its `getImages` function; add new providers there plus a branch in `api/images.ts`.
+
+User-uploaded images are the one exception: `Explore/services/cloudinary.ts` uploads unsigned directly from the browser to Cloudinary's REST API (no `/api/images` involved, no server secret — see `PUBLIC_CLOUDINARY_*` env vars above) and normalizes Cloudinary's response into the same `NormalizedImage` shape. It's surfaced via `Explore/components/UploadImageCard.tsx`, not through the `providers.ts` registry (that registry is shaped around search — `getImages(query, page)` — which upload isn't).
 
 ### Export/print math
 

@@ -26,16 +26,29 @@ export default function ImagesGallery() {
 
 	const selectedImages = useStore(selectedImagesStore);
 
-	// Cierra el modal si la selección queda vacía. Se ajusta durante el render
-	// (patrón recomendado por React: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+	// Cierra el modal si la selección queda vacía, y dispara un pulso en la barra flotante
+	// cuando se agrega una imagen. Se ajusta durante el render (patrón recomendado por React:
+	// https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
 	// en vez de en un useEffect, para evitar el setState síncrono dentro de un efecto.
 	const [prevSelectedCount, setPrevSelectedCount] = useState(selectedImages.length);
+	const [pulse, setPulse] = useState(false);
 	if (selectedImages.length !== prevSelectedCount) {
+		const added = selectedImages.length > prevSelectedCount;
 		setPrevSelectedCount(selectedImages.length);
 		if (selectedImages.length === 0) {
 			setIsModalOpen(false);
 		}
+		if (added) {
+			setPulse(true);
+		}
 	}
+
+	// Apaga el pulso después de la animación.
+	useEffect(() => {
+		if (!pulse) return;
+		const timer = setTimeout(() => setPulse(false), 4500);
+		return () => clearTimeout(timer);
+	}, [pulse]);
 
 	const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -225,7 +238,7 @@ export default function ImagesGallery() {
 					{/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Tailwind resetea list-style en todos los ul/ol; sin el rol explícito, Safari/VoiceOver deja de anunciar la semantica de lista. */}
 					<ul
 						role="list"
-						className="grid grid-flow-row-dense auto-rows-[140px] grid-cols-2 gap-4 md:auto-rows-[130px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
+						className="grid grid-flow-row-dense auto-rows-35 grid-cols-2 gap-4 md:auto-rows-32.5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
 					>
 						{images.map((img, index) => {
 							const isSelected = selectedImages.some(
@@ -264,9 +277,20 @@ export default function ImagesGallery() {
 			{selectedImages.length > 0 && (
 				<div className="animate-fade-in-up fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
 					<nav
-						className="bg-df-surface dark:bg-df-surface-dark dark:shadow-df-primary-dark/10 ring-df-border dark:ring-df-border-dark flex items-center gap-4 rounded-full px-4 py-3 shadow-2xl ring-1 transition-all duration-300"
+						className={[
+							"bg-df-surface dark:bg-df-surface-dark dark:shadow-df-primary-dark/10 relative flex items-center gap-4 rounded-full px-4 py-3 shadow-2xl transition-all duration-300",
+							pulse
+								? "ring-df-border dark:ring-df-border-dark scale-105 ring-1"
+								: "ring-df-border dark:ring-df-border-dark ring-1",
+						].join(" ")}
 						aria-label="Imágenes seleccionadas"
 					>
+						{pulse && (
+							<span
+								aria-hidden="true"
+								className="animate-ring-pulse pointer-events-none absolute inset-0 rounded-full"
+							/>
+						)}
 						<button
 							onClick={() => setIsModalOpen(true)}
 							className="group flex cursor-pointer items-center gap-4 transition-opacity outline-none hover:opacity-80"
