@@ -1,12 +1,6 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "@nanostores/react";
-import {
-	activeCanvasConfigStore,
-	activeCanvasItemsStore,
-	exportJson,
-	importJson,
-	saveCurrentCanvas,
-} from "../../../shared/store/canvasStore";
+import { activeCanvasConfigStore, activeCanvasItemsStore } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import type { ExportMode } from "../types";
 import {
@@ -126,18 +120,6 @@ export default function ExportPanel() {
 		}
 	};
 
-	const handleExportJson = () => {
-		const currentCanvas = {
-			id: crypto.randomUUID(),
-			name: config.name || "Exported Canvas",
-			createdAt: new Date().toISOString(),
-			config,
-			items,
-		};
-		exportJson(currentCanvas as any);
-		showToast("Exportación JSON iniciada.");
-	};
-
 	const [exportDpi, setExportDpi] = useState<150 | 300>(150);
 	const getExportPixelRatio = () => exportDpi / 96;
 
@@ -194,32 +176,6 @@ export default function ExportPanel() {
 		}
 	};
 
-	const handleSaveToBrowser = () => {
-		let thumbnail: string | undefined;
-		if (stageRef.current) {
-			thumbnail = stageRef.current.toDataURL({ pixelRatio: 0.5 });
-		}
-		saveCurrentCanvas(thumbnail);
-		showToast("Guardado correctamente en Mis Lienzos.");
-	};
-
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	const handleImportClick = () => {
-		fileInputRef.current?.click();
-	};
-	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		try {
-			await importJson(file);
-			showToast("Lienzo importado exitosamente.");
-			window.location.href = "/design";
-		} catch (err: any) {
-			showToast("Error importando: " + err.message);
-		}
-		if (fileInputRef.current) fileInputRef.current.value = "";
-	};
-
 	return (
 		<section className="flex flex-1 items-start gap-8 px-8 pb-10">
 			<ExportCanvasPreview
@@ -264,11 +220,6 @@ export default function ExportPanel() {
 						onExportDpiChange={setExportDpi}
 						onDownloadPng={handleDownloadPng}
 						onDownloadJpg={handleDownloadJpg}
-						onSaveToBrowser={handleSaveToBrowser}
-						onExportJson={handleExportJson}
-						onImportClick={handleImportClick}
-						fileInputRef={fileInputRef}
-						onFileChange={handleFileChange}
 					/>
 				</div>
 			</aside>

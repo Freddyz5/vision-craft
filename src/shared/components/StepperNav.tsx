@@ -36,8 +36,12 @@ export default function StepperNav({ activeItem }: Props) {
 	const canvasItems = useStore(activeCanvasItemsStore);
 
 	const currentIndex = LINKS.findIndex((link) => link.id === activeItem);
+	// currentIndex === -1 means we are on a page outside the 4-step wizard
+	// (e.g. /boards): show the steps, but no prev/next arrows.
+	const isWizardStep = currentIndex >= 0;
 	const prevLink = currentIndex > 0 ? LINKS[currentIndex - 1] : undefined;
-	const nextLink = currentIndex < LINKS.length - 1 ? LINKS[currentIndex + 1] : undefined;
+	const nextLink =
+		isWizardStep && currentIndex < LINKS.length - 1 ? LINKS[currentIndex + 1] : undefined;
 
 	return (
 		<nav
