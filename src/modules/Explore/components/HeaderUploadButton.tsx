@@ -1,4 +1,4 @@
-import { toggleImageSelection } from "../../../shared/store/boardStore";
+import { recordUploadedImage, toggleImageSelection } from "../../../shared/store/boardStore";
 import { useToast } from "../../../shared/hooks/useToast";
 import { Toast } from "../../../shared/components/Toast";
 import UploadDropzone from "./UploadDropzone";
@@ -10,6 +10,7 @@ export default function HeaderUploadButton() {
 
 	const handleUploaded = (image: NormalizedImage) => {
 		toggleImageSelection(image);
+		recordUploadedImage(image);
 		showToast("Imagen subida y agregada a tu selección.");
 	};
 
