@@ -33,9 +33,9 @@ const {
 			(function () {
 				const saved = localStorage.getItem("df-theme");
 				const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-				if (saved === "dark" || (!saved && prefersDark)) {
-					document.documentElement.classList.add("dark");
-				}
+				const isDark = saved === "dark" || (!saved && prefersDark);
+				document.documentElement.classList.toggle("dark", isDark);
+				document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
 			})();
 		</script>
 	</head>
