@@ -1,7 +1,12 @@
 import React, { useRef } from "react";
 import { useStore } from "@nanostores/react";
-import { LayoutGrid, Upload } from "lucide-react";
-import { importCanvasToLibrary, savedCanvasesStore } from "../../../shared/store/canvasStore";
+import { LayoutGrid, Plus, Upload } from "lucide-react";
+import {
+	activeCanvasItemsStore,
+	importCanvasToLibrary,
+	savedCanvasesStore,
+	startNewCanvas,
+} from "../../../shared/store/canvasStore";
 import { useToast } from "../../../shared/hooks/useToast";
 import { Toast } from "../../../shared/components/Toast";
 import BoardCard from "./BoardCard";
@@ -19,6 +24,20 @@ export default function BoardsManager() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleImportClick = () => fileInputRef.current?.click();
+
+	// Start a brand-new empty board. Warn first if the active canvas has unsaved
+	// items so the user does not lose in-progress work.
+	const handleNewBoard = () => {
+		const hasUnsaved = activeCanvasItemsStore.get().length > 0;
+		if (
+			hasUnsaved &&
+			!confirm("Se descartará el lienzo actual sin guardar. ¿Crear un tablero nuevo?")
+		) {
+			return;
+		}
+		startNewCanvas();
+		window.location.href = "/explore";
+	};
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -41,13 +60,23 @@ export default function BoardsManager() {
 					Mis Tableros ({boards.length})
 				</p>
 
-				<button
-					onClick={handleImportClick}
-					className="bg-df-primary flex cursor-pointer items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-				>
-					<Upload className="h-4 w-4" aria-hidden="true" />
-					Importar JSON
-				</button>
+				<div className="flex items-center gap-2">
+					<button
+						onClick={handleNewBoard}
+						className="bg-df-primary flex cursor-pointer items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Nuevo tablero
+					</button>
+
+					<button
+						onClick={handleImportClick}
+						className="text-df-ink dark:text-df-ink-dark flex cursor-pointer items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-70"
+					>
+						<Upload className="h-4 w-4" aria-hidden="true" />
+						Importar JSON
+					</button>
+				</div>
 
 				<input
 					type="file"
@@ -67,12 +96,13 @@ export default function BoardsManager() {
 						un tablero desde un archivo JSON.
 					</p>
 					<div className="mt-2 flex gap-3">
-						<a
-							href="/design"
-							className="bg-df-primary cursor-pointer rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+						<button
+							onClick={handleNewBoard}
+							className="bg-df-primary flex cursor-pointer items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
 						>
-							Ir al editor
-						</a>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Crear tablero nuevo
+						</button>
 						<button
 							onClick={handleImportClick}
 							className="text-df-ink dark:text-df-ink-dark cursor-pointer rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-70"

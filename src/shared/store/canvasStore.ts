@@ -100,6 +100,15 @@ export const savedCanvasesStore = persistentAtom<SavedCanvas[]>("vc-saved-canvas
 // Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Reset the active canvas to a blank state so the user can start a brand-new
+ * board. Does not touch the saved list nor the Explore image selection.
+ */
+export function startNewCanvas(): void {
+	activeCanvasConfigStore.set({ ...DEFAULT_CONFIG });
+	activeCanvasItemsStore.set([]);
+}
+
 /** Save the current active canvas to the saved list */
 export function saveCurrentCanvas(thumbnail?: string): SavedCanvas {
 	const config = activeCanvasConfigStore.get();
@@ -132,6 +141,28 @@ export function saveCurrentCanvas(thumbnail?: string): SavedCanvas {
 	const capped = [newCanvas, ...saved].slice(0, 20);
 	savedCanvasesStore.set(capped);
 	return newCanvas;
+}
+
+/**
+ * Persist the active canvas automatically (used when advancing to the Export
+ * step without pressing "Guardar"). Skips empty boards, and gives an unnamed
+ * board a stable name up-front so repeated auto-saves update the same entry
+ * instead of creating duplicates. Returns the saved board, or null if there
+ * was nothing to save.
+ */
+export function autoSaveActiveCanvas(thumbnail?: string): SavedCanvas | null {
+	const items = activeCanvasItemsStore.get();
+	if (items.length === 0) return null;
+
+	const config = activeCanvasConfigStore.get();
+	if (!config.name.trim()) {
+		activeCanvasConfigStore.set({
+			...config,
+			name: `Lienzo ${new Date().toLocaleDateString("es-MX")}`,
+		});
+	}
+
+	return saveCurrentCanvas(thumbnail);
 }
 
 /** Load a saved canvas into the active stores */

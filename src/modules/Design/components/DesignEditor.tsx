@@ -10,6 +10,7 @@ import {
 	activeCanvasItemsStore,
 	addItem,
 	bringToFront,
+	autoSaveActiveCanvas,
 	saveCurrentCanvas,
 	sendToBack,
 	updateItem,
@@ -88,13 +89,18 @@ export default function DesignEditor() {
 		}
 	};
 
+	const captureThumbnail = (): string | undefined =>
+		stageRef?.current ? stageRef.current.toDataURL({ pixelRatio: 0.5 }) : undefined;
+
 	const handleSave = () => {
-		let thumbnail = undefined;
-		if (stageRef?.current) {
-			thumbnail = stageRef.current.toDataURL({ pixelRatio: 0.5 });
-		}
-		saveCurrentCanvas(thumbnail);
+		saveCurrentCanvas(captureThumbnail());
 		showToast("Lienzo guardado exitosamente.");
+	};
+
+	// Auto-save (unless empty) before advancing to the Export step.
+	const handleGoExport = () => {
+		autoSaveActiveCanvas(captureThumbnail());
+		window.location.href = "/export";
 	};
 
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -133,6 +139,7 @@ export default function DesignEditor() {
 
 				<DesignActionBar
 					onSave={handleSave}
+					onExport={handleGoExport}
 					isCanvasView={viewMode === "canvases"}
 					onToggleView={toggleDesignViewMode}
 				/>
