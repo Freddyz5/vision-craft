@@ -56,6 +56,7 @@ const links = [
 	const btn = document.getElementById("landing-theme-toggle");
 	btn?.addEventListener("click", () => {
 		const isDark = document.documentElement.classList.toggle("dark");
+		document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
 		localStorage.setItem("df-theme", isDark ? "dark" : "light");
 	});
 </script>

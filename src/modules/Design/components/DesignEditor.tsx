@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ImagesTray } from "./ImagesTray";
 import { KonvaCanvas } from "./KonvaCanvas";
 import { ZoomControls } from "./ZoomControls";
@@ -15,9 +15,17 @@ import {
 	updateItem,
 	removeItem,
 } from "../../../shared/store/canvasStore";
+import {
+	historyPastStore,
+	historyFutureStore,
+	undo,
+	redo,
+	resetHistory,
+} from "../../../shared/store/canvasHistory";
 import { designViewModeStore, toggleDesignViewMode } from "../../../shared/store/designViewStore";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
+import { useUndoRedoShortcuts } from "../hooks/useUndoRedoShortcuts";
 import { Toast } from "../../../shared/components/Toast";
 import type { SelectedItemId } from "../types";
 import type Konva from "konva";
@@ -28,9 +36,14 @@ export default function DesignEditor() {
 	const config = useStore(activeCanvasConfigStore);
 	const items = useStore(activeCanvasItemsStore);
 	const viewMode = useStore(designViewModeStore);
+	const canUndo = useStore(historyPastStore).length > 0;
+	const canRedo = useStore(historyFutureStore).length > 0;
 
 	const [zoom, setZoom] = useState(1);
 	const { toastMessage, showToast } = useToast();
+
+	useUndoRedoShortcuts();
+	useEffect(() => resetHistory(), []);
 
 	// Convert canvas config to logical pixels
 	const logicalWidth = config.widthMm * MM_TO_PX;
@@ -133,6 +146,10 @@ export default function DesignEditor() {
 
 				<DesignActionBar
 					onSave={handleSave}
+					onUndo={undo}
+					onRedo={redo}
+					canUndo={canUndo}
+					canRedo={canRedo}
 					isCanvasView={viewMode === "canvases"}
 					onToggleView={toggleDesignViewMode}
 				/>
