@@ -3,7 +3,7 @@ import StudioLayout from "../../shared/components/StudioLayout.astro";
 import PageHeader from "../../shared/components/PageHeader.astro";
 import PageFooter from "../../shared/components/PageFooter.astro";
 import ImagesGallery from "./components/ImagesGallery";
-import HeaderUploadButton from "./components/HeaderUploadButton";
+import HeaderAddImages from "./components/HeaderAddImages";
 ---
 
 <StudioLayout activeItem="explore">
@@ -16,7 +16,7 @@ import HeaderUploadButton from "./components/HeaderUploadButton";
 				highlight="Imágenes."
 				class="mb-8 flex w-full justify-between"
 			>
-				<HeaderUploadButton client:load />
+				<HeaderAddImages client:load />
 			</PageHeader>
 		</div>
 
