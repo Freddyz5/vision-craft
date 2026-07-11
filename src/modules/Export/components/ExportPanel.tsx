@@ -177,7 +177,7 @@ export default function ExportPanel() {
 	};
 
 	return (
-		<section className="flex flex-1 items-start gap-8 px-8 pb-10">
+		<section className="flex flex-1 flex-col gap-8 px-4 pb-10 sm:px-8 lg:flex-row lg:items-start">
 			<ExportCanvasPreview
 				config={config}
 				items={items}
@@ -195,7 +195,7 @@ export default function ExportPanel() {
 			/>
 
 			{/* Right Area - Sidebar */}
-			<aside className="bg-df-surface dark:bg-df-surface-dark/70 border-df-primary/30 sticky top-24 -mt-65 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-scroll rounded-3xl border-2 p-5 backdrop-blur-sm">
+			<aside className="bg-df-surface dark:bg-df-surface-dark/70 border-df-primary/30 w-full shrink-0 space-y-4 rounded-3xl border-2 p-5 backdrop-blur-sm lg:sticky lg:top-24 lg:-mt-65 lg:h-[calc(100vh-8rem)] lg:w-96 lg:overflow-y-scroll">
 				<div className="space-y-10">
 					<ExportPrintOptions
 						exportMode={exportMode}
