@@ -5,28 +5,50 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* ════════════════════════════════════════
+	/* ════════════════════════════════════════
      Dream & Focus — Light tokens
      ════════════════════════════════════════ */
-  --color-df-primary:   #7C3AED;   /* violeta moderno */
-  --color-df-secondary: #F59E0B;   /* ámbar */
-  --color-df-bg:        #F9FAFB;   /* fondo */
-  --color-df-surface:   #FFFFFF;   /* cards */
-  --color-df-ink:       #111827;   /* texto principal */
-  --color-df-muted:     #6B7280;   /* texto secundario */
-  --color-df-accent:    #14B8A6;   /* turquesa */
+	--color-df-primary: #7c3aed; /* violeta moderno */
+	--color-df-secondary: #f59e0b; /* ámbar */
+	--color-df-bg: #f9fafb; /* fondo */
+	--color-df-surface: #ffffff; /* cards */
+	--color-df-ink: #111827; /* texto principal */
+	--color-df-muted: #6b7280; /* texto secundario */
+	--color-df-accent: #14b8a6; /* turquesa */
 
-  /* ════════════════════════════════════════
+	/* ════════════════════════════════════════
      Dream & Focus — Dark tokens
      ════════════════════════════════════════ */
-  --color-df-primary-dark:   #A78BFA;   /* violeta suave */
-  --color-df-secondary-dark: #FBBF24;   /* ámbar brillante */
-  --color-df-bg-dark:        #0F172A;   /* fondo oscuro */
-  --color-df-surface-dark:   #1E293B;   /* superficie */
-  --color-df-ink-dark:       #F9FAFB;   /* texto claro */
-  --color-df-muted-dark:     #94A3B8;   /* texto secundario */
-  --color-df-accent-dark:    #2DD4BF;   /* turquesa claro */
+	--color-df-primary-dark: #a78bfa; /* violeta suave */
+	--color-df-secondary-dark: #fbbf24; /* ámbar brillante */
+	--color-df-bg-dark: #0f172a; /* fondo oscuro */
+	--color-df-surface-dark: #1e293b; /* superficie */
+	--color-df-ink-dark: #f9fafb; /* texto claro */
+	--color-df-muted-dark: #94a3b8; /* texto secundario */
+	--color-df-accent-dark: #2dd4bf; /* turquesa claro */
 
-  /* ── Typography ── */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	/* ── Typography ── */
+	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+	/* ── Ring "sonar ping" pulse (Uiverse-style box-shadow pulse) ── */
+	--animate-ring-pulse: ring-pulse 1.5s ease-out infinite;
+}
+
+:root {
+	--ring-pulse-color: rgb(124 58 237 / 0.6);
+	--ring-pulse-color-end: rgb(124 58 237 / 0);
+}
+
+.dark {
+	--ring-pulse-color: rgb(167 139 250 / 0.6);
+	--ring-pulse-color-end: rgb(167 139 250 / 0);
+}
+
+@keyframes ring-pulse {
+	0% {
+		box-shadow: 0 0 0 0 var(--ring-pulse-color);
+	}
+	100% {
+		box-shadow: 0 0 0 28px var(--ring-pulse-color-end);
+	}
 }

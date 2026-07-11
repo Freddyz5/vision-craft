@@ -1,60 +1,53 @@
 ---
+import { Sun, Moon, LayoutGrid } from "lucide-astro";
+import StepperNav from "./StepperNav";
 
+const { activeItem } = Astro.props;
+
+const isBoards = activeItem === "boards";
 ---
 
 <header
-	class="fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-6 gap-8
-         bg-df-surface/90 dark:bg-df-surface-dark/90 backdrop-blur-sm
-         border-b border-gray-200/80 dark:border-gray-800/80">
+	class="bg-df-surface/20 dark:bg-df-surface-dark/20 fixed top-0 right-0 left-0 z-50 flex h-14 items-center gap-3 border-b border-gray-200/80 px-3 backdrop-blur-sm md:gap-8 md:px-6 dark:border-gray-800/80"
+>
 	<!-- Logo -->
 	<a
 		href="/"
-		class="text-df-primary dark:text-df-primary-dark font-bold text-lg tracking-tight shrink-0"
-		aria-label="Vision Craft home">
+		class="text-df-primary dark:text-df-primary-dark shrink-0 text-base font-bold tracking-tight md:text-lg"
+		aria-label="Vision Craft home"
+	>
 		Vision Craft
 	</a>
 
+	<StepperNav activeItem={activeItem} client:load />
+
 	<!-- Right-side actions -->
 	<div class="ml-auto flex items-center gap-1">
+		<!-- Boards / Tableros -->
+		<a
+			href="/boards"
+			aria-current={isBoards ? "page" : undefined}
+			class={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+				isBoards
+					? "bg-df-primary dark:bg-df-primary-dark text-white"
+					: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+			}`}
+		>
+			<LayoutGrid class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<span class="hidden sm:inline">Tableros</span>
+		</a>
+
 		<!-- Theme toggle -->
 		<button
 			id="theme-toggle"
 			aria-label="Toggle dark mode"
-			class="p-2 rounded-full text-df-muted dark:text-df-muted-dark
-             hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+			class="text-df-muted dark:text-df-muted-dark rounded-full p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+		>
 			<!-- Sun (visible in dark mode) -->
-			<svg
-				class="hidden dark:block w-5 h-5"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				stroke-width="2"
-				aria-hidden="true">
-				<circle cx="12" cy="12" r="4"></circle>
-				<path
-					d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-				></path>
-			</svg>
+			<Sun class="hidden h-5 w-5 dark:block" aria-hidden="true" />
 			<!-- Moon (visible in light mode) -->
-			<svg
-				class="block dark:hidden w-5 h-5"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				stroke-width="2"
-				aria-hidden="true">
-				<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-			</svg>
+			<Moon class="block h-5 w-5 dark:hidden" aria-hidden="true" />
 		</button>
-
-		<!-- Avatar -->
-		<!-- <button
-			aria-label="Open user profile"
-			class="ml-1 w-8 h-8 rounded-full overflow-hidden ring-2 ring-df-primary/30 dark:ring-df-primary-dark/30
-             bg-gradient-to-br from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark
-             flex items-center justify-center text-white text-sm font-bold">
-			F
-		</button> -->
 	</div>
 </header>
 

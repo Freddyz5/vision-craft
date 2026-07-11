@@ -1,19 +1,5 @@
 import React from "react";
-
-const IconChevronRight = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="16"
-		height="16"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="2"
-		strokeLinecap="round"
-		strokeLinejoin="round">
-		<polyline points="9 18 15 12 9 6"></polyline>
-	</svg>
-);
+import { ChevronRight } from "lucide-react";
 
 const ExportOptionsButton = ({
 	name,
@@ -29,27 +15,24 @@ const ExportOptionsButton = ({
 	return (
 		<button
 			className={[
-				"w-full flex items-center gap-2 p-4 justify-between rounded-2xl border-2 transition-all duration-200 text-left cursor-pointer outline-none",
-				"border-gray-200 dark:border-gray-700 bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 hover:-translate-y-0.5 hover:shadow-md",
+				"flex w-full cursor-pointer items-center justify-between gap-2 rounded-2xl border-2 p-4 text-left transition-all duration-200 outline-none",
+				"bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 border-gray-200 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700",
 			].join(" ")}
-			onClick={onClick}>
-			<article className="flex gap-4 items-center">
-				<div className="p-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg group-hover:scale-110 transition-transform">
+			onClick={onClick}
+		>
+			<article className="flex items-center gap-4">
+				<div className="rounded-lg bg-purple-500/10 p-2 text-purple-600 transition-transform group-hover:scale-110 dark:text-purple-400">
 					{icon}
 				</div>
 
 				<div className="text-left">
-					<span className="block font-bold text-sm text-df-ink dark:text-df-ink-dark">
-						{name}
-					</span>
-					<span className="block text-xs text-df-muted dark:text-df-muted-dark">
-						{description}
-					</span>
+					<span className="text-df-ink dark:text-df-ink-dark block text-sm font-bold">{name}</span>
+					<span className="text-df-muted dark:text-df-muted-dark block text-xs">{description}</span>
 				</div>
 			</article>
 
 			<div className="text-df-muted dark:text-df-muted-dark">
-				<IconChevronRight />
+				<ChevronRight className="h-4 w-4" aria-hidden="true" />
 			</div>
 		</button>
 	);

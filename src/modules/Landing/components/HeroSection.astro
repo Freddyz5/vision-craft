@@ -1,0 +1,100 @@
+---
+
+---
+
+<section id="inicio" class="bg-df-bg dark:bg-df-bg-dark relative flex min-h-[82vh] items-center">
+	<!-- Ambient glow -->
+	<div
+		class="bg-df-primary/10 dark:bg-df-primary-dark/15 pointer-events-none absolute top-1/2 right-0 h-175 w-175 -translate-y-1/2 rounded-full blur-3xl"
+		aria-hidden="true"
+	>
+	</div>
+	<div
+		class="bg-df-accent/10 dark:bg-df-accent-dark/10 pointer-events-none absolute top-1/3 right-1/4 h-64 w-64 rounded-full blur-2xl"
+		aria-hidden="true"
+	>
+	</div>
+
+	<div class="relative mx-auto flex w-full max-w-6xl items-center gap-12 px-4 sm:px-8">
+		<!-- Left: copy -->
+		<div class="max-w-xl flex-1">
+			<p
+				class="text-df-accent dark:text-df-accent-dark border-df-accent/30 dark:border-df-accent-dark/30 mb-5 inline-block rounded-full border px-3 py-1 text-[10px] font-bold tracking-[0.25em] uppercase"
+			>
+				Explora · Lienzo · Diseña · Exporta
+			</p>
+			<h1
+				class="text-df-ink dark:text-df-ink-dark mb-5 text-4xl leading-[1.05] font-black sm:text-5xl lg:text-6xl"
+			>
+				Crea tu<br />
+				<span class="text-df-primary dark:text-df-primary-dark">vision board</span><br />
+				listo para imprimir.
+			</h1>
+			<p class="text-df-muted dark:text-df-muted-dark mb-6 max-w-md text-base leading-relaxed">
+				Busca imágenes en Unsplash y Pexels, elige el tamaño de tu lienzo y arrástralas para
+				componer tu board. Exporta en PNG o JPG en alta resolución, o imprímelo como póster en
+				varias hojas.
+			</p>
+			<div class="flex flex-wrap items-center gap-3">
+				<a
+					href="/explore"
+					class="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 flex items-center gap-2 rounded-full bg-linear-to-r px-8 py-3 text-lg font-bold text-white shadow-2xl transition-all duration-150 hover:opacity-90 active:scale-95"
+				>
+					Crear mi primer board
+				</a>
+			</div>
+			<p
+				class="text-df-muted dark:text-df-muted-dark mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+			>
+				<span>Sin registro</span>
+				<span aria-hidden="true">·</span>
+				<span>Todo se guarda en tu navegador</span>
+				<span aria-hidden="true">·</span>
+				<span>Unsplash &amp; Pexels</span>
+			</p>
+		</div>
+
+		<!-- Right: visual element -->
+		<div class="relative hidden h-105 w-105 flex-none lg:block" aria-hidden="true">
+			<!-- Light mode: daytime lens photo -->
+			<div class="relative block h-full w-full dark:hidden">
+				<!-- Glow: same photo, blurred and bled outside the circle -->
+				<img
+					src="/day_lens.webp"
+					alt=""
+					class="absolute inset-0 h-full w-full scale-110 rounded-full object-cover object-[55%_35%] opacity-70 blur-3xl"
+				/>
+				<div
+					class="relative h-full w-full overflow-hidden rounded-full border-4 border-cyan-700/20"
+				>
+					<img
+						src="/day_lens.webp"
+						alt=""
+						class="h-full w-full object-cover object-[55%_35%]"
+						loading="eager"
+					/>
+				</div>
+			</div>
+
+			<!-- Dark mode: nighttime lens photo -->
+			<div class="relative hidden h-full w-full dark:block">
+				<!-- Glow: same photo, blurred and bled outside the circle -->
+				<img
+					src="/night_lens.webp"
+					alt=""
+					class="absolute inset-0 h-full w-full scale-125 rounded-full object-cover object-[40%_50%] opacity-80 blur-3xl"
+				/>
+				<div
+					class="relative h-full w-full overflow-hidden rounded-full border-4 border-gray-900/30"
+				>
+					<img
+						src="/night_lens.webp"
+						alt=""
+						class="h-full w-full scale-125 object-cover object-[40%_50%]"
+						loading="eager"
+					/>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

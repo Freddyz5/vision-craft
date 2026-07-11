@@ -1,0 +1,29 @@
+---
+import StudioLayout from "../../shared/components/StudioLayout.astro";
+import PageFooter from "../../shared/components/PageFooter.astro";
+import BoardsManager from "./components/BoardsManager";
+---
+
+<StudioLayout activeItem="boards">
+	<header class="mb-8 px-4 py-6 pb-0 sm:px-8 sm:py-10">
+		<p
+			class="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+		>
+			Tus Tableros
+		</p>
+		<h1
+			class="text-df-ink dark:text-df-ink-dark text-3xl leading-[1.1] font-extrabold sm:text-4xl lg:text-5xl"
+		>
+			Mis<br />
+			<span class="text-df-primary dark:text-df-primary-dark"> Tableros. </span>
+		</h1>
+		<p class="text-df-muted dark:text-df-muted-dark mt-3 max-w-md text-sm leading-relaxed">
+			Aquí viven todos los tableros que has creado. Ábrelos en el editor, duplícalos, descárgalos
+			como JSON para respaldarlos o compartirlos, e importa tableros desde un archivo JSON.
+		</p>
+	</header>
+
+	<BoardsManager client:load />
+
+	<PageFooter />
+</StudioLayout>

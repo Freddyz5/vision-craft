@@ -1,0 +1,15 @@
+---
+import TopNav from "./TopNav.astro";
+
+interface Props {
+	activeItem: string;
+}
+
+const { activeItem } = Astro.props;
+---
+
+<TopNav activeItem={activeItem} />
+
+<main class="bg-df-bg dark:bg-df-bg-dark flex min-h-screen flex-col pt-14">
+	<slot />
+</main>

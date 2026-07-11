@@ -1,0 +1,109 @@
+---
+import { Github } from "lucide-astro";
+
+const year = new Date().getFullYear();
+
+const productLinks = [
+	{ label: "Explora", href: "/explore" },
+	{ label: "Lienzo", href: "/canvas" },
+	{ label: "Diseña", href: "/design" },
+	{ label: "Exporta", href: "/export" },
+];
+
+const projectLinks = [
+	{ label: "Funciones", href: "#features" },
+	{ label: "Cómo funciona", href: "#gallery" },
+	{ label: "Roadmap", href: "#roadmap" },
+	{ label: "Código fuente", href: "https://github.com/Freddyz5/vision-craft" },
+];
+---
+
+<footer
+	class="bg-df-surface dark:bg-df-surface-dark border-t border-gray-200 px-4 pt-12 pb-8 sm:px-8 dark:border-gray-800"
+>
+	<div class="mx-auto max-w-5xl">
+		<div class="mb-10 grid grid-cols-1 gap-8 sm:grid-cols-3">
+			<!-- Brand -->
+			<div class="col-span-1">
+				<p class="mb-2 text-base font-extrabold">
+					<span class="text-df-primary dark:text-df-primary-dark">Vision</span><span
+						class="text-df-ink dark:text-df-ink-dark">Craft</span
+					>
+				</p>
+				<p class="text-df-muted dark:text-df-muted-dark mb-4 text-xs leading-relaxed">
+					Explora imágenes, diseña tu lienzo y exporta en alta calidad para compartir o imprimir.
+				</p>
+				<a
+					href="https://github.com/Freddyz5/vision-craft"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-df-muted dark:text-df-muted-dark hover:bg-df-primary/10 dark:hover:bg-df-primary-dark/10 hover:text-df-primary dark:hover:text-df-primary-dark flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors dark:bg-gray-800"
+					aria-label="Código fuente en GitHub"
+				>
+					<Github class="h-3.5 w-3.5" aria-hidden="true" />
+				</a>
+			</div>
+
+			<!-- Product -->
+			<div>
+				<h3
+					class="text-df-muted dark:text-df-muted-dark mb-4 text-[10px] font-bold tracking-[0.2em] uppercase"
+				>
+					Producto
+				</h3>
+				<ul class="space-y-2.5">
+					{
+						productLinks.map(({ label, href }) => (
+							<li>
+								<a
+									href={href}
+									class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-xs transition-colors"
+								>
+									{label}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			<!-- About the project -->
+			<div>
+				<h3
+					class="text-df-muted dark:text-df-muted-dark mb-4 text-[10px] font-bold tracking-[0.2em] uppercase"
+				>
+					Proyecto
+				</h3>
+				<ul class="space-y-2.5">
+					{
+						projectLinks.map(({ label, href }) => (
+							<li>
+								<a
+									href={href}
+									class="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark text-xs transition-colors"
+								>
+									{label}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+
+		<div
+			class="flex flex-col items-center justify-between gap-3 border-t border-gray-100 pt-6 sm:flex-row dark:border-gray-800"
+		>
+			<small
+				class="text-df-muted dark:text-df-muted-dark text-[10px] font-semibold tracking-[0.15em] uppercase not-italic"
+			>
+				&copy; {year} Vision Craft. Proyecto en desarrollo activo.
+			</small>
+			<p
+				class="text-df-muted dark:text-df-muted-dark text-[10px] font-semibold tracking-[0.15em] uppercase"
+			>
+				Astro · React · Konva
+			</p>
+		</div>
+	</div>
+</footer>

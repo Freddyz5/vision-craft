@@ -1,0 +1,50 @@
+---
+import { LINKS } from "../constants/links";
+
+interface Props {
+	/** Same id used across the flow, e.g. "canvas" — matches LINKS[].id */
+	activeItem: string;
+	/** First line of the heading */
+	title: string;
+	/** Second, accent-colored line of the heading */
+	highlight: string;
+	description?: string;
+	class?: string;
+}
+
+const {
+	activeItem,
+	title,
+	highlight,
+	description,
+	class: className = "mb-8 px-4 py-6 pb-0 sm:px-8 sm:py-10",
+} = Astro.props;
+
+const stepIndex = LINKS.findIndex((link) => link.id === activeItem);
+const step = `Paso ${String(stepIndex + 1).padStart(2, "0")} / ${LINKS[stepIndex].name}`;
+---
+
+<header class={className}>
+	<div>
+		<p
+			class="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+		>
+			{step}
+		</p>
+		<h1
+			class="text-df-ink dark:text-df-ink-dark text-3xl leading-[1.1] font-extrabold sm:text-4xl lg:text-5xl"
+		>
+			{title}<br />
+			<span class="text-df-primary dark:text-df-primary-dark"> {highlight} </span>
+		</h1>
+		{
+			description && (
+				<p class="text-df-muted dark:text-df-muted-dark mt-3 max-w-sm text-sm leading-relaxed">
+					{description}
+				</p>
+			)
+		}
+	</div>
+
+	<slot />
+</header>
