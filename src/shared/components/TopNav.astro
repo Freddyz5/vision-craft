@@ -1,8 +1,10 @@
 ---
-import { Sun, Moon } from "lucide-astro";
+import { Sun, Moon, LayoutGrid } from "lucide-astro";
 import StepperNav from "./StepperNav";
 
 const { activeItem } = Astro.props;
+
+const isBoards = activeItem === "boards";
 ---
 
 <header
@@ -21,6 +23,20 @@ const { activeItem } = Astro.props;
 
 	<!-- Right-side actions -->
 	<div class="ml-auto flex items-center gap-1">
+		<!-- Boards / Tableros -->
+		<a
+			href="/boards"
+			aria-current={isBoards ? "page" : undefined}
+			class={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+				isBoards
+					? "bg-df-primary dark:bg-df-primary-dark text-white"
+					: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+			}`}
+		>
+			<LayoutGrid class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<span class="hidden sm:inline">Tableros</span>
+		</a>
+
 		<!-- Theme toggle -->
 		<button
 			id="theme-toggle"
