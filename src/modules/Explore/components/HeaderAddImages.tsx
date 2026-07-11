@@ -33,7 +33,7 @@ export default function HeaderAddImages() {
 	};
 
 	return (
-		<div className="flex w-72 shrink-0 flex-col gap-3">
+		<div className="flex w-full shrink-0 flex-col gap-3 sm:w-72">
 			<UploadDropzone onUploaded={handleUploaded} onError={showToast} className="h-36 w-full" />
 
 			<PasteImageLinkForm onResolved={handleLinkResolved} onError={showToast} />

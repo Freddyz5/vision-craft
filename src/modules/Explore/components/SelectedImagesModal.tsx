@@ -53,9 +53,9 @@ export default function SelectedImagesModal({ isOpen, onClose }: Props) {
 	return (
 		<div className="bg-df-bg/80 dark:bg-df-bg-dark/80 animate-fade-in fixed inset-0 z-100 flex items-center justify-center p-4 backdrop-blur-sm">
 			<div className="bg-df-surface dark:bg-df-surface-dark border-df-border dark:border-df-border-dark flex h-[80vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl">
-				<div className="border-df-border dark:border-df-border-dark flex shrink-0 items-center justify-between border-b p-6">
-					<div>
-						<h2 className="text-df-ink dark:text-df-ink-dark text-2xl font-bold">
+				<div className="border-df-border dark:border-df-border-dark flex shrink-0 items-center justify-between gap-3 border-b p-4 sm:p-6">
+					<div className="min-w-0">
+						<h2 className="text-df-ink dark:text-df-ink-dark text-xl font-bold sm:text-2xl">
 							Imágenes Seleccionadas
 						</h2>
 						<p className="text-df-muted dark:text-df-muted-dark mt-1 text-sm">
@@ -74,7 +74,7 @@ export default function SelectedImagesModal({ isOpen, onClose }: Props) {
 				<div
 					role="tablist"
 					aria-label="Vistas de imágenes"
-					className="border-df-border dark:border-df-border-dark flex shrink-0 gap-2 border-b px-6 pt-4"
+					className="border-df-border dark:border-df-border-dark flex shrink-0 gap-2 overflow-x-auto border-b px-4 pt-4 sm:px-6"
 				>
 					{TABS.map((tab) => (
 						<button
@@ -86,7 +86,7 @@ export default function SelectedImagesModal({ isOpen, onClose }: Props) {
 							aria-controls={`tabpanel-${tab.id}`}
 							onClick={() => setActiveTab(tab.id)}
 							className={[
-								"rounded-t-xl border border-b-0 px-4 py-2 text-sm font-semibold transition-colors",
+								"shrink-0 rounded-t-xl border border-b-0 px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
 								activeTab === tab.id
 									? "bg-df-bg dark:bg-df-bg-dark text-df-primary dark:text-df-primary-dark border-df-border dark:border-df-border-dark"
 									: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark border-transparent",

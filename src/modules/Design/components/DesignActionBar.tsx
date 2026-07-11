@@ -22,7 +22,7 @@ export function DesignActionBar({
 	onToggleView,
 }: DesignActionBarProps) {
 	return (
-		<article className="flex w-full justify-center gap-3">
+		<article className="flex w-full flex-wrap justify-center gap-3">
 			<button
 				onClick={onUndo}
 				disabled={!canUndo}

@@ -90,7 +90,7 @@ export default function StepperNav({ activeItem }: Props) {
 			)}
 
 			{/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Tailwind resetea list-style en todos los ul/ol; sin el rol explícito, Safari/VoiceOver deja de anunciar la semantica de lista. */}
-			<ol className="flex h-full w-[60%] items-center justify-center-safe gap-2" role="list">
+			<ol className="flex h-full w-auto items-center justify-center-safe gap-2" role="list">
 				{LINKS.map((link, index) => {
 					const StepIcon = STEP_ICONS[link.id];
 					const isCurrent = isWizardStep && activeItem === link.id;
@@ -126,7 +126,12 @@ export default function StepperNav({ activeItem }: Props) {
 					);
 
 					return (
-						<li key={link.id} className="flex items-center gap-2">
+						// On small screens only the current step is shown (between the
+						// prev/next arrows); the full stepper appears from lg up.
+						<li
+							key={link.id}
+							className={["items-center gap-2", isCurrent ? "flex" : "hidden lg:flex"].join(" ")}
+						>
 							{isWizardStep ? (
 								<a
 									href={link.href}
@@ -152,7 +157,10 @@ export default function StepperNav({ activeItem }: Props) {
 								</span>
 							)}
 							{index < LINKS.length - 1 && (
-								<span className="h-px w-6 bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+								<span
+									className="hidden h-px w-6 bg-gray-300 lg:block dark:bg-gray-600"
+									aria-hidden="true"
+								/>
 							)}
 						</li>
 					);

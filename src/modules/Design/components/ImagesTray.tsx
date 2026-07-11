@@ -81,7 +81,7 @@ export function ImagesTray({ viewMode = "images", setSelectedId }: ImagesTrayPro
 
 	return (
 		<aside
-			className="bg-df-surface dark:bg-df-surface-dark border-df-primary/20 sticky top-24 -mt-55 h-[calc(100vh-8rem)] w-96 shrink-0 space-y-4 overflow-y-scroll rounded-3xl border-2 p-5 shadow-md"
+			className="bg-df-surface dark:bg-df-surface-dark lg:border-df-primary/20 min-h-0 w-full flex-1 space-y-4 overflow-y-auto p-5 lg:sticky lg:top-24 lg:-mt-55 lg:h-[calc(100vh-8rem)] lg:w-96 lg:flex-none lg:shrink-0 lg:overflow-y-scroll lg:rounded-3xl lg:border-2 lg:shadow-md"
 			aria-label="Bandeja de imagenes"
 		>
 			{viewMode === "canvases" ? (

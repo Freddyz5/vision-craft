@@ -73,7 +73,7 @@ export default function CanvasLivePreview({
 
 	return (
 		<aside
-			className="border-df-primary/30 sticky top-24 -mt-75 w-96 shrink-0 space-y-4 rounded-3xl border-2 bg-gray-100 p-5 dark:bg-[#161f30]"
+			className="border-df-primary/30 w-full shrink-0 space-y-4 rounded-3xl border-2 bg-gray-100 p-5 lg:sticky lg:top-24 lg:-mt-75 lg:w-96 dark:bg-[#161f30]"
 			aria-label="Vista previa del lienzo"
 		>
 			{/* Label */}

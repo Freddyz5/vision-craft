@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { ChevronUp } from "lucide-react";
 import { ImagesTray } from "./ImagesTray";
 import { KonvaCanvas } from "./KonvaCanvas";
 import { ZoomControls } from "./ZoomControls";
@@ -58,6 +59,16 @@ export default function DesignEditor() {
 
 	// Get currently selected item
 	const selectedItem = items.find((i) => i.id === selectedId);
+
+	// Mobile: the tray/inspector is a collapsible bottom sheet. Auto-open it
+	// when an item gets selected so the inspector is visible. Adjusted during
+	// render (not in an effect) to avoid react-hooks/set-state-in-effect.
+	const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+	const [prevSelectedId, setPrevSelectedId] = useState(selectedId);
+	if (selectedId !== prevSelectedId) {
+		setPrevSelectedId(selectedId);
+		if (selectedId) setMobilePanelOpen(true);
+	}
 
 	// Handle Drag & Drop from ImagesTray
 	const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -121,12 +132,12 @@ export default function DesignEditor() {
 	};
 
 	return (
-		<section className="flex flex-1 items-start gap-8 px-8 pb-10">
+		<section className="flex flex-1 flex-col gap-8 px-4 pb-24 sm:px-8 lg:flex-row lg:items-start lg:pb-10">
 			{/* ════ LEFT: Canvas ════ */}
-			<div className="relative min-w-0 flex-1 space-y-8">
+			<div className="relative min-w-0 flex-1 space-y-6 lg:space-y-8">
 				<article
 					ref={containerRef}
-					className="bg-df-surface dark:bg-base-300/20 border-df-primary/10 relative flex min-h-120 flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-8"
+					className="bg-df-surface dark:bg-base-300/20 border-df-primary/10 relative flex min-h-96 flex-1 items-center justify-center overflow-auto rounded-3xl border-2 p-4 lg:min-h-120 lg:p-8"
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}
 				>
@@ -162,29 +173,62 @@ export default function DesignEditor() {
 				/>
 			</div>
 
-			{/* ════ RIGHT: Item Inspector (when selected) or Images Tray ════ */}
-			{selectedId && selectedItem ? (
-				<ItemInspector
-					item={selectedItem}
-					onClose={() => setSelectedId(null)}
-					onUpdate={(patch) => updateItem(selectedItem.id, patch)}
-					onBringToFront={() => {
-						bringToFront(selectedItem.id);
-						showToast("Elemento traído al frente");
-					}}
-					onSendToBack={() => {
-						sendToBack(selectedItem.id);
-						showToast("Elemento enviado al fondo");
-					}}
-					onDelete={() => {
-						removeItem(selectedItem.id);
-						setSelectedId(null);
-						showToast("Elemento eliminado.");
-					}}
+			{/* Mobile backdrop — tap to collapse the bottom sheet. */}
+			{mobilePanelOpen && (
+				<button
+					type="button"
+					aria-label="Cerrar panel"
+					onClick={() => setMobilePanelOpen(false)}
+					className="fixed inset-0 z-30 bg-black/40 lg:hidden"
 				/>
-			) : (
-				<ImagesTray viewMode={viewMode} selectedId={selectedId} setSelectedId={setSelectedId} />
 			)}
+
+			{/* ════ RIGHT: Item Inspector (when selected) or Images Tray ════
+			    Sidebar on lg+ (the wrapper collapses via lg:contents so the
+			    aside inside becomes the flex column). On mobile it's a
+			    collapsible bottom sheet driven by mobilePanelOpen. */}
+			<div
+				className={[
+					"border-df-primary/20 bg-df-surface dark:bg-df-surface-dark fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col rounded-t-3xl border-t-2 shadow-2xl transition-transform duration-300 lg:contents",
+					mobilePanelOpen ? "translate-y-0" : "translate-y-[calc(100%-3.25rem)] lg:translate-y-0",
+				].join(" ")}
+			>
+				<button
+					type="button"
+					onClick={() => setMobilePanelOpen((open) => !open)}
+					aria-expanded={mobilePanelOpen}
+					className="text-df-muted dark:text-df-muted-dark flex shrink-0 items-center justify-between px-5 py-3 text-[10px] font-bold tracking-[0.2em] uppercase lg:hidden"
+				>
+					{selectedId && selectedItem ? "Editar elemento" : "Tus imágenes / lienzos"}
+					<ChevronUp
+						className={`h-4 w-4 transition-transform ${mobilePanelOpen ? "rotate-180" : ""}`}
+						aria-hidden="true"
+					/>
+				</button>
+
+				{selectedId && selectedItem ? (
+					<ItemInspector
+						item={selectedItem}
+						onClose={() => setSelectedId(null)}
+						onUpdate={(patch) => updateItem(selectedItem.id, patch)}
+						onBringToFront={() => {
+							bringToFront(selectedItem.id);
+							showToast("Elemento traído al frente");
+						}}
+						onSendToBack={() => {
+							sendToBack(selectedItem.id);
+							showToast("Elemento enviado al fondo");
+						}}
+						onDelete={() => {
+							removeItem(selectedItem.id);
+							setSelectedId(null);
+							showToast("Elemento eliminado.");
+						}}
+					/>
+				) : (
+					<ImagesTray viewMode={viewMode} selectedId={selectedId} setSelectedId={setSelectedId} />
+				)}
+			</div>
 
 			<Toast message={toastMessage} />
 		</section>
