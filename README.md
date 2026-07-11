@@ -1,7 +1,7 @@
-# 🧠 Vision Board App
+# 🧠 Vision Craft
 
 Una aplicación web para crear **vision boards** de forma rápida, simple y visual.
-Permite buscar imágenes, seleccionarlas, organizarlas en un canvas y exportarlas listas para imprimir.
+Permite buscar (o subir) imágenes, seleccionarlas, organizarlas en un canvas y exportarlas listas para imprimir.
 
 ---
 
@@ -9,11 +9,11 @@ Permite buscar imágenes, seleccionarlas, organizarlas en un canvas y exportarla
 
 Construir una primera versión funcional sin backend que permita:
 
-- Buscar imágenes
+- Buscar imágenes (Unsplash/Pexels), subir las propias o pegar un enlace
 - Seleccionar múltiples imágenes
 - Crear un tablero visual (vision board)
-- Ajustar layout (posición y tamaño)
-- Exportar el resultado (PNG / JSON)
+- Ajustar layout (posición, tamaño, rotación, texto)
+- Exportar el resultado (PNG / JPG / póster para imprimir) y respaldar en JSON
 - Guardar tableros localmente
 
 ---
@@ -81,23 +81,28 @@ src/
       components/
       hooks/
       types.ts
-    Export/            # Paso 4: guardar / imprimir / exportar
+    Export/            # Paso 4: descargar (PNG/JPG) / imprimir (hoja o póster)
       components/
       hooks/
       utils/           # generación del HTML de impresión
       types.ts
+    Boards/            # Biblioteca de tableros guardados + import/export JSON
+      components/
+      types.ts
+    Landing/           # Página de inicio (marketing), solo .astro
+      components/
   shared/
     store/             # nanostores: fuente de verdad del dominio
       canvasStore.ts   # config + items + lienzos guardados (persistente)
       boardStore.ts    # selección de imágenes en Explore (persistente)
       designViewStore.ts
-    components/        # TopNav, AppSidebar, StudioLayout, PageHeader/Footer, Toast
+    components/        # TopNav, StudioLayout, PageHeader/Footer, StepperNav, Toast
     hooks/              # useToast, useContainerScale, useDebounce
     constants/
     utils/
   pages/
     index.astro
-    explore.astro, canvas.astro, design.astro, export.astro
+    explore.astro, canvas.astro, design.astro, export.astro, boards.astro
     api/images.ts      # proxy server-side a Unsplash/Pexels
   layouts/
     Layout.astro
@@ -151,15 +156,17 @@ interface SavedCanvas {
 
 ## 🔄 Flujo de Usuario
 
-1. 🔍 Buscar imágenes
+1. 🔍 Buscar imágenes (Unsplash/Pexels), subir las propias o pegar un enlace
 2. 🖼️ Seleccionar múltiples imágenes
 3. 📐 Definir tamaño del tablero
-4. 🧱 Editar layout (drag & resize)
+4. 🧱 Editar layout (drag, resize, rotación, texto)
 5. 💾 Guardado automático (local)
 6. 📤 Exportar:
 
-   - PNG (para imprimir)
-   - JSON (backup)
+   - PNG o JPG en alta resolución (DPI 150/300)
+   - Imprimir en una hoja o como póster en varias hojas
+
+7. 🗂️ Gestionar tableros guardados en **Boards** (abrir, duplicar, importar/exportar JSON)
 
 ---
 
@@ -175,16 +182,20 @@ Se utiliza `localStorage` mediante `persistentAtom` de nanostores:
 
 ## 📤 Exportación
 
-### Imagen (PNG)
+### Imagen (PNG / JPG)
 
-- Generada desde el canvas
+- Generada desde el canvas (Konva `Stage.toDataURL`) con DPI ajustable (150/300)
 
-### JSON
+### Impresión
+
+- Ajustada a una sola hoja, o como **póster** repartido en varias hojas (ver `buildPrintConfig()` en `Export/types.ts`)
+
+### JSON (en el módulo Boards)
 
 Permite:
 
-- Backup
-- Importar/exportar tableros
+- Backup de cada tablero
+- Importar/exportar tableros como archivo `.json`
 
 ---
 
@@ -201,11 +212,11 @@ Permite:
 
 ### ✅ V1 (MVP)
 
-- [x] Buscar imágenes
+- [x] Buscar imágenes (Unsplash/Pexels), subir propias y pegar enlace
 - [x] Selección múltiple
-- [x] Editor básico (drag & resize)
-- [x] Exportar PNG
-- [x] Guardado local
+- [x] Editor drag & drop (mover, escalar, rotar, texto, capas)
+- [x] Exportar PNG/JPG e imprimir (hoja o póster)
+- [x] Guardado local + biblioteca de tableros (Boards) con import/export JSON
 
 ---
 
