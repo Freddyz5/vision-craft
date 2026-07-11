@@ -108,7 +108,7 @@ export function ItemInspector({
 						<input
 							type="range"
 							min="12"
-							max="120"
+							max="500"
 							value={item.fontSize || 24}
 							onChange={(e) => {
 								const newSize = parseInt(e.target.value);

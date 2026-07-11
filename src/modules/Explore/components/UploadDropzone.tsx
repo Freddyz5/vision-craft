@@ -9,7 +9,7 @@ interface Props {
 	className?: string;
 }
 
-/** Card visual + lógica de subida usada por HeaderUploadButton. */
+/** Card visual + lógica de subida usada por HeaderAddImages. */
 export default function UploadDropzone({
 	onUploaded,
 	onError,
