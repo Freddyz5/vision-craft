@@ -25,20 +25,24 @@ const step = `Paso ${String(stepIndex + 1).padStart(2, "0")} / ${LINKS[stepIndex
 ---
 
 <header class={className}>
-	<p
-		class="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
-	>
-		{step}
-	</p>
-	<h1 class="text-df-ink dark:text-df-ink-dark text-5xl leading-[1.1] font-extrabold">
-		{title}<br />
-		<span class="text-df-primary dark:text-df-primary-dark"> {highlight} </span>
-	</h1>
-	{
-		description && (
-			<p class="text-df-muted dark:text-df-muted-dark mt-3 max-w-sm text-sm leading-relaxed">
-				{description}
-			</p>
-		)
-	}
+	<div>
+		<p
+			class="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+		>
+			{step}
+		</p>
+		<h1 class="text-df-ink dark:text-df-ink-dark text-5xl leading-[1.1] font-extrabold">
+			{title}<br />
+			<span class="text-df-primary dark:text-df-primary-dark"> {highlight} </span>
+		</h1>
+		{
+			description && (
+				<p class="text-df-muted dark:text-df-muted-dark mt-3 max-w-sm text-sm leading-relaxed">
+					{description}
+				</p>
+			)
+		}
+	</div>
+
+	<slot />
 </header>
