@@ -7,6 +7,7 @@ import {
 	savedCanvasesStore,
 	startNewCanvas,
 } from "../../../shared/store/canvasStore";
+import { clearImageSelection } from "../../../shared/store/boardStore";
 import { useToast } from "../../../shared/hooks/useToast";
 import { Toast } from "../../../shared/components/Toast";
 import BoardCard from "./BoardCard";
@@ -25,8 +26,9 @@ export default function BoardsManager() {
 
 	const handleImportClick = () => fileInputRef.current?.click();
 
-	// Start a brand-new empty board. Warn first if the active canvas has unsaved
-	// items so the user does not lose in-progress work.
+	// Start a brand-new empty board: blank canvas + cleared Explore selection.
+	// Warn first if the active canvas has unsaved items so the user does not lose
+	// in-progress work.
 	const handleNewBoard = () => {
 		const hasUnsaved = activeCanvasItemsStore.get().length > 0;
 		if (
@@ -36,6 +38,7 @@ export default function BoardsManager() {
 			return;
 		}
 		startNewCanvas();
+		clearImageSelection();
 		window.location.href = "/explore";
 	};
 
