@@ -275,7 +275,7 @@ export default function ImagesGallery() {
 
 			{/* Floating Bottom Bar for Selected Images */}
 			{selectedImages.length > 0 && (
-				<div className="animate-fade-in-up fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+				<div className="animate-fade-in-up fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
 					<nav
 						className={[
 							"bg-df-surface dark:bg-df-surface-dark dark:shadow-df-primary-dark/10 relative flex items-center gap-4 rounded-full px-4 py-3 shadow-2xl transition-all duration-300",
@@ -315,7 +315,7 @@ export default function ImagesGallery() {
 								)}
 							</div>
 
-							<div className="shrink-0">
+							<div className="hidden shrink-0 sm:block">
 								<p className="text-df-ink dark:text-df-ink-dark text-xs leading-none font-bold tracking-widest uppercase">
 									{selectedImages.length} {selectedImages.length === 1 ? "imagen" : "imágenes"}
 								</p>

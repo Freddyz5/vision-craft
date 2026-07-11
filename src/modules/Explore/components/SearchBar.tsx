@@ -47,10 +47,10 @@ export default function SearchBar({
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="bg-df-surface dark:bg-df-surface-dark border-df-muted dark:border-df-muted-dark flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm"
+			className="bg-df-surface dark:bg-df-surface-dark border-df-muted dark:border-df-muted-dark flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm"
 		>
 			{/* Search input */}
-			<search className="flex min-w-0 flex-1 items-center gap-3">
+			<search className="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-auto">
 				<Search
 					className="text-df-muted dark:text-df-muted-dark h-4.5 w-4.5 shrink-0"
 					aria-hidden="true"
@@ -69,7 +69,10 @@ export default function SearchBar({
 			</search>
 
 			{/* Divider */}
-			<div className="bg-df-border dark:bg-df-border-dark h-5 w-px shrink-0" aria-hidden="true" />
+			<div
+				className="bg-df-border dark:bg-df-border-dark hidden h-5 w-px shrink-0 sm:block"
+				aria-hidden="true"
+			/>
 
 			{/* Provider filters */}
 			<fieldset className="flex shrink-0 items-center gap-4">
