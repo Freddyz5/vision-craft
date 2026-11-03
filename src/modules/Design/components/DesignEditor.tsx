@@ -55,6 +55,7 @@ import { captureStage } from "../../../shared/utils/stageCapture";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import { useEditorShortcuts } from "../hooks/useEditorShortcuts";
 import { useEditorClipboard } from "../hooks/useEditorClipboard";
+import { MAX_SCALE, MIN_SCALE, useViewportNavigation } from "../hooks/useViewportNavigation";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
@@ -77,8 +78,6 @@ import {
 } from "../utils/arrange";
 
 const THUMBNAIL_WIDTH = 320;
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 3;
 const ZOOM_STEP = 1.25;
 /** The floating toolbar clears the Transformer's rotate handle when it sits above an item. */
 const TOOLBAR_GAP_ABOVE = 44;
@@ -198,6 +197,8 @@ export default function DesignEditor() {
 		document.addEventListener("keydown", onKey, true);
 		return () => document.removeEventListener("keydown", onKey, true);
 	}, [croppingId]);
+	const { spaceHeld } = useViewportNavigation({ viewportRef, stageRef, scale, setScale });
+
 	const select = (ids: string[]) => {
 		// Picking something else ends crop mode, keeping the crop.
 		if (croppingId) commitCrop();
@@ -618,7 +619,7 @@ export default function DesignEditor() {
 					/>
 					<div
 						ref={viewportRef}
-						className="relative min-h-0 flex-1 overflow-auto"
+						className={`relative min-h-0 flex-1 overflow-auto ${spaceHeld ? "cursor-grab active:cursor-grabbing" : ""}`}
 						onDrop={handleDrop}
 						onDragOver={(e) => e.preventDefault()}
 					>
