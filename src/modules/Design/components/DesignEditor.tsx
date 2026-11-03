@@ -352,6 +352,7 @@ export default function DesignEditor() {
 											setEditingId(id);
 										}}
 										onInteractionChange={setInteracting}
+										onCopied={select}
 									/>
 									{items.length === 0 && (
 										<p className="text-df-muted pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold">

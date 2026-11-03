@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Stage, Layer, Rect, Line, Group } from "react-konva";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
-import { updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { insertItemCopies, updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 import type { CanvasItemDragHandler } from "../hooks/useCanvasItemInteractions";
 import type { SelectedItemId } from "../types";
@@ -28,6 +29,8 @@ interface KonvaCanvasProps {
 	onEditText: (id: string) => void;
 	/** True while an item is dragged or transformed. */
 	onInteractionChange: (active: boolean) => void;
+	/** Alt+drag made a copy: select it. */
+	onCopied: (id: string) => void;
 }
 
 export function KonvaCanvas({
@@ -42,7 +45,15 @@ export function KonvaCanvas({
 	editingId,
 	onEditText,
 	onInteractionChange,
+	onCopied,
 }: KonvaCanvasProps) {
+	// Alt+drag (Option on Mac): the original stays put, drawn here as a ghost,
+	// while the dragged node becomes the copy on drop.
+	const [altDragId, setAltDragId] = useState<string | null>(null);
+
+	const handleDragStart: CanvasItemDragHandler = (id, e) => {
+		if (e.evt.altKey) setAltDragId(id);
+	};
 	const [snappingLines, setSnappingLines] = useState<{ x: number | null; y: number | null }>({
 		x: null,
 		y: null,
@@ -111,10 +122,17 @@ export function KonvaCanvas({
 		setSnappingLines({ x: null, y: null });
 		onInteractionChange(false);
 		const node = e.target;
-		updateItem(id, {
-			x: node.x() / scaleFactor,
-			y: node.y() / scaleFactor,
-		});
+		const dropped = { x: node.x() / scaleFactor, y: node.y() / scaleFactor };
+		const original = items.find((i) => i.id === id);
+		if (altDragId === id && original) {
+			setAltDragId(null);
+			// Put the original back and add the copy where it was dropped: one write, one undo step.
+			node.position({ x: original.x * scaleFactor, y: original.y * scaleFactor });
+			const [copyId] = insertItemCopies([{ ...original, ...dropped }], 0);
+			if (copyId) onCopied(copyId);
+			return;
+		}
+		updateItem(id, dropped);
 	};
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
@@ -139,18 +157,27 @@ export function KonvaCanvas({
 					/>
 
 					{sortedItems.map((item) => (
-						<KonvaCanvasItem
-							key={item.id}
-							item={item}
-							isSelected={selectedId === item.id}
-							onSelect={setSelectedId}
-							scaleFactor={scaleFactor}
-							onDragMove={handleDragMove}
-							onDragEnd={handleDragEnd}
-							hidden={item.id === editingId}
-							onEditText={onEditText}
-							onInteractionChange={onInteractionChange}
-						/>
+						<React.Fragment key={item.id}>
+							{altDragId === item.id && (
+								<CanvasItemShape
+									item={item}
+									scaleFactor={scaleFactor}
+									interaction={{ listening: false }}
+								/>
+							)}
+							<KonvaCanvasItem
+								item={item}
+								isSelected={selectedId === item.id}
+								onSelect={setSelectedId}
+								scaleFactor={scaleFactor}
+								onDragMove={handleDragMove}
+								onDragStart={handleDragStart}
+								onDragEnd={handleDragEnd}
+								hidden={item.id === editingId}
+								onEditText={onEditText}
+								onInteractionChange={onInteractionChange}
+							/>
+						</React.Fragment>
 					))}
 
 					{/* Print overlay: what the printer will do to the sheet. Never exported. */}

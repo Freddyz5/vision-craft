@@ -27,6 +27,7 @@ interface KonvaCanvasItemProps {
 	scaleFactor: number;
 	onDragMove?: CanvasItemDragHandler;
 	onDragEnd?: CanvasItemDragHandler;
+	onDragStart?: CanvasItemDragHandler;
 	/** Hidden while its text is edited in place over the sheet. */
 	hidden?: boolean;
 	onEditText?: (id: string) => void;
@@ -41,6 +42,7 @@ export function KonvaCanvasItem({
 	scaleFactor,
 	onDragMove,
 	onDragEnd,
+	onDragStart,
 	hidden = false,
 	onEditText,
 	onInteractionChange,
@@ -76,7 +78,10 @@ export function KonvaCanvasItem({
 					onTap: handleSelect,
 					onDblClick: editText,
 					onDblTap: editText,
-					onDragStart: () => onInteractionChange?.(true),
+					onDragStart: (e) => {
+						onInteractionChange?.(true);
+						onDragStart?.(item.id, e);
+					},
 					onDragMove: handleDragMove,
 					onDragEnd: handleDragEnd,
 					onTransformStart: () => onInteractionChange?.(true),
