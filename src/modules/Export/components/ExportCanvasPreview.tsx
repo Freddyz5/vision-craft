@@ -5,7 +5,7 @@ import { Image as ImageIcon, Layers, Gauge } from "lucide-react";
 import type { CanvasConfig, CanvasItem } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
-import type { ExportMode, PrintConfig } from "../types";
+import { sheetCount, type ExportMode, type PrintConfig } from "../types";
 import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
 
@@ -60,7 +60,7 @@ export function ExportCanvasPreview({
 				{showPosterMeta && (
 					<div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-gray-900/80 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm dark:bg-black/80">
 						<Layers className="h-3.5 w-3.5" aria-hidden="true" />
-						{transposePrintConfig!.tiles.length} hojas · {selectedPaper.label}{" "}
+						{sheetCount(transposePrintConfig!.tiles.length)} · {selectedPaper.label}{" "}
 						{paperOrientation === "landscape" ? "Horizontal" : "Vertical"}
 					</div>
 				)}

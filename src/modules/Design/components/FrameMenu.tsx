@@ -59,7 +59,7 @@ export function FrameMenu({ item, onChange }: FrameMenuProps) {
 						style={{ backgroundColor: c.value }}
 					/>
 				))}
-				<label className="border-df-hairline dark:border-df-hairline-dark relative ml-auto h-7 w-7 cursor-pointer overflow-hidden rounded-full border bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]">
+				<label className="border-df-hairline dark:border-df-hairline-dark has-focus-visible:outline-df-primary dark:has-focus-visible:outline-df-primary-dark relative ml-auto h-7 w-7 cursor-pointer overflow-hidden rounded-full border bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2">
 					<span className="sr-only">Otro color</span>
 					<input
 						type="color"
@@ -91,10 +91,7 @@ export function FrameMenu({ item, onChange }: FrameMenuProps) {
 								className="accent-df-primary dark:accent-df-primary-dark h-4 w-4"
 							/>
 						</label>
-						<p
-							id={`${hintId}-${key}`}
-							className="text-df-muted dark:text-df-muted-dark text-[11px]"
-						>
+						<p id={`${hintId}-${key}`} className="text-df-muted dark:text-df-muted-dark text-xs">
 							{hint}
 						</p>
 					</div>

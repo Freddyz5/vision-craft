@@ -95,7 +95,7 @@ function NumberField({
 	min?: number;
 }) {
 	return (
-		<label className="text-df-muted dark:text-df-muted-dark flex flex-col gap-1 text-[11px] font-semibold">
+		<label className="text-df-muted dark:text-df-muted-dark flex flex-col gap-1 text-xs font-semibold">
 			{label}
 			<input
 				type="number"

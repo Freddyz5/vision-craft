@@ -7,7 +7,7 @@ import {
 	markActiveCanvasExported,
 } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
-import type { ExportMode } from "../types";
+import { sheetCount, type ExportMode } from "../types";
 import { buildDirectPrintHtml, buildTiledPrintHtml, printHtml } from "../utils/printHelpers";
 import { usePosterPrintConfig } from "../hooks/usePosterPrintConfig";
 import { useWallPreviewCapture } from "../hooks/useWallPreviewCapture";
@@ -26,6 +26,12 @@ import { PrintPreviewModal } from "./PrintPreviewModal";
  * A3 page (the largest sheet offered) stays under Safari's ~16.7 MP canvas cap.
  */
 const PRINT_DPI = 250;
+
+/** Resolves after the browser has painted, e.g. a toast set just before. */
+const nextPaint = () =>
+	new Promise<void>((resolve) =>
+		requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+	);
 
 export default function ExportPanel() {
 	const config = useStore(activeCanvasConfigStore);
@@ -74,28 +80,45 @@ export default function ExportPanel() {
 	// Pages are captured from the preview stage, which draws items with the
 	// editor's own renderer, so crops, shapes and effects print as designed.
 	const printPagesRef = useRef<string[]>([]);
+	const preparingPrintRef = useRef(false);
 
-	const capturePrintPages = (): string[] => {
+	/**
+	 * Each page blocks the main thread while it's drawn, so the toast says
+	 * which one is on and gets a frame to paint before every page.
+	 */
+	const capturePrintPages = async (): Promise<string[]> => {
 		const stage = stageRef.current;
 		if (!stage) return [];
 		const jpeg = { mimeType: "image/jpeg" as const, quality: 0.95 };
 		if (exportMode === "poster" && transposePrintConfig) {
 			const pc = transposePrintConfig;
-			return pc.tiles.map((tile) =>
-				captureStage(stage, {
-					...jpeg,
-					scaleFactor,
-					// Canvas px are printed `canvasScale` times bigger on the tiles.
-					pixelRatio: (PRINT_DPI / 96) * pc.canvasScale,
-					region: {
-						x: tile.offsetXMm * MM_TO_PX,
-						y: tile.offsetYMm * MM_TO_PX,
-						width: pc.pageViewportWidthMm * MM_TO_PX,
-						height: pc.pageViewportHeightMm * MM_TO_PX,
-					},
-				}),
-			);
+			const pages: string[] = [];
+			for (const [i, tile] of pc.tiles.entries()) {
+				if (pc.tiles.length > 1) {
+					showToast(`Preparando la hoja ${i + 1} de ${pc.tiles.length}…`, {
+						tone: "progress",
+						durationMs: 60_000,
+					});
+				}
+				await nextPaint();
+				pages.push(
+					captureStage(stage, {
+						...jpeg,
+						scaleFactor,
+						// Canvas px are printed `canvasScale` times bigger on the tiles.
+						pixelRatio: (PRINT_DPI / 96) * pc.canvasScale,
+						region: {
+							x: tile.offsetXMm * MM_TO_PX,
+							y: tile.offsetYMm * MM_TO_PX,
+							width: pc.pageViewportWidthMm * MM_TO_PX,
+							height: pc.pageViewportHeightMm * MM_TO_PX,
+						},
+					}),
+				);
+			}
+			return pages;
 		}
+		await nextPaint();
 		// Fit-page prints the canvas at fitPageScale (never enlarged).
 		return [
 			captureStage(stage, { ...jpeg, scaleFactor, pixelRatio: (PRINT_DPI / 96) * fitPageScale }),
@@ -137,21 +160,24 @@ export default function ExportPanel() {
 	};
 
 	const handlePrintPreview = async () => {
-		if (exportMode === "image") return;
+		// A second click while pages are still being drawn would draw them twice.
+		if (exportMode === "image" || preparingPrintRef.current) return;
+		preparingPrintRef.current = true;
 		// Capturing big pages blocks for a moment: say so first.
 		showToast("Preparando la impresión…", { tone: "progress", durationMs: 60_000 });
-		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 		try {
-			printPagesRef.current = capturePrintPages();
+			printPagesRef.current = await capturePrintPages();
 		} catch {
 			showToast("No se pudo preparar la impresión.", { tone: "error" });
 			return;
+		} finally {
+			preparingPrintRef.current = false;
 		}
 		dismissToast();
 		printModal.open(
 			buildPrintHtml(printPagesRef.current, false),
 			exportMode === "poster" && transposePrintConfig
-				? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
+				? `Imprimir (${sheetCount(transposePrintConfig.tiles.length)})`
 				: `Imprimir (ajustado a ${selectedPaper.label})`,
 		);
 	};

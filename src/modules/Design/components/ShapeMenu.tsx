@@ -48,7 +48,7 @@ export function ShapeMenu({ shape, onChange, docked }: ShapeMenuProps) {
 						aria-pressed={current === id}
 						onClick={() => pick(id)}
 						className={[
-							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2",
+							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold transition-colors focus-visible:outline-2",
 							current === id
 								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
 								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",

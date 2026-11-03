@@ -1,6 +1,6 @@
 import { Printer } from "lucide-react";
 import type { ExportMode, PrintConfig } from "../types";
-import { PRINT_PAPERS } from "../types";
+import { PRINT_PAPERS, sheetCount } from "../types";
 import type { PaperId, PaperOrientation } from "../hooks/usePosterPrintConfig";
 import ExportModeSelector from "./ExportModeSelector";
 
@@ -174,7 +174,7 @@ export function ExportPrintOptions({
 				>
 					{exportMode === "poster"
 						? transposePrintConfig
-							? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
+							? `Imprimir (${sheetCount(transposePrintConfig.tiles.length)})`
 							: "Imprimir (múltiples hojas)"
 						: `Imprimir en ${selectedPaper.label}`}
 					<Printer className="h-5 w-5" aria-hidden="true" />

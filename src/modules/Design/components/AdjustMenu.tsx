@@ -38,7 +38,7 @@ export function AdjustMenu({ item, onChange }: AdjustMenuProps) {
 						aria-pressed={adjust.filter === look.id}
 						onClick={() => set({ filter: look.id })}
 						className={[
-							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl p-1 text-[11px] font-semibold focus-visible:outline-2",
+							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl p-1 text-xs font-semibold focus-visible:outline-2",
 							adjust.filter === look.id
 								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
 								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",

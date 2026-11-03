@@ -118,7 +118,7 @@ function PanelButton({
 		<button
 			type="button"
 			onClick={onClick}
-			className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2"
+			className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold transition-colors focus-visible:outline-2"
 		>
 			{children}
 			{label}

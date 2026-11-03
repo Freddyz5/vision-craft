@@ -10,6 +10,7 @@ import { MoreMenu } from "./MoreMenu";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
+import { useToolbarRoving } from "../hooks/useToolbarRoving";
 
 const FONTS = [
 	{ value: "Inter", label: "Inter" },
@@ -68,11 +69,13 @@ export function ItemToolbar({
 	const text = !group && isTextItem(item);
 	const docked = variant === "docked";
 	const fontSize = item.fontSize || TEXT_DEFAULTS.fontSize;
+	const toolbarRef = useToolbarRoving<HTMLDivElement>();
 
 	// Anything locked in the selection: the only action is to unlock it.
 	if (items.some((i) => i.locked)) {
 		return (
 			<div
+				ref={toolbarRef}
 				role="toolbar"
 				aria-label="Elemento bloqueado"
 				style={style}
@@ -103,6 +106,7 @@ export function ItemToolbar({
 
 	return (
 		<div
+			ref={toolbarRef}
 			role="toolbar"
 			aria-label={
 				group
@@ -155,7 +159,7 @@ export function ItemToolbar({
 						/>
 						pt
 					</label>
-					<label className="hover:bg-df-well dark:hover:bg-df-well-dark relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full">
+					<label className="hover:bg-df-well dark:hover:bg-df-well-dark has-focus-visible:outline-df-primary dark:has-focus-visible:outline-df-primary-dark relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full has-focus-visible:outline-2">
 						<span
 							className="border-df-hairline dark:border-df-hairline-dark h-5 w-5 rounded-full border-2"
 							style={{ backgroundColor: item.fillColor || TEXT_DEFAULTS.fillColor }}
@@ -261,7 +265,7 @@ function ToolButton({
 			className={[
 				"text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
 				docked
-					? "min-w-14 flex-col gap-1 rounded-xl px-2 text-[11px] font-semibold"
+					? "min-w-14 flex-col gap-1 rounded-xl px-2 text-xs font-semibold"
 					: "h-9 w-9 rounded-full",
 			].join(" ")}
 		>
@@ -299,8 +303,10 @@ export function CropToolbar({
 	style,
 }: CropToolbarProps) {
 	const docked = variant === "docked";
+	const toolbarRef = useToolbarRoving<HTMLDivElement>();
 	return (
 		<div
+			ref={toolbarRef}
 			role="toolbar"
 			aria-label="Recorte"
 			style={style}

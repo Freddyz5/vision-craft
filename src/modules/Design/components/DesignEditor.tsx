@@ -635,7 +635,7 @@ export default function DesignEditor() {
 	);
 
 	return (
-		<div className="grid h-[calc(100dvh-3.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] md:grid-rows-[auto_minmax(0,1fr)]">
+		<div className="grid h-[calc(100dvh-3.5rem)] grid-cols-[minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] md:grid-rows-[auto_minmax(0,1fr)]">
 			<EditorHeader warningCount={warningCount} onOpenList={openListDrawer} />
 
 			<div className="grid min-h-0 md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_20rem]">

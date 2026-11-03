@@ -106,3 +106,10 @@ Pass. The editor reads as one product-specific system: the print list doubles as
 1. **[P2] `/impeccable polish`**: toolbar roving focus, 12 px captions (detector findings).
 2. **[P2] `/impeccable harden`**: per-page progress when capturing large posters for print.
 3. **[P3] `/impeccable polish`**: final pass.
+
+## Follow-up (VC-30, polish)
+
+- Toolbar roving focus: done (`useToolbarRoving`; one Tab stop, ←/→/Inicio/Fin, ↑/↓ never nudge from a focused button).
+- 11 px captions: now 12 px (`text-xs`); detector over `src/modules/Design`, `CanvasItemShape`, `Toast` returns no findings.
+- Print capture feedback: pages are captured one at a time with "Preparando la hoja N de M…".
+- Also fixed: the mobile editor grid grew to the docked toolbar's width (the whole page scrolled sideways at 390 px), and floating popover panels were cut off by the sheet's scroll area near its left edge.
