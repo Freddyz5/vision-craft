@@ -1,6 +1,8 @@
 import type React from "react";
 import { BringToFront, CopyPlus, PenLine, SendToBack, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { AlignMenu } from "./AlignMenu";
+import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 
 const FONTS = [
 	{ value: "Inter", label: "Inter" },
@@ -28,6 +30,8 @@ interface ItemToolbarProps {
 	onRemove: () => void;
 	onEditText: () => void;
 	onDuplicate: () => void;
+	onAlign: (edge: AlignEdge, reference: AlignReference) => void;
+	onDistribute: (axis: DistributeAxis) => void;
 	style?: React.CSSProperties;
 }
 
@@ -44,6 +48,8 @@ export function ItemToolbar({
 	onRemove,
 	onEditText,
 	onDuplicate,
+	onAlign,
+	onDistribute,
 	style,
 }: ItemToolbarProps) {
 	const [item] = items;
@@ -138,11 +144,14 @@ export function ItemToolbar({
 				<SendToBack className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
 			<Divider docked={docked} />
-			{/* Desktop only, per the editor brief; on mobile it waits for "Más en computadora". */}
+			{/* Desktop only, per the editor brief; on mobile they wait for "Más en computadora". */}
 			{!docked && (
-				<ToolButton docked={docked} label={`Duplicar (${modKey()}+D)`} onClick={onDuplicate}>
-					<CopyPlus className="h-4 w-4" aria-hidden="true" />
-				</ToolButton>
+				<>
+					<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
+					<ToolButton docked={docked} label={`Duplicar (${modKey()}+D)`} onClick={onDuplicate}>
+						<CopyPlus className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
+				</>
 			)}
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />

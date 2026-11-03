@@ -23,6 +23,7 @@ import {
 	saveCurrentCanvas,
 	sendItemsToBack,
 	updateItem,
+	updateItems,
 } from "../../../shared/store/canvasStore";
 import { retryCanvasImage } from "../../../shared/store/canvasImages";
 import {
@@ -53,6 +54,13 @@ import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
+import {
+	alignPatches,
+	distributePatches,
+	type AlignEdge,
+	type AlignReference,
+	type DistributeAxis,
+} from "../utils/arrange";
 
 const THUMBNAIL_WIDTH = 320;
 const MIN_SCALE = 0.1;
@@ -336,6 +344,9 @@ export default function DesignEditor() {
 		onRemove: removeSelected,
 		onEditText: () => selectedItem && setEditingId(selectedItem.id),
 		onDuplicate: () => select(duplicateItems(selectedIds)),
+		onAlign: (edge: AlignEdge, reference: AlignReference) =>
+			updateItems(alignPatches(selectedItems, edge, reference, sheet)),
+		onDistribute: (axis: DistributeAxis) => updateItems(distributePatches(selectedItems, axis)),
 	};
 
 	const printList = (
