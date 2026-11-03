@@ -29,7 +29,7 @@ import {
 	updateItem,
 	updateItems,
 } from "../../../shared/store/canvasStore";
-import { retryCanvasImage } from "../../../shared/store/canvasImages";
+import { canvasImagesStore, retryCanvasImage } from "../../../shared/store/canvasImages";
 import {
 	recordUploadedImage,
 	selectedImagesStore,
@@ -58,6 +58,7 @@ import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
+import { collagePatches, type CollageLayout } from "../utils/collage";
 import { copyItems, hasCopiedItems, pasteCopiedItems } from "../utils/editorClipboard";
 import {
 	applyCrop,
@@ -365,6 +366,35 @@ export default function DesignEditor() {
 		updateItems(Object.fromEntries(ids.map((id) => [id, { locked: lock || undefined }])));
 	};
 
+	// ── Collage templates ─────────────────────────────────────────────────
+
+	// The selected photos when there are two or more, else every photo on the
+	// sheet; hidden and locked ones stay where they are.
+	const arrangeable = (list: typeof items) =>
+		list.filter((i) => !isTextItem(i) && !i.hidden && !i.locked);
+	const selectedPhotos = arrangeable(selectedItems);
+	const collageUsesSelection = selectedPhotos.length >= 2;
+	const collageTargets = collageUsesSelection ? selectedPhotos : arrangeable(items);
+	const images = useStore(canvasImagesStore);
+
+	const applyCollage = (layout: CollageLayout) => {
+		if (collageTargets.length < 2) return;
+		updateItems(
+			collagePatches(collageTargets, layout, sheet, (item) => {
+				// The photo's own proportions when loaded, its box's otherwise.
+				const img = item.imageSrc ? images[item.imageSrc] : undefined;
+				return img?.naturalWidth && img.naturalHeight
+					? img.naturalWidth / img.naturalHeight
+					: item.width / item.height;
+			}),
+		);
+		const name = { grid: "en cuadrícula", mosaic: "en mosaico", featured: "con una destacada" }[
+			layout
+		];
+		showToast(`Fotos acomodadas ${name}.`, { action: { label: "Deshacer", onClick: undo } });
+		setMobilePanel(null);
+	};
+
 	// ── Right-click menu (desktop) ────────────────────────────────────────
 
 	// `ids`: what the menu acts on (empty = the bare sheet), fixed when it opens.
@@ -553,7 +583,14 @@ export default function DesignEditor() {
 	);
 
 	const photosPanel = (
-		<PhotosPanel onPickPhoto={handlePickPhoto} onAddText={handleAddText} className="h-full" />
+		<PhotosPanel
+			onPickPhoto={handlePickPhoto}
+			onAddText={handleAddText}
+			templateCount={collageTargets.length}
+			templateUsesSelection={collageUsesSelection}
+			onApplyTemplate={applyCollage}
+			className="h-full"
+		/>
 	);
 
 	return (
