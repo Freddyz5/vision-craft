@@ -12,7 +12,7 @@ import {
 } from "react-konva";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem, type ImageAdjust } from "../store/canvasStore";
 import { useCanvasImage } from "../hooks/useCanvasImage";
-import { EDITOR_ONLY } from "../utils/stageCapture";
+import { EDITOR_ONLY, FILTER_SCREEN_RATIO, FILTER_SOURCE_RATIO } from "../utils/stageCapture";
 import { traceShape } from "../utils/shapePath";
 import { coverRegion, polaroidPhotoBox, type Box } from "../utils/frame";
 
@@ -108,9 +108,10 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 	}
 	const sourceWidth = region?.width ?? 0;
 
-	// Konva only applies filters to a cached node. Cache at the photo's own
-	// resolution (bounded), not the screen's, so a 300 ppp export of a
-	// filtered photo is as sharp as an unfiltered one.
+	// Konva only applies filters to a cached node. While editing it's cached
+	// at screen sharpness, which keeps memory low (several full-resolution
+	// caches can crash mobile Safari); captureStage re-caches filtered photos
+	// at the export's resolution, up to the photo's own, just for the capture.
 	const cacheKey = filters.length
 		? [
 				photoBox.width,
@@ -131,7 +132,11 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 		const capRatio = Math.sqrt(
 			MAX_FILTER_CACHE_PIXELS / Math.max(photoBox.width * photoBox.height, 1),
 		);
-		node.cache({ pixelRatio: Math.min(fullRatio, capRatio) });
+		const sourceRatio = Math.min(fullRatio, capRatio);
+		const screenRatio = Math.min(sourceRatio, window.devicePixelRatio || 1);
+		node.setAttr(FILTER_SOURCE_RATIO, sourceRatio);
+		node.setAttr(FILTER_SCREEN_RATIO, screenRatio);
+		node.cache({ pixelRatio: screenRatio });
 		node.getLayer()?.batchDraw();
 	}, [image, cacheKey, sourceWidth, photoBox.width, photoBox.height]);
 

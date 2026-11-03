@@ -10,6 +10,7 @@ import {
 	type CanvasItem,
 } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
+import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 import type {
 	CanvasItemDragHandler,
@@ -165,6 +166,8 @@ export function KonvaCanvas({
 			window.removeEventListener("mouseup", up);
 		};
 	}, [marqueeActive, stageRef, scaleFactor, items, onMarqueeSelect]);
+
+	const coarsePointer = useMediaQuery("(pointer: coarse)");
 
 	// One Transformer for the whole selection. Items report their Konva node
 	// here; after every render the Transformer is pointed at the selected
@@ -473,7 +476,8 @@ export function KonvaCanvas({
 						borderStroke={GUIDE_COLOR}
 						anchorStroke={GUIDE_COLOR}
 						anchorFill="#FFFFFF"
-						anchorSize={9}
+						// Fingers need bigger handles than a mouse pointer.
+						anchorSize={coarsePointer ? 18 : 9}
 						anchorCornerRadius={2}
 						rotateAnchorOffset={24}
 						enabledAnchors={loneText ? TEXT_ANCHORS : undefined}

@@ -309,7 +309,7 @@ function RowAction({
 			aria-label={label}
 			aria-pressed={pressed}
 			title={label}
-			className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-surface dark:hover:bg-df-surface-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-8 w-8 shrink-0 items-center justify-center rounded-full focus-visible:outline-2"
+			className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-surface dark:hover:bg-df-surface-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 md:h-8 md:w-8"
 		>
 			{children}
 		</button>

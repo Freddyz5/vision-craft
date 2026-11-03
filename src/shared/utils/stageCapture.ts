@@ -6,6 +6,10 @@ import type Konva from "konva";
  */
 export const EDITOR_ONLY = "editor-only";
 
+/** Node attrs set on a filtered photo: its cache ratio at full photo resolution, and on screen. */
+export const FILTER_SOURCE_RATIO = "filterSourceRatio";
+export const FILTER_SCREEN_RATIO = "filterScreenRatio";
+
 interface CaptureStageOptions {
 	/** Stage px per logical px the stage is currently drawn at. */
 	scaleFactor: number;
@@ -28,6 +32,16 @@ export function captureStage(stage: Konva.Stage, options: CaptureStageOptions): 
 		node.visible(),
 	);
 	hidden.forEach((node) => node.visible(false));
+	// Filtered photos are cached at screen sharpness while editing; for the
+	// capture, re-cache them at the output's resolution (never past the
+	// photo's own), then put the light cache back.
+	const outputRatio = pixelRatio / scaleFactor;
+	const filtered = stage
+		.find("Image")
+		.filter((node) => node.isCached() && node.getAttr(FILTER_SOURCE_RATIO));
+	filtered.forEach((node) =>
+		node.cache({ pixelRatio: Math.min(outputRatio, node.getAttr(FILTER_SOURCE_RATIO)) }),
+	);
 	try {
 		const area = {
 			...(region && {
@@ -53,5 +67,6 @@ export function captureStage(stage: Konva.Stage, options: CaptureStageOptions): 
 		return paper.toDataURL(mimeType, quality);
 	} finally {
 		hidden.forEach((node) => node.visible(true));
+		filtered.forEach((node) => node.cache({ pixelRatio: node.getAttr(FILTER_SCREEN_RATIO) }));
 	}
 }

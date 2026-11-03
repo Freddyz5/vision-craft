@@ -299,9 +299,25 @@ export default function DesignEditor() {
 		return () => viewport.removeEventListener("pointerdown", clear);
 	}, []);
 
+	// Tablet drawer: focus moves into it on open and back to its opener on close.
+	const drawerCloseRef = useRef<HTMLButtonElement>(null);
+	const drawerOpenerRef = useRef<HTMLElement | null>(null);
+	const openListDrawer = () => {
+		drawerOpenerRef.current = document.activeElement as HTMLElement | null;
+		setListDrawerOpen(true);
+	};
+	const closeListDrawer = () => {
+		setListDrawerOpen(false);
+		drawerOpenerRef.current?.focus();
+	};
 	useEffect(() => {
 		if (!listDrawerOpen) return;
-		const close = (e: KeyboardEvent) => e.key === "Escape" && setListDrawerOpen(false);
+		drawerCloseRef.current?.focus();
+		const close = (e: KeyboardEvent) => {
+			if (e.key !== "Escape") return;
+			setListDrawerOpen(false);
+			drawerOpenerRef.current?.focus();
+		};
 		window.addEventListener("keydown", close);
 		return () => window.removeEventListener("keydown", close);
 	}, [listDrawerOpen]);
@@ -596,7 +612,7 @@ export default function DesignEditor() {
 
 	return (
 		<div className="grid h-[calc(100dvh-3.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] md:grid-rows-[auto_minmax(0,1fr)]">
-			<EditorHeader warningCount={warningCount} onOpenList={() => setListDrawerOpen(true)} />
+			<EditorHeader warningCount={warningCount} onOpenList={openListDrawer} />
 
 			<div className="grid min-h-0 md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_20rem]">
 				{isTabletUp && (
@@ -710,14 +726,16 @@ export default function DesignEditor() {
 							id="mobile-panel"
 							className="bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute inset-x-0 bottom-0 z-30 flex h-[50dvh] flex-col rounded-t-3xl border-t shadow-[0_-12px_32px_-12px_rgb(17_24_39/0.3)]"
 						>
-							<button
-								type="button"
-								onClick={() => setMobilePanel(null)}
-								aria-label="Cerrar panel"
-								className="text-df-muted dark:text-df-muted-dark hover:bg-df-well dark:hover:bg-df-well-dark absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full"
-							>
-								<X className="h-4 w-4" aria-hidden="true" />
-							</button>
+							<div className="flex shrink-0 justify-end px-2 pt-1">
+								<button
+									type="button"
+									onClick={() => setMobilePanel(null)}
+									aria-label="Cerrar panel"
+									className="text-df-muted dark:text-df-muted-dark hover:bg-df-well dark:hover:bg-df-well-dark flex h-11 w-11 items-center justify-center rounded-full"
+								>
+									<X className="h-4 w-4" aria-hidden="true" />
+								</button>
+							</div>
 							<div className="min-h-0 flex-1">
 								{mobilePanel === "fotos" ? photosPanel : printList}
 							</div>
@@ -777,8 +795,9 @@ export default function DesignEditor() {
 					className="bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark fixed top-14 right-0 bottom-0 z-40 w-80 border-l shadow-[-12px_0_32px_-12px_rgb(17_24_39/0.3)]"
 				>
 					<button
+						ref={drawerCloseRef}
 						type="button"
-						onClick={() => setListDrawerOpen(false)}
+						onClick={closeListDrawer}
 						aria-label="Cerrar la lista"
 						className="text-df-muted dark:text-df-muted-dark hover:bg-df-well dark:hover:bg-df-well-dark absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full"
 					>

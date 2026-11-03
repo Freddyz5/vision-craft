@@ -3,6 +3,7 @@ import type Konva from "konva";
 import { Group, Image as KonvaImage, Rect, Transformer } from "react-konva";
 import type { CanvasItem } from "../../../shared/store/canvasStore";
 import { useCanvasImage } from "../../../shared/hooks/useCanvasImage";
+import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 import { traceShape } from "../../../shared/utils/shapePath";
 import { clampRect, fitAspect, fullImageRect, MIN_CROP, type LocalRect } from "../utils/crop";
@@ -44,6 +45,7 @@ export function CropOverlay({
 	const frameRef = useRef<Konva.Rect>(null);
 	const trRef = useRef<Konva.Transformer>(null);
 	const full = fullImageRect(item);
+	const coarsePointer = useMediaQuery("(pointer: coarse)");
 
 	useEffect(() => {
 		if (frameRef.current) trRef.current?.nodes([frameRef.current]);
@@ -117,7 +119,7 @@ export function CropOverlay({
 					borderEnabled={false}
 					anchorStroke={GUIDE_COLOR}
 					anchorFill="#FFFFFF"
-					anchorSize={10}
+					anchorSize={coarsePointer ? 20 : 10}
 					anchorCornerRadius={2}
 					boundBoxFunc={(oldBox, newBox) =>
 						newBox.width < MIN_CROP * s || newBox.height < MIN_CROP * s ? oldBox : newBox
