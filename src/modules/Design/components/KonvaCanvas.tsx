@@ -14,7 +14,7 @@ import type {
 	CanvasItemDragHandler,
 	CanvasItemSelectHandler,
 } from "../hooks/useCanvasItemInteractions";
-import { SAFE_MARGIN_MM } from "../utils/printChecks";
+import { SAFE_MARGIN_MM, itemBounds } from "../utils/printChecks";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 
 /** Editor accents on the sheet: violet for guides and handles, amber (Marigold) for print warnings. */
@@ -39,6 +39,8 @@ interface KonvaCanvasProps {
 	selectedIds: string[];
 	onSelectItem: CanvasItemSelectHandler;
 	onClearSelection: () => void;
+	/** A drag-select rectangle ended over these items; `additive` keeps the current selection. */
+	onMarqueeSelect: (ids: string[], additive: boolean) => void;
 	scaleFactor: number;
 	/** Items with an open print warning, outlined in amber on the sheet. */
 	warnedIds: Set<string>;
@@ -59,6 +61,7 @@ export function KonvaCanvas({
 	selectedIds,
 	onSelectItem,
 	onClearSelection,
+	onMarqueeSelect,
 	scaleFactor,
 	warnedIds,
 	editingId,
@@ -78,12 +81,63 @@ export function KonvaCanvas({
 		y: null,
 	});
 
+	// Drag-select (desktop): pressing on empty sheet and dragging draws a
+	// rectangle; on release every item it touches is selected.
+	type Marquee = { x0: number; y0: number; x1: number; y1: number; additive: boolean };
+	const [marquee, setMarquee] = useState<Marquee | null>(null);
+	const marqueeRef = useRef<Marquee | null>(null);
+	const marqueeActive = marquee !== null;
+
 	const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
-		// Deselect when clicking on empty area
-		if (e.target === e.target.getStage() || e.target.name() === "background-rect") {
-			onClearSelection();
-		}
+		const stage = e.target.getStage();
+		if (!stage || (e.target !== stage && e.target.name() !== "background-rect")) return;
+		const evt = e.evt as MouseEvent;
+		const additive = !!(evt.shiftKey || evt.metaKey || evt.ctrlKey);
+		if (!additive) onClearSelection();
+		const pos = stage.getPointerPosition();
+		if (e.type !== "mousedown" || evt.button !== 0 || !pos) return;
+		const start = { x0: pos.x, y0: pos.y, x1: pos.x, y1: pos.y, additive };
+		marqueeRef.current = start;
+		setMarquee(start);
 	};
+
+	useEffect(() => {
+		if (!marqueeActive) return;
+		const stage = stageRef.current;
+		const move = (e: MouseEvent) => {
+			if (!stage || !marqueeRef.current) return;
+			stage.setPointersPositions(e);
+			const pos = stage.getPointerPosition();
+			if (!pos) return;
+			marqueeRef.current = { ...marqueeRef.current, x1: pos.x, y1: pos.y };
+			setMarquee(marqueeRef.current);
+		};
+		const up = () => {
+			const m = marqueeRef.current;
+			marqueeRef.current = null;
+			setMarquee(null);
+			// A press without a drag is just a click on empty space.
+			if (!m || (Math.abs(m.x1 - m.x0) < 3 && Math.abs(m.y1 - m.y0) < 3)) return;
+			const left = Math.min(m.x0, m.x1) / scaleFactor;
+			const right = Math.max(m.x0, m.x1) / scaleFactor;
+			const top = Math.min(m.y0, m.y1) / scaleFactor;
+			const bottom = Math.max(m.y0, m.y1) / scaleFactor;
+			const touched = items.filter((item) => {
+				const b = itemBounds(item);
+				return b.maxX >= left && b.minX <= right && b.maxY >= top && b.minY <= bottom;
+			});
+			onMarqueeSelect(
+				touched.map((i) => i.id),
+				m.additive,
+			);
+		};
+		window.addEventListener("mousemove", move);
+		window.addEventListener("mouseup", up);
+		return () => {
+			window.removeEventListener("mousemove", move);
+			window.removeEventListener("mouseup", up);
+		};
+	}, [marqueeActive, stageRef, scaleFactor, items, onMarqueeSelect]);
 
 	// One Transformer for the whole selection. Items report their Konva node
 	// here; after every render the Transformer is pointed at the selected
@@ -281,6 +335,20 @@ export function KonvaCanvas({
 							stroke={GUIDE_COLOR}
 							strokeWidth={1}
 							dash={[4, 4]}
+						/>
+					)}
+
+					{marquee && (
+						<Rect
+							name={EDITOR_ONLY}
+							listening={false}
+							x={Math.min(marquee.x0, marquee.x1)}
+							y={Math.min(marquee.y0, marquee.y1)}
+							width={Math.abs(marquee.x1 - marquee.x0)}
+							height={Math.abs(marquee.y1 - marquee.y0)}
+							fill="rgba(124, 58, 237, 0.08)"
+							stroke={GUIDE_COLOR}
+							strokeWidth={1}
 						/>
 					)}
 

@@ -132,6 +132,9 @@ export default function DesignEditor() {
 		if (editingId && !ids.includes(editingId)) setEditingId(null);
 	};
 	const selectOne = (id: string | null | undefined) => select(id ? [id] : []);
+	/** Drag-select result: replaces the selection, or joins it with Shift/Cmd/Ctrl. */
+	const selectMany = (ids: string[], additive: boolean) =>
+		select(additive ? [...new Set([...selectedIds, ...ids])] : ids);
 	/** Plain click selects just this item; Shift/Cmd/Ctrl+click adds or removes it. */
 	const selectItem = (id: string, additive: boolean) => {
 		if (!additive) return select([id]);
@@ -404,6 +407,7 @@ export default function DesignEditor() {
 										selectedIds={selectedIds}
 										onSelectItem={selectItem}
 										onClearSelection={() => select([])}
+										onMarqueeSelect={selectMany}
 										scaleFactor={scale}
 										warnedIds={warnedIds}
 										editingId={editingId}
