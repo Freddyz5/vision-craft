@@ -5,7 +5,7 @@ import { KonvaCanvasItem } from "./KonvaCanvasItem";
 import {
 	insertItemCopies,
 	isTextItem,
-	updateItem,
+	updateItems,
 	type CanvasItem,
 } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
@@ -49,8 +49,8 @@ interface KonvaCanvasProps {
 	onEditText: (id: string) => void;
 	/** True while an item is dragged or transformed. */
 	onInteractionChange: (active: boolean) => void;
-	/** Alt+drag made a copy: select it. */
-	onCopied: (id: string) => void;
+	/** Alt+drag made copies: select them. */
+	onCopied: (ids: string[]) => void;
 }
 
 export function KonvaCanvas({
@@ -69,12 +69,28 @@ export function KonvaCanvas({
 	onInteractionChange,
 	onCopied,
 }: KonvaCanvasProps) {
-	// Alt+drag (Option on Mac): the original stays put, drawn here as a ghost,
-	// while the dragged node becomes the copy on drop.
-	const [altDragId, setAltDragId] = useState<string | null>(null);
+	// What a drag moves: the whole selection when the dragged item is part of
+	// it (the Transformer carries the other nodes along), else just that item.
+	const dragGroup = (id: string): CanvasItem[] =>
+		selectedIds.includes(id)
+			? items.filter((i) => selectedIds.includes(i.id))
+			: items.filter((i) => i.id === id);
+
+	// Alt+drag (Option on Mac): the originals stay put, drawn here as ghosts,
+	// while the dragged nodes become the copies on drop.
+	const [altDragIds, setAltDragIds] = useState<string[]>([]);
+
+	// The Transformer drags the other selected nodes along by calling their
+	// own startDrag, so every node fires drag events. Only the node the
+	// pointer grabbed (the first dragstart of the gesture) acts on them.
+	const leadDragIdRef = useRef<string | null>(null);
 
 	const handleDragStart: CanvasItemDragHandler = (id, e) => {
-		if (e.evt.altKey) setAltDragId(id);
+		if (leadDragIdRef.current) return;
+		leadDragIdRef.current = id;
+		// Dragging an unselected item makes it the selection, like a click would.
+		if (!selectedIds.includes(id)) onSelectItem(id, false);
+		if (e.evt.altKey) setAltDragIds(dragGroup(id).map((i) => i.id));
 	};
 	const [snappingLines, setSnappingLines] = useState<{ x: number | null; y: number | null }>({
 		x: null,
@@ -165,32 +181,38 @@ export function KonvaCanvas({
 	const loneText =
 		selectedIds.length === 1 && items.some((i) => i.id === selectedIds[0] && isTextItem(i));
 
-	const handleDragMove: CanvasItemDragHandler = (id, e) => {
-		const node = e.target;
-		// Current node coordinates in stage pixels (scaled by scaleFactor)
-		const currentX = node.x();
-		const currentY = node.y();
-		const currentW = node.width() * node.scaleX();
-		const currentH = node.height() * node.scaleY();
+	/** How far (logical px) the dragged node has moved from its stored position. */
+	const dragDelta = (id: string, node: Konva.Node) => {
+		const item = items.find((i) => i.id === id);
+		return item
+			? { dx: node.x() / scaleFactor - item.x, dy: node.y() / scaleFactor - item.y }
+			: null;
+	};
 
-		// Convert current bounds to logical coordinates
-		const logicalX = currentX / scaleFactor;
-		const logicalY = currentY / scaleFactor;
-		const logicalW = currentW / scaleFactor;
-		const logicalH = currentH / scaleFactor;
+	// Snap a single dragged item's bounds (edges and centre) to the sheet's
+	// edges and centre and to the other items, within a few px. Groups don't
+	// snap: their other nodes follow the pointer on their own, so nudging
+	// only the lead would pull the group apart.
+	const handleDragMove: CanvasItemDragHandler = (id, e) => {
+		if (id !== leadDragIdRef.current) return;
+		const node = e.target;
+		const delta = dragDelta(id, node);
+		const group = dragGroup(id);
+		if (!delta || group.length !== 1) return;
+		const b0 = itemBounds(group[0]);
+		const minX = b0.minX + delta.dx;
+		const maxX = b0.maxX + delta.dx;
+		const minY = b0.minY + delta.dy;
+		const maxY = b0.maxY + delta.dy;
 
 		const threshold = 5;
-
 		const pickBestSnap = (dragPoints: number[], targetPoints: number[]) => {
 			let best: { delta: number; guide: number } | null = null;
 			for (const dragPoint of dragPoints) {
 				for (const targetPoint of targetPoints) {
-					const delta = targetPoint - dragPoint;
-					const abs = Math.abs(delta);
-					if (abs > threshold) continue;
-					if (!best || abs < Math.abs(best.delta)) {
-						best = { delta, guide: targetPoint };
-					}
+					const d = targetPoint - dragPoint;
+					if (Math.abs(d) > threshold) continue;
+					if (!best || Math.abs(d) < Math.abs(best.delta)) best = { delta: d, guide: targetPoint };
 				}
 			}
 			return best;
@@ -198,40 +220,76 @@ export function KonvaCanvas({
 
 		const xTargets = [0, logicalWidth / 2, logicalWidth];
 		const yTargets = [0, logicalHeight / 2, logicalHeight];
-
 		for (const other of items) {
 			if (other.id === id) continue;
-			xTargets.push(other.x, other.x + other.width / 2, other.x + other.width);
-			yTargets.push(other.y, other.y + other.height / 2, other.y + other.height);
+			const b = itemBounds(other);
+			xTargets.push(b.minX, (b.minX + b.maxX) / 2, b.maxX);
+			yTargets.push(b.minY, (b.minY + b.maxY) / 2, b.maxY);
 		}
 
-		const xDragPoints = [logicalX, logicalX + logicalW / 2, logicalX + logicalW];
-		const yDragPoints = [logicalY, logicalY + logicalH / 2, logicalY + logicalH];
-
-		const xSnap = pickBestSnap(xDragPoints, xTargets);
-		const ySnap = pickBestSnap(yDragPoints, yTargets);
-
-		if (xSnap) node.x((logicalX + xSnap.delta) * scaleFactor);
-		if (ySnap) node.y((logicalY + ySnap.delta) * scaleFactor);
+		const xSnap = pickBestSnap([minX, (minX + maxX) / 2, maxX], xTargets);
+		const ySnap = pickBestSnap([minY, (minY + maxY) / 2, maxY], yTargets);
+		if (xSnap) node.x(node.x() + xSnap.delta * scaleFactor);
+		if (ySnap) node.y(node.y() + ySnap.delta * scaleFactor);
 
 		setSnappingLines({ x: xSnap?.guide ?? null, y: ySnap?.guide ?? null });
 	};
 
 	const handleDragEnd: CanvasItemDragHandler = (id, e) => {
+		if (id !== leadDragIdRef.current) return;
+		leadDragIdRef.current = null;
 		setSnappingLines({ x: null, y: null });
 		onInteractionChange(false);
-		const node = e.target;
-		const dropped = { x: node.x() / scaleFactor, y: node.y() / scaleFactor };
-		const original = items.find((i) => i.id === id);
-		if (altDragId === id && original) {
-			setAltDragId(null);
-			// Put the original back and add the copy where it was dropped: one write, one undo step.
-			node.position({ x: original.x * scaleFactor, y: original.y * scaleFactor });
-			const [copyId] = insertItemCopies([{ ...original, ...dropped }], 0);
-			if (copyId) onCopied(copyId);
+		// The group moved together, so the lead's offset is everyone's offset.
+		const delta = dragDelta(id, e.target);
+		if (!delta) return;
+		const group = dragGroup(id);
+		const moved = group.map((item) => ({ ...item, x: item.x + delta.dx, y: item.y + delta.dy }));
+
+		if (altDragIds.includes(id)) {
+			setAltDragIds([]);
+			// Put the originals back and add the copies where they were dropped:
+			// one write, one undo step.
+			for (const item of group) {
+				nodesRef.current
+					.get(item.id)
+					?.position({ x: item.x * scaleFactor, y: item.y * scaleFactor });
+			}
+			onCopied(insertItemCopies(moved, 0));
 			return;
 		}
-		updateItem(id, dropped);
+		updateItems(Object.fromEntries(moved.map(({ id, x, y }) => [id, { x, y }])));
+	};
+
+	// Resizing/rotating one or many items: read every attached node back
+	// into the store in a single write.
+	const handleTransformEnd = () => {
+		onInteractionChange(false);
+		const tr = trRef.current;
+		if (!tr) return;
+		const patches: Record<string, Partial<CanvasItem>> = {};
+		for (const node of tr.nodes()) {
+			const item = items.find((i) => i.id === node.id());
+			if (!item) continue;
+			const scaleX = node.scaleX();
+			const scaleY = node.scaleY();
+			// Konva scales the node; the store keeps the real size instead.
+			node.scaleX(1);
+			node.scaleY(1);
+			const patch: Partial<CanvasItem> = {
+				x: node.x() / scaleFactor,
+				y: node.y() / scaleFactor,
+				rotation: node.rotation(),
+				width: item.width * scaleX,
+				height: item.height * scaleY,
+			};
+			// A text box's type grows and shrinks with it instead of re-wrapping.
+			if (isTextItem(item)) {
+				patch.fontSize = Math.max(8, Math.round((item.fontSize || 24) * ((scaleX + scaleY) / 2)));
+			}
+			patches[item.id] = patch;
+		}
+		updateItems(patches);
 	};
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
@@ -257,7 +315,7 @@ export function KonvaCanvas({
 
 					{sortedItems.map((item) => (
 						<React.Fragment key={item.id}>
-							{altDragId === item.id && (
+							{altDragIds.includes(item.id) && (
 								<CanvasItemShape
 									item={item}
 									scaleFactor={scaleFactor}
@@ -354,6 +412,8 @@ export function KonvaCanvas({
 
 					<Transformer
 						ref={trRef}
+						onTransformStart={() => onInteractionChange(true)}
+						onTransformEnd={handleTransformEnd}
 						borderStroke={GUIDE_COLOR}
 						anchorStroke={GUIDE_COLOR}
 						anchorFill="#FFFFFF"

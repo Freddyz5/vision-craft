@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import type Konva from "konva";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
@@ -36,13 +36,11 @@ export function KonvaCanvasItem({
 	onEditText,
 	onInteractionChange,
 }: KonvaCanvasItemProps) {
-	const nodeRef = useRef<Konva.Node>(null);
 	const { id } = item;
 	// A callback ref, so the stage also hears when the node is swapped (e.g.
 	// an image that fails to load becomes a placeholder group).
 	const setNode = useCallback(
 		(node: Konva.Node | null) => {
-			nodeRef.current = node;
 			onNode(id, node);
 		},
 		[id, onNode],
@@ -51,15 +49,13 @@ export function KonvaCanvasItem({
 		if (isTextItem(item)) onEditText?.(item.id);
 	};
 
-	const { handleSelect, handleDragMove, handleDragEnd, handleTransformEnd } =
-		useCanvasItemInteractions({
-			item,
-			scaleFactor,
-			nodeRef,
-			onSelect,
-			onDragMove,
-			onDragEnd,
-		});
+	const { handleSelect, handleDragMove, handleDragEnd } = useCanvasItemInteractions({
+		item,
+		scaleFactor,
+		onSelect,
+		onDragMove,
+		onDragEnd,
+	});
 
 	return (
 		<CanvasItemShape
@@ -79,11 +75,6 @@ export function KonvaCanvasItem({
 				},
 				onDragMove: handleDragMove,
 				onDragEnd: handleDragEnd,
-				onTransformStart: () => onInteractionChange?.(true),
-				onTransformEnd: () => {
-					handleTransformEnd();
-					onInteractionChange?.(false);
-				},
 			}}
 		/>
 	);
