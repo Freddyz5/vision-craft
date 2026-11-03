@@ -20,7 +20,7 @@ import BoardCard from "./BoardCard";
  */
 export default function BoardsManager() {
 	const boards = useStore(savedCanvasesStore);
-	const { toastMessage, showToast } = useToast();
+	const { toast, showToast } = useToast();
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,7 +50,7 @@ export default function BoardsManager() {
 			showToast(`"${imported.name}" importado a tus tableros.`);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : "Archivo inválido.";
-			showToast("Error al importar: " + message);
+			showToast("No se pudo importar: " + message, { tone: "error" });
 		}
 		// Reset so importing the same file twice fires onChange again.
 		if (fileInputRef.current) fileInputRef.current.value = "";
@@ -126,7 +126,7 @@ export default function BoardsManager() {
 				</ul>
 			)}
 
-			<Toast message={toastMessage} />
+			<Toast message={toast?.message ?? null} tone={toast?.tone} />
 		</section>
 	);
 }

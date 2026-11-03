@@ -308,7 +308,7 @@ A button card (16px corners, 2px border) with a 48px Well Gray tile holding the 
 
 ### Toast
 
-Bottom-right, white text on a success fill with a check icon and a large shadow. **Known drift:** it uses DaisyUI's green `alert-success`, which sits outside the palette.
+Bottom-right: an ink pill-ish card (Graphite Ink by day, Slate Surface with a Night Hairline at night) with white text and a 20px icon that carries the tone: a Lagoon check for done, a spinner while something uploads, a red alert icon for a failure. An optional action ("Deshacer", "Ir a Tableros") sits on the right in night violet. It's a `role="status"` live region that stays mounted.
 
 ## Do's and Don'ts
 

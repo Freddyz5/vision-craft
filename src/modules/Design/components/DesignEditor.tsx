@@ -25,6 +25,16 @@ import {
 } from "../../../shared/store/canvasStore";
 import { retryCanvasImage } from "../../../shared/store/canvasImages";
 import {
+	recordUploadedImage,
+	selectedImagesStore,
+	toggleImageSelection,
+} from "../../../shared/store/boardStore";
+import {
+	UPLOAD_NOT_CONFIGURED,
+	uploadToCloudinary,
+	validateImageFile,
+} from "../../Explore/services/cloudinary";
+import {
 	historyFutureStore,
 	historyPastStore,
 	redo,
@@ -118,8 +128,7 @@ export default function DesignEditor() {
 
 	const showRemovedToast = (count: number) =>
 		showToast(count === 1 ? "Elemento quitado." : `${count} elementos quitados.`, {
-			label: "Deshacer",
-			onClick: undo,
+			action: { label: "Deshacer", onClick: undo },
 		});
 
 	useEditorShortcuts({
@@ -129,9 +138,43 @@ export default function DesignEditor() {
 		onSelect: (ids) => select(ids[0] ?? null),
 	});
 
+	// A screenshot or copied photo pasted with Ctrl/Cmd+V: upload it, then place it like a picked photo.
+	const handlePasteImage = async (file: File) => {
+		const invalid = validateImageFile(file);
+		if (invalid) {
+			showToast(invalid, { tone: "error" });
+			return;
+		}
+		showToast("Subiendo la imagen pegada…", { tone: "progress", durationMs: 60_000 });
+		try {
+			const uploaded = await uploadToCloudinary(file);
+			// Screenshots arrive as "image"; name it after how it got here.
+			const photo = { ...uploaded, alt: "Imagen pegada" };
+			recordUploadedImage(photo);
+			if (!selectedImagesStore.get().some((img) => img.imageSrc === photo.imageSrc)) {
+				toggleImageSelection(photo);
+			}
+			const item = newPhotoItem(photo, sheet, activeCanvasItemsStore.get());
+			addItem(item);
+			select(item.id);
+			showToast("Imagen pegada en la hoja.");
+		} catch (err) {
+			// Cloudinary answers in English; keep the message in the product's language.
+			const reason =
+				err instanceof Error && err.message === UPLOAD_NOT_CONFIGURED
+					? err.message
+					: "Revisa tu conexión e inténtalo de nuevo.";
+			showToast(`No se pudo subir la imagen pegada. ${reason}`, {
+				tone: "error",
+				durationMs: 6000,
+			});
+		}
+	};
+
 	useEditorClipboard({
 		selectedIds: selectedId ? [selectedId] : [],
 		onSelect: (ids) => select(ids[0] ?? null),
+		onPasteImage: handlePasteImage,
 	});
 
 	// A press on the empty space around the sheet clears the selection.
@@ -228,7 +271,10 @@ export default function DesignEditor() {
 		if (result.status === "full") {
 			showToast(
 				`Ya tienes ${MAX_SAVED_CANVASES} tableros guardados. Elimina uno para guardar este.`,
-				{ label: "Ir a Tableros", onClick: () => (window.location.href = "/boards") },
+				{
+					tone: "error",
+					action: { label: "Ir a Tableros", onClick: () => (window.location.href = "/boards") },
+				},
 			);
 			return;
 		}
@@ -452,7 +498,12 @@ export default function DesignEditor() {
 				</div>
 			)}
 
-			<Toast message={toast?.message ?? null} action={toast?.action} onDismiss={dismissToast} />
+			<Toast
+				message={toast?.message ?? null}
+				action={toast?.action}
+				tone={toast?.tone}
+				onDismiss={dismissToast}
+			/>
 		</div>
 	);
 }

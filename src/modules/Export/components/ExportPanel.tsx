@@ -54,7 +54,7 @@ export default function ExportPanel() {
 	// Canvas scaling state
 	const containerRef = useRef<HTMLDivElement>(null);
 	const scaleFactor = useContainerScale(containerRef, logicalWidth, logicalHeight);
-	const { toastMessage, showToast } = useToast();
+	const { toast, showToast } = useToast();
 	const printModal = usePrintModal();
 	const printIframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -89,7 +89,7 @@ export default function ExportPanel() {
 
 		const win = printIframeRef.current?.contentWindow as any;
 		if (!win) {
-			showToast("No se pudo iniciar la impresión.");
+			showToast("No se pudo iniciar la impresión.", { tone: "error" });
 			return;
 		}
 		try {
@@ -100,7 +100,7 @@ export default function ExportPanel() {
 			win.print?.();
 			markActiveCanvasExported();
 		} catch (err: any) {
-			showToast("No se pudo iniciar la impresión: " + (err?.message || "Error"));
+			showToast("No se pudo iniciar la impresión: " + (err?.message || "Error"), { tone: "error" });
 		}
 	};
 
@@ -205,7 +205,7 @@ export default function ExportPanel() {
 				</div>
 			</aside>
 
-			<Toast message={toastMessage} />
+			<Toast message={toast?.message ?? null} tone={toast?.tone} />
 
 			<PrintPreviewModal
 				open={printModal.isOpen}

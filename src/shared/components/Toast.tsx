@@ -1,14 +1,24 @@
-import { CircleCheck } from "lucide-react";
-import type { ToastAction } from "../hooks/useToast";
+import { CircleAlert, CircleCheck, Loader2 } from "lucide-react";
+import type { ToastAction, ToastTone } from "../hooks/useToast";
 
 interface ToastProps {
 	message: string | null;
 	action?: ToastAction;
+	tone?: ToastTone;
 	/** Called after the action runs, to close the toast. */
 	onDismiss?: () => void;
 }
 
-export function Toast({ message, action, onDismiss }: ToastProps) {
+// One ink surface for every toast; the tone lives in the icon, so the text
+// always reads at full contrast.
+const TONES: Record<ToastTone, { icon: string; Icon: typeof CircleCheck; spin?: boolean }> = {
+	success: { icon: "text-df-accent-dark", Icon: CircleCheck },
+	progress: { icon: "text-white/80 dark:text-df-ink-dark/80", Icon: Loader2, spin: true },
+	error: { icon: "text-red-400", Icon: CircleAlert },
+};
+
+export function Toast({ message, action, tone = "success", onDismiss }: ToastProps) {
+	const { icon, Icon, spin } = TONES[tone];
 	// The live region stays mounted so screen readers announce each new message.
 	return (
 		<div
@@ -17,8 +27,11 @@ export function Toast({ message, action, onDismiss }: ToastProps) {
 			className="toast toast-end toast-bottom pointer-events-none z-50"
 		>
 			{message && (
-				<div className="alert alert-success pointer-events-auto flex items-center gap-2 font-semibold text-white shadow-lg">
-					<CircleCheck className="h-5 w-5 shrink-0 stroke-current" aria-hidden="true" />
+				<div className="bg-df-ink dark:bg-df-surface-dark dark:border-df-hairline-dark dark:text-df-ink-dark pointer-events-auto flex max-w-md items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_-12px_rgb(17_24_39/0.5)] dark:border">
+					<Icon
+						className={`h-5 w-5 shrink-0 ${icon} ${spin ? "animate-spin" : ""}`}
+						aria-hidden="true"
+					/>
 					<span>{message}</span>
 					{action && (
 						<button
@@ -27,7 +40,7 @@ export function Toast({ message, action, onDismiss }: ToastProps) {
 								action.onClick();
 								onDismiss?.();
 							}}
-							className="ml-2 rounded-full px-2 py-0.5 font-bold underline underline-offset-2 hover:bg-white/15"
+							className="text-df-primary-dark ml-1 shrink-0 rounded-full px-2 py-0.5 font-bold hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
 						>
 							{action.label}
 						</button>
