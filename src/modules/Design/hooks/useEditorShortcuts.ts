@@ -20,7 +20,8 @@ const ARROW_DIRECTIONS: Record<string, [number, number]> = {
 const NUDGE_MM = 1;
 const NUDGE_SHIFT_MM = 10;
 
-function isTypingTarget(target: EventTarget | null): boolean {
+/** Keys and clipboard events aimed at a field belong to the field, not the canvas. */
+export function isTypingTarget(target: EventTarget | null): boolean {
 	if (!(target instanceof HTMLElement)) return false;
 	return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable;
 }

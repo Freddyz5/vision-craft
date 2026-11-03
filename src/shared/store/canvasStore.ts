@@ -297,17 +297,30 @@ export const DUPLICATE_OFFSET = 20;
  * Returns the new ids in that same order.
  */
 export function duplicateItems(ids: string[], offset = DUPLICATE_OFFSET): string[] {
-	const items = activeCanvasItemsStore.get();
 	const wanted = new Set(ids);
-	const originals = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	return insertItemCopies(
+		activeCanvasItemsStore.get().filter((i) => wanted.has(i.id)),
+		offset,
+	);
+}
+
+/**
+ * Add copies of `originals` (from this board or another one, e.g. the
+ * editor's clipboard) in one write, shifted by `offset` and stacked on top
+ * in their original order. Returns the new ids.
+ */
+export function insertItemCopies(originals: CanvasItem[], offset: number): string[] {
+	const items = activeCanvasItemsStore.get();
 	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
-	const copies = originals.map((item, rank) => ({
-		...item,
-		id: crypto.randomUUID(),
-		x: item.x + offset,
-		y: item.y + offset,
-		zIndex: maxZ + 1 + rank,
-	}));
+	const copies = [...originals]
+		.sort((a, b) => a.zIndex - b.zIndex)
+		.map((item, rank) => ({
+			...item,
+			id: crypto.randomUUID(),
+			x: item.x + offset,
+			y: item.y + offset,
+			zIndex: maxZ + 1 + rank,
+		}));
 	activeCanvasItemsStore.set([...items, ...copies]);
 	return copies.map((c) => c.id);
 }

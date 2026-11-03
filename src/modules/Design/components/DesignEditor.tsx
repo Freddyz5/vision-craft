@@ -38,6 +38,7 @@ import { Toast } from "../../../shared/components/Toast";
 import { captureStage } from "../../../shared/utils/stageCapture";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import { useEditorShortcuts } from "../hooks/useEditorShortcuts";
+import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
@@ -125,6 +126,11 @@ export default function DesignEditor() {
 		selectedIds: selectedId ? [selectedId] : [],
 		onClearSelection: () => select(null),
 		onRemoved: showRemovedToast,
+		onSelect: (ids) => select(ids[0] ?? null),
+	});
+
+	useEditorClipboard({
+		selectedIds: selectedId ? [selectedId] : [],
 		onSelect: (ids) => select(ids[0] ?? null),
 	});
 
