@@ -1,4 +1,9 @@
-import type { CanvasConfig, CanvasItem } from "../../../shared/store/canvasStore";
+import {
+	TEXT_DEFAULTS,
+	isTextItem,
+	type CanvasConfig,
+	type CanvasItem,
+} from "../../../shared/store/canvasStore";
 import type { PrintConfig } from "../types";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 
@@ -46,12 +51,14 @@ function getCanvasHtml(
 			const wMm = pxToMm(item.width) * scale;
 			const hMm = pxToMm(item.height) * scale;
 
-			if (item.type === "text" || (!!item.text && !item.imageSrc)) {
+			// Mirrors CanvasItemShape: Konva rotates a node around its top-left
+			// corner, stretches images to their box and clips text to its box.
+			if (isTextItem(item)) {
 				const text = escapeHtml(item.text ?? "");
-				const fontSizeMm = pxToMm(item.fontSize ?? 24) * scale;
-				const fillColor = escapeAttr(item.fillColor ?? "#111827");
-				const fontFamily = escapeAttr(item.fontFamily ?? "Inter");
-				const fontStyle = escapeAttr(item.fontStyle ?? "normal");
+				const fontSizeMm = pxToMm(item.fontSize || TEXT_DEFAULTS.fontSize) * scale;
+				const fillColor = escapeAttr(item.fillColor || TEXT_DEFAULTS.fillColor);
+				const fontFamily = escapeAttr(item.fontFamily || TEXT_DEFAULTS.fontFamily);
+				const fontStyle = escapeAttr(item.fontStyle || TEXT_DEFAULTS.fontStyle);
 				return `
                 <div
                     style="
@@ -61,13 +68,15 @@ function getCanvasHtml(
                         width: ${wMm}mm;
                         height: ${hMm}mm;
                         transform: rotate(${item.rotation}deg);
-                        transform-origin: center center;
+                        transform-origin: 0 0;
                         font-size: ${fontSizeMm}mm;
                         font-family: ${fontFamily};
                         font-style: ${fontStyle};
                         color: ${fillColor};
                         white-space: pre-wrap;
-                        line-height: 1.1;
+                        overflow-wrap: break-word;
+                        overflow: hidden;
+                        line-height: ${TEXT_DEFAULTS.lineHeight};
                     "
                 >${text}</div>
             `;
@@ -88,8 +97,8 @@ function getCanvasHtml(
                     width: ${wMm}mm;
                     height: ${hMm}mm;
                     transform: rotate(${item.rotation}deg);
-                    transform-origin: center center;
-                    object-fit: contain;
+                    transform-origin: 0 0;
+                    object-fit: fill;
                 "
             />
         `;

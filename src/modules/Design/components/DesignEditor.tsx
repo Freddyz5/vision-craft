@@ -29,10 +29,12 @@ import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
 import { useUndoRedoShortcuts } from "../hooks/useUndoRedoShortcuts";
 import { Toast } from "../../../shared/components/Toast";
+import { captureStage } from "../../../shared/utils/stageCapture";
 import type { SelectedItemId } from "../types";
 import type Konva from "konva";
 
 const MM_TO_PX = 96 / 25.4;
+const THUMBNAIL_WIDTH = 320;
 
 export default function DesignEditor() {
 	const config = useStore(activeCanvasConfigStore);
@@ -113,8 +115,16 @@ export default function DesignEditor() {
 		}
 	};
 
+	// Small JPEG so 20 saved boards stay well inside the localStorage quota.
 	const captureThumbnail = (): string | undefined =>
-		stageRef?.current ? stageRef.current.toDataURL({ pixelRatio: 0.5 }) : undefined;
+		stageRef.current
+			? captureStage(stageRef.current, {
+					scaleFactor: scaleFactor * zoom,
+					pixelRatio: THUMBNAIL_WIDTH / logicalWidth,
+					mimeType: "image/jpeg",
+					quality: 0.8,
+				})
+			: undefined;
 
 	const handleSave = () => {
 		saveCurrentCanvas(captureThumbnail());

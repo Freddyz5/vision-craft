@@ -1,12 +1,14 @@
 import { useEffect, useRef } from "react";
 import type Konva from "konva";
-import type { CanvasItem } from "../../../shared/store/canvasStore";
+import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import {
 	updateItem,
 	bringToFront,
 	sendToBack,
 	removeItem,
 } from "../../../shared/store/canvasStore";
+
+export type CanvasItemDragHandler = (id: string, e: Konva.KonvaEventObject<DragEvent>) => void;
 
 interface UseCanvasItemInteractionsOptions {
 	item: CanvasItem;
@@ -15,14 +17,13 @@ interface UseCanvasItemInteractionsOptions {
 	/** Ref to the underlying Konva node (Image, Text, ...) the Transformer attaches to. */
 	nodeRef: React.RefObject<Konva.Node | null>;
 	onSelect: (id: string) => void;
-	onDragMove?: (id: string, e: any) => void;
-	onDragEnd?: (id: string, e: any) => void;
+	onDragMove?: CanvasItemDragHandler;
+	onDragEnd?: CanvasItemDragHandler;
 }
 
 /**
  * Shared drag/select/resize/keyboard behavior for items placed on the Konva
- * design stage. KonvaImageItem and KonvaTextItem only differ in the shape
- * they render and their Transformer's boundBoxFunc/enabledAnchors.
+ * design stage (see KonvaCanvasItem).
  */
 export function useCanvasItemInteractions({
 	item,
@@ -70,9 +71,9 @@ export function useCanvasItemInteractions({
 
 	const handleSelect = () => onSelect(item.id);
 
-	const handleDragMove = (e: any) => onDragMove?.(item.id, e);
+	const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => onDragMove?.(item.id, e);
 
-	const handleDragEnd = (e: any) => {
+	const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
 		if (onDragEnd) {
 			onDragEnd(item.id, e);
 			return;
@@ -103,7 +104,7 @@ export function useCanvasItemInteractions({
 
 		// Grow/shrink the font size along with its box so resizing a text item
 		// scales the text instead of just re-wrapping it inside a bigger box.
-		if (item.type === "text") {
+		if (isTextItem(item)) {
 			const growth = (scaleX + scaleY) / 2;
 			patch.fontSize = Math.max(8, Math.round((item.fontSize || 24) * growth));
 		}

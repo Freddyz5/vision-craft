@@ -47,6 +47,20 @@ export interface CanvasItem {
 	zIndex: number;
 }
 
+/** Text styling used when an item doesn't set its own (editor, export and print share it). */
+export const TEXT_DEFAULTS = {
+	fontSize: 24,
+	fontFamily: "Inter",
+	fillColor: "#7C3AED",
+	fontStyle: "normal",
+	lineHeight: 1,
+} as const;
+
+/** Older saves have no `type`; an item with text and no image is a text item. */
+export function isTextItem(item: CanvasItem): boolean {
+	return item.type === "text" || (!!item.text && !item.imageSrc);
+}
+
 export interface SavedCanvas {
 	id: string;
 	name: string;

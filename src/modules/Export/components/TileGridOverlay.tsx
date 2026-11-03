@@ -1,5 +1,6 @@
 import { Group, Rect, Line } from "react-konva";
 import type { PrintConfig } from "../types";
+import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 
 interface TileGridOverlayProps {
 	printConfig: PrintConfig;
@@ -44,7 +45,7 @@ export function TileGridOverlay({
 	}
 
 	return (
-		<Group name="poster-grid-overlay">
+		<Group name={EDITOR_ONLY}>
 			{printConfig.tiles.map((tile, i) => {
 				const x = tile.offsetXMm * pxPerMm;
 				const y = tile.offsetYMm * pxPerMm;

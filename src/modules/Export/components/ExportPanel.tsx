@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import type Konva from "konva";
 import { useStore } from "@nanostores/react";
 import { activeCanvasConfigStore, activeCanvasItemsStore } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
@@ -14,6 +15,7 @@ import { useWallPreviewCapture } from "../hooks/useWallPreviewCapture";
 import { usePrintModal } from "../hooks/usePrintModal";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
+import { captureStage } from "../../../shared/utils/stageCapture";
 import { Toast } from "../../../shared/components/Toast";
 import { ExportCanvasPreview } from "./ExportCanvasPreview";
 import { ExportPrintOptions } from "./ExportPrintOptions";
@@ -53,7 +55,7 @@ export default function ExportPanel() {
 	const printIframeRef = useRef<HTMLIFrameElement>(null);
 
 	// Konva stage ref for PNG export
-	const stageRef = useRef<any>(null);
+	const stageRef = useRef<Konva.Stage>(null);
 
 	const showPosterPreview = exportMode === "poster" && !!transposePrintConfig;
 	const wallPreviewSrc = useWallPreviewCapture({
@@ -121,7 +123,6 @@ export default function ExportPanel() {
 	};
 
 	const [exportDpi, setExportDpi] = useState<150 | 300>(150);
-	const getExportPixelRatio = () => exportDpi / 96;
 
 	const downloadDataUrl = (dataURL: string, filename: string) => {
 		const link = document.createElement("a");
@@ -132,48 +133,19 @@ export default function ExportPanel() {
 		document.body.removeChild(link);
 	};
 
-	const handleDownloadPng = () => {
-		if (stageRef.current) {
-			// Unscale it back to original resolution for export
-			const originalScale = stageRef.current.scale();
-			stageRef.current.scale({ x: 1, y: 1 });
-			stageRef.current.width(logicalWidth);
-			stageRef.current.height(logicalHeight);
-
-			const dataURL = stageRef.current.toDataURL({
-				pixelRatio: getExportPixelRatio(),
-			});
-
-			// Restore scale
-			stageRef.current.scale(originalScale);
-			stageRef.current.width(logicalWidth * scaleFactor);
-			stageRef.current.height(logicalHeight * scaleFactor);
-
-			downloadDataUrl(dataURL, `${config.name || "vision-board"}.png`);
-			showToast("PNG descargado.");
-		}
-	};
-
-	const handleDownloadJpg = () => {
-		if (stageRef.current) {
-			const originalScale = stageRef.current.scale();
-			stageRef.current.scale({ x: 1, y: 1 });
-			stageRef.current.width(logicalWidth);
-			stageRef.current.height(logicalHeight);
-
-			const dataURL = stageRef.current.toDataURL({
-				pixelRatio: getExportPixelRatio(),
-				mimeType: "image/jpeg",
-				quality: 0.92,
-			});
-
-			stageRef.current.scale(originalScale);
-			stageRef.current.width(logicalWidth * scaleFactor);
-			stageRef.current.height(logicalHeight * scaleFactor);
-
-			downloadDataUrl(dataURL, `${config.name || "vision-board"}.jpg`);
-			showToast("JPG descargado.");
-		}
+	// Captured from the preview stage at the chosen DPI, independent of how
+	// big the preview happens to be drawn on screen.
+	const downloadImage = (mimeType: "image/png" | "image/jpeg", extension: "png" | "jpg") => {
+		const stage = stageRef.current;
+		if (!stage) return;
+		const dataURL = captureStage(stage, {
+			scaleFactor,
+			pixelRatio: exportDpi / 96,
+			mimeType,
+			quality: mimeType === "image/jpeg" ? 0.92 : undefined,
+		});
+		downloadDataUrl(dataURL, `${config.name || "vision-board"}.${extension}`);
+		showToast(`${extension.toUpperCase()} descargado.`);
 	};
 
 	return (
@@ -218,8 +190,8 @@ export default function ExportPanel() {
 						exportMode={exportMode}
 						exportDpi={exportDpi}
 						onExportDpiChange={setExportDpi}
-						onDownloadPng={handleDownloadPng}
-						onDownloadJpg={handleDownloadJpg}
+						onDownloadPng={() => downloadImage("image/png", "png")}
+						onDownloadJpg={() => downloadImage("image/jpeg", "jpg")}
 					/>
 				</div>
 			</aside>

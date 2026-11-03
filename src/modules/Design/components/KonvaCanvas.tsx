@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Stage, Layer, Rect, Line } from "react-konva";
-import { KonvaImageItem } from "./KonvaImageItem";
-import { KonvaTextItem } from "./KonvaTextItem";
+import { KonvaCanvasItem } from "./KonvaCanvasItem";
 import { updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
+import type { CanvasItemDragHandler } from "../hooks/useCanvasItemInteractions";
 import type { SelectedItemId } from "../types";
 import type Konva from "konva";
 
@@ -37,7 +38,7 @@ export function KonvaCanvas({
 		}
 	};
 
-	const handleDragMove = (id: string, e: any) => {
+	const handleDragMove: CanvasItemDragHandler = (id, e) => {
 		const node = e.target;
 		// Current node coordinates in stage pixels (scaled by scaleFactor)
 		const currentX = node.x();
@@ -89,7 +90,7 @@ export function KonvaCanvas({
 		setSnappingLines({ x: xSnap?.guide ?? null, y: ySnap?.guide ?? null });
 	};
 
-	const handleDragEnd = (id: string, e: any) => {
+	const handleDragEnd: CanvasItemDragHandler = (id, e) => {
 		setSnappingLines({ x: null, y: null });
 		const node = e.target;
 		updateItem(id, {
@@ -105,7 +106,7 @@ export function KonvaCanvas({
 			<Stage
 				width={logicalWidth * scaleFactor}
 				height={logicalHeight * scaleFactor}
-				ref={stageRef as any}
+				ref={stageRef}
 				onMouseDown={handleMouseDown}
 				onTouchStart={handleMouseDown}
 				className="bg-white"
@@ -118,37 +119,22 @@ export function KonvaCanvas({
 						fill="white"
 					/>
 
-					{sortedItems.map((item) => {
-						const isSelected = selectedId === item.id;
-						if (item.type === "text") {
-							return (
-								<KonvaTextItem
-									key={item.id}
-									item={item}
-									isSelected={isSelected}
-									onSelect={setSelectedId}
-									scaleFactor={scaleFactor}
-									onDragMove={handleDragMove}
-									onDragEnd={handleDragEnd}
-								/>
-							);
-						}
-						return (
-							<KonvaImageItem
-								key={item.id}
-								item={item}
-								isSelected={isSelected}
-								onSelect={setSelectedId}
-								scaleFactor={scaleFactor}
-								onDragMove={handleDragMove}
-								onDragEnd={handleDragEnd}
-							/>
-						);
-					})}
+					{sortedItems.map((item) => (
+						<KonvaCanvasItem
+							key={item.id}
+							item={item}
+							isSelected={selectedId === item.id}
+							onSelect={setSelectedId}
+							scaleFactor={scaleFactor}
+							onDragMove={handleDragMove}
+							onDragEnd={handleDragEnd}
+						/>
+					))}
 
 					{/* Snapping guide lines layer (rendered above items for visibility) */}
 					{snappingLines.x !== null && (
 						<Line
+							name={EDITOR_ONLY}
 							points={[
 								snappingLines.x * scaleFactor,
 								0,
@@ -162,6 +148,7 @@ export function KonvaCanvas({
 					)}
 					{snappingLines.y !== null && (
 						<Line
+							name={EDITOR_ONLY}
 							points={[
 								0,
 								snappingLines.y * scaleFactor,

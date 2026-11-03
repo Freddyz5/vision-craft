@@ -4,8 +4,8 @@ import type Konva from "konva";
 import { Image as ImageIcon, Layers, Gauge } from "lucide-react";
 import type { CanvasConfig, CanvasItem } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
+import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import type { ExportMode, PrintConfig } from "../types";
-import { StaticImage, StaticText } from "./StaticCanvasItems";
 import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
 
@@ -75,39 +75,9 @@ export function ExportCanvasPreview({
 								height={logicalHeight * scaleFactor}
 								fill="white"
 							/>
-							{sortedItems.map((item) => {
-								if (item.type === "text" || (!!item.text && !item.imageSrc)) {
-									return (
-										<StaticText
-											key={item.id}
-											text={item.text}
-											x={item.x}
-											y={item.y}
-											width={item.width}
-											height={item.height}
-											rotation={item.rotation}
-											scaleFactor={scaleFactor}
-											fontSize={item.fontSize}
-											fillColor={item.fillColor}
-											fontFamily={item.fontFamily}
-											fontStyle={item.fontStyle}
-										/>
-									);
-								}
-								if (!item.imageSrc) return null;
-								return (
-									<StaticImage
-										key={item.id}
-										src={item.imageSrc}
-										x={item.x}
-										y={item.y}
-										width={item.width}
-										height={item.height}
-										rotation={item.rotation}
-										scaleFactor={scaleFactor}
-									/>
-								);
-							})}
+							{sortedItems.map((item) => (
+								<CanvasItemShape key={item.id} item={item} scaleFactor={scaleFactor} />
+							))}
 							{showPosterMeta && (
 								<TileGridOverlay
 									printConfig={transposePrintConfig!}
