@@ -12,6 +12,7 @@ import {
 	addItem,
 	bringToFront,
 	autoSaveActiveCanvas,
+	MAX_SAVED_CANVASES,
 	saveCurrentCanvas,
 	sendToBack,
 	updateItem,
@@ -138,8 +139,18 @@ export default function DesignEditor() {
 			: undefined;
 
 	const handleSave = () => {
-		saveCurrentCanvas(captureThumbnail());
-		showToast("Lienzo guardado exitosamente.");
+		const result = saveCurrentCanvas(captureThumbnail());
+		if (result.status === "full") {
+			showToast(
+				`Ya tienes ${MAX_SAVED_CANVASES} tableros guardados. Elimina uno para guardar este.`,
+				{
+					label: "Ir a Tableros",
+					onClick: () => (window.location.href = "/boards"),
+				},
+			);
+			return;
+		}
+		showToast("Tablero guardado en este navegador.");
 	};
 
 	// Auto-save (unless empty) before advancing to the Export step.

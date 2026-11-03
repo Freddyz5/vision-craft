@@ -104,11 +104,34 @@ export const activeCanvasItemsStore = persistentAtom<CanvasItem[]>("vc-canvas-it
 	decode,
 });
 
-/** List of saved canvases (max 20) */
+/** List of saved canvases (max {@link MAX_SAVED_CANVASES}) */
 export const savedCanvasesStore = persistentAtom<SavedCanvas[]>("vc-saved-canvases", [], {
 	encode,
 	decode,
 });
+
+/**
+ * Which saved board the active canvas is: its id once saved or loaded, null
+ * for a board that was never saved. Saving matches on this, not on the name,
+ * so renaming a board updates it and two boards may share a name. undefined
+ * (key absent) only for sessions from before this was tracked.
+ */
+export const activeCanvasIdStore = persistentAtom<string | null | undefined>(
+	"vc-canvas-id",
+	undefined,
+	{ encode, decode },
+);
+
+/** Saved boards live in localStorage; past this many, saving asks to delete one first. */
+export const MAX_SAVED_CANVASES = 20;
+
+/** "full": the library already holds MAX_SAVED_CANVASES boards, nothing was stored. */
+export type SaveResult =
+	{ status: "created" | "updated"; canvas: SavedCanvas } | { status: "full" };
+
+function defaultCanvasName(): string {
+	return `Lienzo ${new Date().toLocaleDateString("es-MX")}`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Actions
@@ -121,61 +144,65 @@ export const savedCanvasesStore = persistentAtom<SavedCanvas[]>("vc-saved-canvas
 export function startNewCanvas(): void {
 	activeCanvasConfigStore.set({ ...DEFAULT_CONFIG });
 	activeCanvasItemsStore.set([]);
+	activeCanvasIdStore.set(null);
 }
 
-/** Save the current active canvas to the saved list */
-export function saveCurrentCanvas(thumbnail?: string): SavedCanvas {
-	const config = activeCanvasConfigStore.get();
+/**
+ * Save the active canvas to the library: updates the board it was loaded
+ * from or last saved as, otherwise adds a new one (an unnamed board gets a
+ * dated name first). Never drops an existing board to make room.
+ */
+export function saveCurrentCanvas(thumbnail?: string): SaveResult {
+	let config = activeCanvasConfigStore.get();
+	if (!config.name.trim()) {
+		config = { ...config, name: defaultCanvasName() };
+		activeCanvasConfigStore.set(config);
+	}
 	const items = activeCanvasItemsStore.get();
 	const saved = savedCanvasesStore.get();
-
-	// Check whether we are updating an existing save
-	const existing = saved.find((c) => c.name === config.name);
+	const activeId = activeCanvasIdStore.get();
+	const existing =
+		activeId === undefined
+			? // Pre-tracking session: fall back to the old match by name, once.
+				saved.find((c) => c.name === config.name)
+			: saved.find((c) => c.id === activeId);
 
 	if (existing) {
 		const updated: SavedCanvas = {
 			...existing,
+			name: config.name,
 			config,
 			items,
-			thumbnail,
+			// Saving from outside the stage (e.g. the stepper) has no fresh thumbnail.
+			thumbnail: thumbnail ?? existing.thumbnail,
 		};
 		savedCanvasesStore.set(saved.map((c) => (c.id === existing.id ? updated : c)));
-		return updated;
+		activeCanvasIdStore.set(existing.id);
+		return { status: "updated", canvas: updated };
 	}
 
-	const newCanvas: SavedCanvas = {
+	if (saved.length >= MAX_SAVED_CANVASES) return { status: "full" };
+
+	const created: SavedCanvas = {
 		id: crypto.randomUUID(),
-		name: config.name || `Lienzo ${new Date().toLocaleDateString("es-MX")}`,
+		name: config.name,
 		createdAt: new Date().toISOString(),
 		thumbnail,
 		config,
 		items,
 	};
-
-	const capped = [newCanvas, ...saved].slice(0, 20);
-	savedCanvasesStore.set(capped);
-	return newCanvas;
+	savedCanvasesStore.set([created, ...saved]);
+	activeCanvasIdStore.set(created.id);
+	return { status: "created", canvas: created };
 }
 
 /**
  * Persist the active canvas automatically (used when advancing to the Export
- * step without pressing "Guardar"). Skips empty boards, and gives an unnamed
- * board a stable name up-front so repeated auto-saves update the same entry
- * instead of creating duplicates. Returns the saved board, or null if there
- * was nothing to save.
+ * step without pressing "Guardar"). Skips empty boards; returns null when
+ * there was nothing to save.
  */
-export function autoSaveActiveCanvas(thumbnail?: string): SavedCanvas | null {
-	const items = activeCanvasItemsStore.get();
-	if (items.length === 0) return null;
-
-	const config = activeCanvasConfigStore.get();
-	if (!config.name.trim()) {
-		activeCanvasConfigStore.set({
-			...config,
-			name: `Lienzo ${new Date().toLocaleDateString("es-MX")}`,
-		});
-	}
-
+export function autoSaveActiveCanvas(thumbnail?: string): SaveResult | null {
+	if (activeCanvasItemsStore.get().length === 0) return null;
 	return saveCurrentCanvas(thumbnail);
 }
 
@@ -185,25 +212,29 @@ export function loadCanvas(id: string): void {
 	if (!canvas) return;
 	activeCanvasConfigStore.set(canvas.config);
 	activeCanvasItemsStore.set(canvas.items);
+	activeCanvasIdStore.set(canvas.id);
 }
 
-/** Duplicate a saved canvas */
-export function duplicateCanvas(id: string): void {
-	const canvas = savedCanvasesStore.get().find((c) => c.id === id);
-	if (!canvas) return;
+/** Duplicate a saved canvas. Returns false when the library is full. */
+export function duplicateCanvas(id: string): boolean {
+	const saved = savedCanvasesStore.get();
+	const canvas = saved.find((c) => c.id === id);
+	if (!canvas || saved.length >= MAX_SAVED_CANVASES) return false;
 	const copy: SavedCanvas = {
 		...canvas,
 		id: crypto.randomUUID(),
 		name: `${canvas.name} (copia)`,
 		createdAt: new Date().toISOString(),
 	};
-	const saved = savedCanvasesStore.get();
-	savedCanvasesStore.set([copy, ...saved].slice(0, 20));
+	savedCanvasesStore.set([copy, ...saved]);
+	return true;
 }
 
 /** Delete a canvas from the saved list */
 export function deleteCanvas(id: string): void {
 	savedCanvasesStore.set(savedCanvasesStore.get().filter((c) => c.id !== id));
+	// The active canvas keeps its content but is no longer a saved board.
+	if (activeCanvasIdStore.get() === id) activeCanvasIdStore.set(null);
 }
 
 // ── Canvas Items ─────────────────────────────────────────────────────────────
@@ -309,6 +340,7 @@ export async function importJson(file: File): Promise<void> {
 
 	activeCanvasConfigStore.set(canvas.config);
 	activeCanvasItemsStore.set(canvas.items);
+	activeCanvasIdStore.set(null);
 }
 
 /**
@@ -326,6 +358,11 @@ export async function importCanvasToLibrary(file: File): Promise<SavedCanvas> {
 	}
 
 	const saved = savedCanvasesStore.get();
+	if (saved.length >= MAX_SAVED_CANVASES) {
+		throw new Error(
+			`Ya tienes ${MAX_SAVED_CANVASES} tableros guardados. Elimina uno para importar otro.`,
+		);
+	}
 	const imported: SavedCanvas = {
 		id: crypto.randomUUID(),
 		name: parsed.name?.trim() || `Tablero importado ${new Date().toLocaleDateString("es-MX")}`,
@@ -335,6 +372,6 @@ export async function importCanvasToLibrary(file: File): Promise<SavedCanvas> {
 		items: parsed.items,
 	};
 
-	savedCanvasesStore.set([imported, ...saved].slice(0, 20));
+	savedCanvasesStore.set([imported, ...saved]);
 	return imported;
 }
