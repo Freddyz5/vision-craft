@@ -21,6 +21,7 @@ import {
 	MAX_SAVED_CANVASES,
 	removeItem,
 	removeItems,
+	reorderItems,
 	saveCurrentCanvas,
 	sendItemsToBack,
 	updateItem,
@@ -445,6 +446,11 @@ export default function DesignEditor() {
 			onDismiss={handleDismiss}
 			onRetry={(item) => item.imageSrc && retryCanvasImage(item.imageSrc)}
 			onRemove={handleRemoveRow}
+			onToggleHidden={(id) => {
+				const item = items.find((i) => i.id === id);
+				if (item) updateItem(id, { hidden: !item.hidden });
+			}}
+			onReorder={reorderItems}
 			onSave={handleSave}
 			onExport={handleExport}
 		/>

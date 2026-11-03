@@ -146,6 +146,7 @@ export function KonvaCanvas({
 			const top = Math.min(m.y0, m.y1) / scaleFactor;
 			const bottom = Math.max(m.y0, m.y1) / scaleFactor;
 			const touched = items.filter((item) => {
+				if (item.hidden) return false;
 				const b = itemBounds(item);
 				return b.maxX >= left && b.minX <= right && b.maxY >= top && b.minY <= bottom;
 			});
@@ -175,8 +176,9 @@ export function KonvaCanvas({
 	useEffect(() => {
 		const tr = trRef.current;
 		if (!tr) return;
+		const hiddenIds = new Set(items.filter((i) => i.hidden).map((i) => i.id));
 		const next = selectedIds
-			.filter((id) => id !== editingId)
+			.filter((id) => id !== editingId && !hiddenIds.has(id))
 			.map((id) => nodesRef.current.get(id))
 			.filter((node): node is Konva.Node => !!node);
 		const current = tr.nodes();
@@ -228,7 +230,7 @@ export function KonvaCanvas({
 		const xTargets = [0, logicalWidth / 2, logicalWidth];
 		const yTargets = [0, logicalHeight / 2, logicalHeight];
 		for (const other of items) {
-			if (other.id === id) continue;
+			if (other.id === id || other.hidden) continue;
 			const b = itemBounds(other);
 			xTargets.push(b.minX, (b.minX + b.maxX) / 2, b.maxX);
 			yTargets.push(b.minY, (b.minY + b.maxY) / 2, b.maxY);
@@ -337,7 +339,7 @@ export function KonvaCanvas({
 								onDragMove={handleDragMove}
 								onDragStart={handleDragStart}
 								onDragEnd={handleDragEnd}
-								hidden={item.id === editingId}
+								hidden={item.id === editingId || !!item.hidden}
 								onDoubleClick={onDoubleClickItem}
 								onInteractionChange={onInteractionChange}
 							/>
@@ -357,7 +359,7 @@ export function KonvaCanvas({
 							dash={[6, 4]}
 						/>
 						{sortedItems
-							.filter((item) => warnedIds.has(item.id) && item.id !== editingId)
+							.filter((item) => warnedIds.has(item.id) && item.id !== editingId && !item.hidden)
 							.map((item) => (
 								<Rect
 									key={item.id}

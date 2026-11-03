@@ -1,7 +1,10 @@
 import type React from "react";
+import { useState } from "react";
 import {
 	ArrowRight,
 	CircleCheck,
+	Eye,
+	EyeOff,
 	ImageOff,
 	RotateCw,
 	Trash2,
@@ -23,6 +26,9 @@ interface PrintListProps {
 	onDismiss: (id: string, kind: PrintWarningKind) => void;
 	onRetry: (item: CanvasItem) => void;
 	onRemove: (id: string) => void;
+	onToggleHidden: (id: string) => void;
+	/** New stacking order, every id front-most first (drag a row to reorder, desktop). */
+	onReorder: (frontToBack: string[]) => void;
 	onSave: () => void;
 	onExport: () => void;
 }
@@ -38,8 +44,10 @@ function rowName(item: CanvasItem): string {
 
 function rowDetail(row: PrintListRow): string {
 	if (isTextItem(row.item)) {
+		if (row.item.hidden) return "Oculto: no se imprime";
 		return `${Math.round((row.item.fontSize || 24) * 0.75)} pt`;
 	}
+	if (row.item.hidden) return "Oculta: no se imprime";
 	if (row.ppi === null) return "Cargando…";
 	return `${row.ppi >= PPI_GOOD ? "Nítida" : "Aceptable"} · ${row.ppi} ppp`;
 }
@@ -57,9 +65,26 @@ export function PrintList({
 	onDismiss,
 	onRetry,
 	onRemove,
+	onToggleHidden,
+	onReorder,
 	onSave,
 	onExport,
 }: PrintListProps) {
+	// Row being dragged, and where it would land: before or after another row.
+	const [dragId, setDragId] = useState<string | null>(null);
+	const [dropAt, setDropAt] = useState<{ id: string; after: boolean } | null>(null);
+
+	const dropRow = () => {
+		if (dragId && dropAt && dragId !== dropAt.id) {
+			const order = rows.map((r) => r.item.id).filter((id) => id !== dragId);
+			const index = order.indexOf(dropAt.id) + (dropAt.after ? 1 : 0);
+			order.splice(index, 0, dragId);
+			onReorder(order);
+		}
+		setDragId(null);
+		setDropAt(null);
+	};
+
 	const ready = rows.length > 0 && warningCount === 0;
 
 	return (
@@ -105,13 +130,40 @@ export function PrintList({
 					return (
 						<li
 							key={item.id}
+							draggable
+							onDragStart={(e) => {
+								setDragId(item.id);
+								e.dataTransfer.effectAllowed = "move";
+							}}
+							onDragOver={(e) => {
+								if (!dragId) return;
+								e.preventDefault();
+								const box = e.currentTarget.getBoundingClientRect();
+								setDropAt({ id: item.id, after: e.clientY > box.top + box.height / 2 });
+							}}
+							onDrop={(e) => {
+								e.preventDefault();
+								dropRow();
+							}}
+							onDragEnd={() => {
+								setDragId(null);
+								setDropAt(null);
+							}}
 							className={[
-								"group flex items-center gap-1 rounded-xl pr-1 transition-colors duration-150",
+								"group relative flex items-center gap-1 rounded-xl pr-1 transition-colors duration-150",
 								selected
 									? "bg-df-primary/10 dark:bg-df-primary-dark/15"
 									: "hover:bg-df-well dark:hover:bg-df-well-dark",
+								dragId === item.id ? "opacity-50" : "",
+								item.hidden ? "[&_img]:opacity-40" : "",
 							].join(" ")}
 						>
+							{dropAt?.id === item.id && dragId !== item.id && (
+								<span
+									aria-hidden="true"
+									className={`bg-df-primary dark:bg-df-primary-dark pointer-events-none absolute inset-x-2 h-0.5 rounded-full ${dropAt.after ? "-bottom-0.5" : "-top-0.5"}`}
+								/>
+							)}
 							<button
 								type="button"
 								onClick={(e) => onSelect(item.id, e.shiftKey || e.metaKey || e.ctrlKey)}
@@ -156,6 +208,18 @@ export function PrintList({
 									</span>
 								</span>
 							</button>
+
+							<RowAction
+								label={item.hidden ? `Mostrar «${rowName(item)}»` : `Ocultar «${rowName(item)}»`}
+								onClick={() => onToggleHidden(item.id)}
+								pressed={!!item.hidden}
+							>
+								{item.hidden ? (
+									<EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+								) : (
+									<Eye className="h-3.5 w-3.5" aria-hidden="true" />
+								)}
+							</RowAction>
 
 							{warning?.kind === "load-error" ? (
 								<>
@@ -213,10 +277,12 @@ export function PrintList({
 function RowAction({
 	label,
 	onClick,
+	pressed,
 	children,
 }: {
 	label: string;
 	onClick: () => void;
+	pressed?: boolean;
 	children: React.ReactNode;
 }) {
 	return (
@@ -224,6 +290,7 @@ function RowAction({
 			type="button"
 			onClick={onClick}
 			aria-label={label}
+			aria-pressed={pressed}
 			title={label}
 			className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-surface dark:hover:bg-df-surface-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-8 w-8 shrink-0 items-center justify-center rounded-full focus-visible:outline-2"
 		>

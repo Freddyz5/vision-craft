@@ -40,7 +40,8 @@ export function ExportCanvasPreview({
 	stageRef,
 	containerRef,
 }: ExportCanvasPreviewProps) {
-	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
+	// Hidden items are left out of every export and print.
+	const sortedItems = items.filter((i) => !i.hidden).sort((a, b) => a.zIndex - b.zIndex);
 	const showPosterMeta = exportMode === "poster" && !!transposePrintConfig;
 
 	return (

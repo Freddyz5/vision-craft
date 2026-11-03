@@ -29,9 +29,12 @@ export function usePrintChecks(items: CanvasItem[], sheet: Sheet, dismissed: Set
 				const image = item.imageSrc ? images[item.imageSrc] : undefined;
 				return {
 					item,
-					warnings: checkItem(item, sheet, image).filter(
-						(w) => !dismissed.has(warningKey(item.id, w.kind)),
-					),
+					// A hidden item won't print, so it can't go wrong on paper.
+					warnings: item.hidden
+						? []
+						: checkItem(item, sheet, image).filter(
+								(w) => !dismissed.has(warningKey(item.id, w.kind)),
+							),
 					ppi: isTextItem(item) ? null : imagePpi(item, image),
 				};
 			});

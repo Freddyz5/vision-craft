@@ -57,6 +57,8 @@ export interface CanvasItem {
 	adjust?: ImageAdjust;
 	/** Images only: border, polaroid card and shadow. */
 	frame?: ImageFrame;
+	/** Hidden from the sheet and from every export or print; still listed. */
+	hidden?: boolean;
 }
 
 export interface ImageFrame {
@@ -380,6 +382,15 @@ export function bringToFront(id: string): void {
 /** Send an item to the back (min zIndex - 1) */
 export function sendToBack(id: string): void {
 	sendItemsToBack([id]);
+}
+
+/**
+ * Restack the board to match `frontToBack` (every item id, front-most first),
+ * renumbering zIndex in one write. Ids not listed keep their place behind.
+ */
+export function reorderItems(frontToBack: string[]): void {
+	const n = frontToBack.length;
+	updateItems(Object.fromEntries(frontToBack.map((id, i) => [id, { zIndex: n - i }])));
 }
 
 /** Put `ids` above everything else, keeping their order among themselves. One write. */
