@@ -27,7 +27,7 @@ import {
 import { designViewModeStore, toggleDesignViewMode } from "../../../shared/store/designViewStore";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
-import { useUndoRedoShortcuts } from "../hooks/useUndoRedoShortcuts";
+import { useEditorShortcuts } from "../hooks/useEditorShortcuts";
 import { Toast } from "../../../shared/components/Toast";
 import { captureStage } from "../../../shared/utils/stageCapture";
 import type { SelectedItemId } from "../types";
@@ -44,9 +44,8 @@ export default function DesignEditor() {
 	const canRedo = useStore(historyFutureStore).length > 0;
 
 	const [zoom, setZoom] = useState(1);
-	const { toastMessage, showToast } = useToast();
+	const { toast, showToast, dismissToast } = useToast();
 
-	useUndoRedoShortcuts();
 	useEffect(() => resetHistory(), []);
 
 	// Convert canvas config to logical pixels
@@ -54,6 +53,18 @@ export default function DesignEditor() {
 	const logicalHeight = config.heightMm * MM_TO_PX;
 
 	const [selectedId, setSelectedId] = useState<SelectedItemId>(null);
+
+	const showRemovedToast = (count: number) =>
+		showToast(count === 1 ? "Elemento eliminado." : `${count} elementos eliminados.`, {
+			label: "Deshacer",
+			onClick: undo,
+		});
+
+	useEditorShortcuts({
+		selectedIds: selectedId ? [selectedId] : [],
+		onClearSelection: () => setSelectedId(null),
+		onRemoved: showRemovedToast,
+	});
 	const stageRef = useRef<Konva.Stage | null>(null);
 
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -232,7 +243,7 @@ export default function DesignEditor() {
 						onDelete={() => {
 							removeItem(selectedItem.id);
 							setSelectedId(null);
-							showToast("Elemento eliminado.");
+							showRemovedToast(1);
 						}}
 					/>
 				) : (
@@ -240,7 +251,7 @@ export default function DesignEditor() {
 				)}
 			</div>
 
-			<Toast message={toastMessage} />
+			<Toast message={toast?.message ?? null} action={toast?.action} onDismiss={dismissToast} />
 		</section>
 	);
 }

@@ -1,12 +1,7 @@
 import { useEffect, useRef } from "react";
 import type Konva from "konva";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
-import {
-	updateItem,
-	bringToFront,
-	sendToBack,
-	removeItem,
-} from "../../../shared/store/canvasStore";
+import { updateItem } from "../../../shared/store/canvasStore";
 
 export type CanvasItemDragHandler = (id: string, e: Konva.KonvaEventObject<DragEvent>) => void;
 
@@ -22,8 +17,8 @@ interface UseCanvasItemInteractionsOptions {
 }
 
 /**
- * Shared drag/select/resize/keyboard behavior for items placed on the Konva
- * design stage (see KonvaCanvasItem).
+ * Shared drag/select/resize behavior for items placed on the Konva design
+ * stage (see KonvaCanvasItem). Keyboard shortcuts live in useEditorShortcuts.
  */
 export function useCanvasItemInteractions({
 	item,
@@ -42,32 +37,6 @@ export function useCanvasItemInteractions({
 			trRef.current.getLayer()?.batchDraw();
 		}
 	}, [isSelected, nodeRef]);
-
-	useEffect(() => {
-		if (!isSelected) return;
-
-		const handleKeyDown = (e: KeyboardEvent) => {
-			// Only react if we are not typing in an input
-			if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) return;
-
-			if (e.key === "Backspace" || e.key === "Delete") {
-				removeItem(item.id);
-			} else if (e.key === "ArrowUp") {
-				if (e.shiftKey) bringToFront(item.id);
-				else updateItem(item.id, { y: item.y - 1 });
-			} else if (e.key === "ArrowDown") {
-				if (e.shiftKey) sendToBack(item.id);
-				else updateItem(item.id, { y: item.y + 1 });
-			} else if (e.key === "ArrowLeft") {
-				updateItem(item.id, { x: item.x - 1 });
-			} else if (e.key === "ArrowRight") {
-				updateItem(item.id, { x: item.x + 1 });
-			}
-		};
-
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [isSelected, item]);
 
 	const handleSelect = () => onSelect(item.id);
 
