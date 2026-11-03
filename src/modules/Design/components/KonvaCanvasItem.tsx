@@ -36,7 +36,7 @@ export function KonvaCanvasItem({
 	onDragMove,
 	onDragEnd,
 }: KonvaCanvasItemProps) {
-	const nodeRef = useRef<Konva.Shape>(null);
+	const nodeRef = useRef<Konva.Node>(null);
 	const isText = isTextItem(item);
 	const minWidth = isText ? 30 : 10;
 
