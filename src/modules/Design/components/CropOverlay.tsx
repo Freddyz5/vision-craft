@@ -4,6 +4,7 @@ import { Group, Image as KonvaImage, Rect, Transformer } from "react-konva";
 import type { CanvasItem } from "../../../shared/store/canvasStore";
 import { useCanvasImage } from "../../../shared/hooks/useCanvasImage";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
+import { traceShape } from "../../../shared/utils/shapePath";
 import { clampRect, fitAspect, fullImageRect, MIN_CROP, type LocalRect } from "../utils/crop";
 
 const GUIDE_COLOR = "#7C3AED";
@@ -76,11 +77,11 @@ export function CropOverlay({
 			/>
 			<Group x={item.x * s} y={item.y * s} rotation={item.rotation}>
 				<KonvaImage {...photo} opacity={0.35} />
+				{/* The photo's shape masks the crop box, as it will on the sheet. */}
 				<Group
-					clipX={rect.x * s}
-					clipY={rect.y * s}
-					clipWidth={rect.width * s}
-					clipHeight={rect.height * s}
+					clipFunc={(ctx) =>
+						traceShape(ctx, item.shape, rect.x * s, rect.y * s, rect.width * s, rect.height * s)
+					}
 					listening={false}
 				>
 					<KonvaImage {...photo} />

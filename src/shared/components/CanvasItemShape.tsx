@@ -10,6 +10,7 @@ import {
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../store/canvasStore";
 import { useCanvasImage } from "../hooks/useCanvasImage";
 import { EDITOR_ONLY } from "../utils/stageCapture";
+import { traceShape } from "../utils/shapePath";
 
 /** Konva props an interactive stage (the Design editor) layers on top of the plain render. */
 export type CanvasItemInteraction = KonvaNodeEvents & {
@@ -54,24 +55,43 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 	const { image, status } = useCanvasImage(item.imageSrc);
 	if (status === "error") return <MissingImagePlaceholder {...props} />;
 	const c = item.crop;
+	// Konva crops in source pixels; the store keeps fractions.
+	const crop =
+		c && image
+			? {
+					x: c.x * image.naturalWidth,
+					y: c.y * image.naturalHeight,
+					width: c.width * image.naturalWidth,
+					height: c.height * image.naturalHeight,
+				}
+			: undefined;
+
+	if (!item.shape) {
+		return (
+			<KonvaImage
+				ref={ref as React.Ref<Konva.Image>}
+				image={image}
+				crop={crop}
+				{...itemGeometry(item, scaleFactor)}
+				{...interaction}
+			/>
+		);
+	}
+
+	// A masked photo: the group is the item (it carries geometry, events and
+	// the Transformer) and clips the image to the shape.
+	const width = item.width * scaleFactor;
+	const height = item.height * scaleFactor;
+	const shape = item.shape;
 	return (
-		<KonvaImage
-			ref={ref as React.Ref<Konva.Image>}
-			image={image}
-			// Konva crops in source pixels; the store keeps fractions.
-			crop={
-				c && image
-					? {
-							x: c.x * image.naturalWidth,
-							y: c.y * image.naturalHeight,
-							width: c.width * image.naturalWidth,
-							height: c.height * image.naturalHeight,
-						}
-					: undefined
-			}
+		<Group
+			ref={ref as React.Ref<Konva.Group>}
 			{...itemGeometry(item, scaleFactor)}
 			{...interaction}
-		/>
+			clipFunc={(ctx) => traceShape(ctx, shape, 0, 0, width, height)}
+		>
+			<KonvaImage image={image} crop={crop} width={width} height={height} />
+		</Group>
 	);
 }
 

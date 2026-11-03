@@ -51,7 +51,13 @@ export interface CanvasItem {
 	 * Absent = the whole photo. The item's width/height is the cropped box.
 	 */
 	crop?: ImageCrop;
+	/** Images only: the mask the photo is cut to. Absent = rectangle. */
+	shape?: ImageShape;
 }
+
+/** `radius`: corner radius as a fraction (0–0.5) of the box's shorter side. */
+export type ImageShape =
+	{ kind: "circle" } | { kind: "rounded"; radius: number } | { kind: "heart" };
 
 export interface ImageCrop {
 	x: number;
