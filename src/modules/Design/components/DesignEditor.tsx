@@ -15,13 +15,13 @@ import {
 	activeCanvasItemsStore,
 	addItem,
 	autoSaveActiveCanvas,
-	bringToFront,
+	bringItemsToFront,
 	duplicateItems,
 	MAX_SAVED_CANVASES,
 	removeItem,
 	removeItems,
 	saveCurrentCanvas,
-	sendToBack,
+	sendItemsToBack,
 	updateItem,
 } from "../../../shared/store/canvasStore";
 import { retryCanvasImage } from "../../../shared/store/canvasImages";
@@ -105,8 +105,11 @@ export default function DesignEditor() {
 		() => selection.filter((id) => items.some((i) => i.id === id)),
 		[selection, items],
 	);
-	const selectedItem =
-		selectedIds.length === 1 ? items.find((i) => i.id === selectedIds[0]) : undefined;
+	const selectedItems = useMemo(
+		() => items.filter((i) => selectedIds.includes(i.id)),
+		[items, selectedIds],
+	);
+	const selectedItem = selectedItems.length === 1 ? selectedItems[0] : undefined;
 	const editingItem = items.find((i) => i.id === editingId);
 	const { rows, warningCount } = usePrintChecks(items, sheet, dismissed);
 	const warnedIds = useMemo(
@@ -306,8 +309,15 @@ export default function DesignEditor() {
 
 	const stageWidth = logicalWidth * scale;
 	let toolbarStyle: React.CSSProperties | null = null;
-	if (selectedItem && !interacting && !editingId) {
-		const b = itemBounds(selectedItem);
+	if (selectedItems.length > 0 && !interacting && !editingId) {
+		// Over the whole selection's bounds.
+		const all = selectedItems.map(itemBounds);
+		const b = {
+			minX: Math.min(...all.map((x) => x.minX)),
+			maxX: Math.max(...all.map((x) => x.maxX)),
+			minY: Math.min(...all.map((x) => x.minY)),
+			maxY: Math.max(...all.map((x) => x.maxY)),
+		};
 		const centerX = Math.min(stageWidth, Math.max(0, ((b.minX + b.maxX) / 2) * scale));
 		const above = b.minY * scale > TOOLBAR_CLEARANCE;
 		toolbarStyle = {
@@ -317,13 +327,14 @@ export default function DesignEditor() {
 		};
 	}
 
-	const toolbarActions = selectedItem && {
-		item: selectedItem,
-		onUpdate: (patch: Parameters<typeof updateItem>[1]) => updateItem(selectedItem.id, patch),
-		onBringToFront: () => bringToFront(selectedItem.id),
-		onSendToBack: () => sendToBack(selectedItem.id),
+	const toolbarActions = selectedItems.length > 0 && {
+		items: selectedItems,
+		onUpdate: (patch: Parameters<typeof updateItem>[1]) =>
+			selectedItem && updateItem(selectedItem.id, patch),
+		onBringToFront: () => bringItemsToFront(selectedIds),
+		onSendToBack: () => sendItemsToBack(selectedIds),
 		onRemove: removeSelected,
-		onEditText: () => setEditingId(selectedItem.id),
+		onEditText: () => selectedItem && setEditingId(selectedItem.id),
 		onDuplicate: () => select(duplicateItems(selectedIds)),
 	};
 

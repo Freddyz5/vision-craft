@@ -327,16 +327,36 @@ export function insertItemCopies(originals: CanvasItem[], offset: number): strin
 
 /** Bring an item to the front (max zIndex + 1) */
 export function bringToFront(id: string): void {
-	const items = activeCanvasItemsStore.get();
-	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
-	updateItem(id, { zIndex: maxZ + 1 });
+	bringItemsToFront([id]);
 }
 
 /** Send an item to the back (min zIndex - 1) */
 export function sendToBack(id: string): void {
+	sendItemsToBack([id]);
+}
+
+/** Put `ids` above everything else, keeping their order among themselves. One write. */
+export function bringItemsToFront(ids: string[]): void {
 	const items = activeCanvasItemsStore.get();
+	const wanted = new Set(ids);
+	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
+	const moving = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	updateItems(
+		Object.fromEntries(moving.map((item, rank) => [item.id, { zIndex: maxZ + 1 + rank }])),
+	);
+}
+
+/** Put `ids` below everything else, keeping their order among themselves. One write. */
+export function sendItemsToBack(ids: string[]): void {
+	const items = activeCanvasItemsStore.get();
+	const wanted = new Set(ids);
 	const minZ = Math.min(0, ...items.map((i) => i.zIndex));
-	updateItem(id, { zIndex: minZ - 1 });
+	const moving = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	updateItems(
+		Object.fromEntries(
+			moving.map((item, rank) => [item.id, { zIndex: minZ - moving.length + rank }]),
+		),
+	);
 }
 
 /** Clear all items from the active canvas */

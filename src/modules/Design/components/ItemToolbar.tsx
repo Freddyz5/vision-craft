@@ -18,7 +18,8 @@ function modKey(): string {
 const PX_PER_PT = 96 / 72;
 
 interface ItemToolbarProps {
-	item: CanvasItem;
+	/** The selection: one item gets its own controls, several get group actions. */
+	items: CanvasItem[];
 	/** "floating" sits over the selection on desktop; "docked" fills the bottom bar on mobile. */
 	variant: "floating" | "docked";
 	onUpdate: (patch: Partial<CanvasItem>) => void;
@@ -35,7 +36,7 @@ interface ItemToolbarProps {
  * add crop, shape, adjustments, frame, duplicate and lock here.
  */
 export function ItemToolbar({
-	item,
+	items,
 	variant,
 	onUpdate,
 	onBringToFront,
@@ -45,7 +46,9 @@ export function ItemToolbar({
 	onDuplicate,
 	style,
 }: ItemToolbarProps) {
-	const text = isTextItem(item);
+	const [item] = items;
+	const group = items.length > 1;
+	const text = !group && isTextItem(item);
 	const docked = variant === "docked";
 	const fontSize = item.fontSize || TEXT_DEFAULTS.fontSize;
 
@@ -59,7 +62,13 @@ export function ItemToolbar({
 	return (
 		<div
 			role="toolbar"
-			aria-label={text ? "Acciones del texto" : "Acciones de la foto"}
+			aria-label={
+				group
+					? `Acciones de ${items.length} elementos`
+					: text
+						? "Acciones del texto"
+						: "Acciones de la foto"
+			}
 			style={style}
 			className={
 				docked
@@ -67,6 +76,14 @@ export function ItemToolbar({
 					: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center gap-1 rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
 			}
 		>
+			{group && (
+				<>
+					<span className="text-df-muted dark:text-df-muted-dark shrink-0 px-2 text-xs font-semibold">
+						{items.length} elementos
+					</span>
+					<Divider docked={docked} />
+				</>
+			)}
 			{text && (
 				<>
 					<ToolButton docked={docked} label="Editar texto" onClick={onEditText}>
