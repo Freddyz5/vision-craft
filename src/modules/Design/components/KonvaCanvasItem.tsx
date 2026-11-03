@@ -8,6 +8,8 @@ import {
 	type CanvasItemDragHandler,
 } from "../hooks/useCanvasItemInteractions";
 
+const HANDLE_COLOR = "#7C3AED";
+
 // Text boxes resize by the corners or sideways; the font size follows the box.
 const TEXT_ANCHORS = [
 	"top-left",
@@ -25,6 +27,10 @@ interface KonvaCanvasItemProps {
 	scaleFactor: number;
 	onDragMove?: CanvasItemDragHandler;
 	onDragEnd?: CanvasItemDragHandler;
+	/** Hidden while its text is edited in place over the sheet. */
+	hidden?: boolean;
+	onEditText?: (id: string) => void;
+	onInteractionChange?: (active: boolean) => void;
 }
 
 /** A CanvasItem on the Design stage: the shared render plus selection and its Transformer. */
@@ -35,10 +41,16 @@ export function KonvaCanvasItem({
 	scaleFactor,
 	onDragMove,
 	onDragEnd,
+	hidden = false,
+	onEditText,
+	onInteractionChange,
 }: KonvaCanvasItemProps) {
 	const nodeRef = useRef<Konva.Node>(null);
 	const isText = isTextItem(item);
 	const minWidth = isText ? 30 : 10;
+	const editText = () => {
+		if (isText) onEditText?.(item.id);
+	};
 
 	const { trRef, handleSelect, handleDragMove, handleDragEnd, handleTransformEnd } =
 		useCanvasItemInteractions({
@@ -59,16 +71,30 @@ export function KonvaCanvasItem({
 				scaleFactor={scaleFactor}
 				interaction={{
 					draggable: true,
+					visible: !hidden,
 					onClick: handleSelect,
 					onTap: handleSelect,
+					onDblClick: editText,
+					onDblTap: editText,
+					onDragStart: () => onInteractionChange?.(true),
 					onDragMove: handleDragMove,
 					onDragEnd: handleDragEnd,
-					onTransformEnd: handleTransformEnd,
+					onTransformStart: () => onInteractionChange?.(true),
+					onTransformEnd: () => {
+						handleTransformEnd();
+						onInteractionChange?.(false);
+					},
 				}}
 			/>
 			{isSelected && (
 				<Transformer
 					ref={trRef}
+					borderStroke={HANDLE_COLOR}
+					anchorStroke={HANDLE_COLOR}
+					anchorFill="#FFFFFF"
+					anchorSize={9}
+					anchorCornerRadius={2}
+					rotateAnchorOffset={24}
 					enabledAnchors={isText ? TEXT_ANCHORS : undefined}
 					boundBoxFunc={(oldBox, newBox) => {
 						if (newBox.width < minWidth || newBox.height < 10) return oldBox;

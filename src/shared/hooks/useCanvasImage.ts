@@ -1,43 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useStore } from "@nanostores/react";
+import {
+	canvasImagesStore,
+	requestCanvasImage,
+	type CanvasImageEntry,
+} from "../store/canvasImages";
 
-export type CanvasImageStatus = "loading" | "loaded" | "error";
+export type { CanvasImageStatus } from "../store/canvasImages";
 
-interface CanvasImageState {
-	url?: string;
-	image?: HTMLImageElement;
-	status: CanvasImageStatus;
-}
+const LOADING: CanvasImageEntry = { status: "loading" };
+const MISSING: CanvasImageEntry = { status: "error" };
 
-/**
- * Loads `url` as an HTMLImageElement for a Konva stage. `crossOrigin` is
- * required so the stage can still be exported with toDataURL (a tainted
- * canvas throws), which also means a server that sends no CORS headers makes
- * the load fail: that surfaces as status "error" instead of a silent blank.
- */
-export function useCanvasImage(url?: string): CanvasImageState {
-	const [state, setState] = useState<CanvasImageState>({ status: "loading" });
+/** The shared load state of `url` (see canvasImagesStore), starting the load if needed. */
+export function useCanvasImage(url?: string): CanvasImageEntry {
+	const images = useStore(canvasImagesStore, { keys: url ? [url] : [] });
 
 	useEffect(() => {
-		if (!url) return;
-		let cancelled = false;
-		const img = new window.Image();
-		img.crossOrigin = "anonymous";
-		img.onload = () => {
-			if (!cancelled) setState({ url, image: img, status: "loaded" });
-		};
-		img.onerror = () => {
-			if (!cancelled) setState({ url, status: "error" });
-		};
-		img.src = url;
-		return () => {
-			cancelled = true;
-			img.onload = null;
-			img.onerror = null;
-		};
+		if (url) requestCanvasImage(url);
 	}, [url]);
 
-	if (!url) return { status: "error" };
-	// The stored result belongs to a previous url until the effect catches up.
-	if (state.url !== url) return { url, status: "loading" };
-	return state;
+	if (!url) return MISSING;
+	return images[url] ?? LOADING;
 }

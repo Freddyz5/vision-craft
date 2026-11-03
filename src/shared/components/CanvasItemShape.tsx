@@ -12,7 +12,7 @@ import { useCanvasImage } from "../hooks/useCanvasImage";
 import { EDITOR_ONLY } from "../utils/stageCapture";
 
 /** Konva props an interactive stage (the Design editor) layers on top of the plain render. */
-export type CanvasItemInteraction = KonvaNodeEvents & { draggable?: boolean };
+export type CanvasItemInteraction = KonvaNodeEvents & { draggable?: boolean; visible?: boolean };
 
 interface CanvasItemShapeProps {
 	item: CanvasItem;

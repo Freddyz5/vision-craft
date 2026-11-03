@@ -165,7 +165,7 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 ### Tertiary
 
-- **Marigold** (#f59e0b; night: #fbbf24): defined in the theme and **reserved**. No component uses it today. Don't introduce it casually; it needs a deliberate role first.
+- **Marigold** (#f59e0b; night: #fbbf24): the **print-warning** color, and only that. In the Design editor it marks what would go wrong on paper: amber dashed outlines on the sheet (#d97706, so it holds 3:1 on white), the warning count badge, and warning text in the print list (`df-warning`, #b45309 by day for 4.5:1 on white; #fbbf24 at night). Nothing decorative uses it.
 
 ### Neutral
 
@@ -192,7 +192,7 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 **The Ink-on-Violet Rule.** At night, text and icons on a filled Studio Violet (night) or on the night gradient are Midnight Navy (`text-white dark:text-df-on-primary-dark`), never white: white on #a78bfa is 2.7:1 and on #2dd4bf 1.8:1, while Midnight gives 7:1 and 9.7:1. A large violet panel that holds white copy at several opacities (the print-options panel, the landing feature card) keeps the day violet (#7c3aed) at night instead, where white reads at 5.7:1.
 
-**Known drift (UI pass):** `df-border`, `df-border-dark`, `df-surface-alt` and `df-surface-alt-dark` are referenced (search bar divider, upload dropzone, selected-images modal, print-preview modal) but never defined in `src/assets/app.css`, so those borders and fills render as nothing. Borders currently use Tailwind gray (`gray-200`, `gray-700/800`) directly; define Hairline / Night Hairline as real `df-*` tokens instead of adding more raw grays. One panel hardcodes `#161f30` at night, and one element hardcodes `#20d4a4`.
+**Known drift (UI pass):** `df-border`, `df-border-dark`, `df-surface-alt` and `df-surface-alt-dark` are referenced (search bar divider, upload dropzone, selected-images modal, print-preview modal) but never defined in `src/assets/app.css`, so those borders and fills render as nothing. Hairline and Well now exist as `df-hairline` / `df-well` (with `-dark` twins) and the Design editor uses them; move the other screens off raw Tailwind grays and the undefined names onto these. One panel hardcodes `#161f30` at night, and one element hardcodes `#20d4a4`.
 
 ## Typography
 
@@ -213,6 +213,8 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 ### Named Rules
 
 **The Violet Second Line Rule.** A wizard step's page heading is two lines: a plain Graphite line, then a violet line that ends with a period ("Diseña tu / **Visión.**"). The eyebrow above it names the step. Don't add a third line or move the violet to the first line.
+
+**The Editor Exception.** The Design step is a full-screen tool, so it trades the two-line heading for a one-line 48px header: "Paso 03 · Diseña", the board's editable name, the paper ("A4 vertical · 21 × 29,7 cm") and "Guardado en este navegador". No footer on that step either; the sheet gets the whole screen.
 
 **The Whisper Label Rule.** Section labels are tiny, bold, uppercase, widely tracked, and muted. They organize, they don't compete. Headings shout; labels whisper; nothing sits loudly in between.
 
@@ -284,7 +286,7 @@ Soft and confident: rounded pills, semibold labels, an unmistakable violet.
 - **Search field:** a whole-row Paper White container, 16px corners, 1px Pewter border, Rest shadow, 12px × 16px padding, a leading search icon in Pewter, and a borderless transparent input inside. Provider checkboxes share the row behind a small label legend.
 - **Focus:** buttons and tiles use the 2px violet outline. **Known drift:** the search input is `outline-none` and its container has no `focus-within` state, so keyboard focus is invisible there.
 - **Checkboxes:** native, 16px, accent Studio Violet.
-- **Known drift (UI pass):** the Design inspector uses DaisyUI stock controls (`select-bordered`, `textarea-bordered`, `input-bordered`, `btn-outline`, `btn-xs`) on `bg-base-100`. They should adopt the `df-*` look (Paper/Midnight fills, hairline border, 12–16px corners, violet focus) like the search field.
+- The Design editor's controls (floating item toolbar, sheet toolbar, print list) are built on `df-*` tokens: pill buttons on Paper/Slate, Hairline borders, Well hovers, violet focus. The old DaisyUI inspector is gone.
 
 ### Navigation
 
@@ -324,7 +326,7 @@ Bottom-right, white text on a success fill with a check icon and a large shadow.
 ### Don't:
 
 - **Don't** use the violet-to-teal gradient on more than one button per screen, or on anything that isn't the main forward action.
-- **Don't** use Marigold until it has a defined role.
+- **Don't** use Marigold for anything but print warnings.
 - **Don't** use DaisyUI stock component classes (`btn-outline`, `select-bordered`, `alert-success`, `bg-base-*`) for new UI; they're off-system drift.
 - **Don't** reference undefined tokens (`df-border`, `df-surface-alt`, `animate-fade-in`, `animate-fade-in-up`); they silently render nothing.
 - **Don't** put heavy shadows (`shadow-lg` and up) on resting cards; those belong to Lift, Glow, and Float.

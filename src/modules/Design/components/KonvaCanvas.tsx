@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { Stage, Layer, Rect, Line } from "react-konva";
+import { Stage, Layer, Rect, Line, Group } from "react-konva";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
 import { updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 import type { CanvasItemDragHandler } from "../hooks/useCanvasItemInteractions";
 import type { SelectedItemId } from "../types";
+import { SAFE_MARGIN_MM } from "../utils/printChecks";
+import { MM_TO_PX } from "../../Canvas/constants/presets";
+
+/** Editor accents on the sheet: violet for guides, amber (Marigold) for print warnings. */
+const GUIDE_COLOR = "#7C3AED";
+const WARNING_COLOR = "#D97706";
 import type Konva from "konva";
 
 interface KonvaCanvasProps {
@@ -15,6 +21,13 @@ interface KonvaCanvasProps {
 	selectedId: SelectedItemId;
 	setSelectedId: (id: SelectedItemId) => void;
 	scaleFactor: number;
+	/** Items with an open print warning, outlined in amber on the sheet. */
+	warnedIds: Set<string>;
+	/** Text item being edited in place (hidden on the stage meanwhile). */
+	editingId: string | null;
+	onEditText: (id: string) => void;
+	/** True while an item is dragged or transformed. */
+	onInteractionChange: (active: boolean) => void;
 }
 
 export function KonvaCanvas({
@@ -25,6 +38,10 @@ export function KonvaCanvas({
 	selectedId,
 	setSelectedId,
 	scaleFactor,
+	warnedIds,
+	editingId,
+	onEditText,
+	onInteractionChange,
 }: KonvaCanvasProps) {
 	const [snappingLines, setSnappingLines] = useState<{ x: number | null; y: number | null }>({
 		x: null,
@@ -92,6 +109,7 @@ export function KonvaCanvas({
 
 	const handleDragEnd: CanvasItemDragHandler = (id, e) => {
 		setSnappingLines({ x: null, y: null });
+		onInteractionChange(false);
 		const node = e.target;
 		updateItem(id, {
 			x: node.x() / scaleFactor,
@@ -100,9 +118,10 @@ export function KonvaCanvas({
 	};
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
+	const margin = SAFE_MARGIN_MM * MM_TO_PX * scaleFactor;
 
 	return (
-		<div className="shadow-xl shadow-gray-200 dark:shadow-gray-900/50">
+		<div className="shadow-[0_1px_3px_rgb(17_24_39/0.08),0_12px_32px_-12px_rgb(17_24_39/0.25)] dark:shadow-[0_12px_32px_-12px_rgb(0_0_0/0.8)]">
 			<Stage
 				width={logicalWidth * scaleFactor}
 				height={logicalHeight * scaleFactor}
@@ -128,8 +147,40 @@ export function KonvaCanvas({
 							scaleFactor={scaleFactor}
 							onDragMove={handleDragMove}
 							onDragEnd={handleDragEnd}
+							hidden={item.id === editingId}
+							onEditText={onEditText}
+							onInteractionChange={onInteractionChange}
 						/>
 					))}
+
+					{/* Print overlay: what the printer will do to the sheet. Never exported. */}
+					<Group name={EDITOR_ONLY} listening={false}>
+						<Rect
+							x={margin}
+							y={margin}
+							width={logicalWidth * scaleFactor - margin * 2}
+							height={logicalHeight * scaleFactor - margin * 2}
+							stroke={GUIDE_COLOR}
+							strokeWidth={1}
+							opacity={0.35}
+							dash={[6, 4]}
+						/>
+						{sortedItems
+							.filter((item) => warnedIds.has(item.id) && item.id !== editingId)
+							.map((item) => (
+								<Rect
+									key={item.id}
+									x={item.x * scaleFactor}
+									y={item.y * scaleFactor}
+									width={item.width * scaleFactor}
+									height={item.height * scaleFactor}
+									rotation={item.rotation}
+									stroke={WARNING_COLOR}
+									strokeWidth={2}
+									dash={[6, 3]}
+								/>
+							))}
+					</Group>
 
 					{/* Snapping guide lines layer (rendered above items for visibility) */}
 					{snappingLines.x !== null && (
@@ -141,7 +192,7 @@ export function KonvaCanvas({
 								snappingLines.x * scaleFactor,
 								logicalHeight * scaleFactor,
 							]}
-							stroke="#EF4444"
+							stroke={GUIDE_COLOR}
 							strokeWidth={1}
 							dash={[4, 4]}
 						/>
@@ -155,7 +206,7 @@ export function KonvaCanvas({
 								logicalWidth * scaleFactor,
 								snappingLines.y * scaleFactor,
 							]}
-							stroke="#EF4444"
+							stroke={GUIDE_COLOR}
 							strokeWidth={1}
 							dash={[4, 4]}
 						/>

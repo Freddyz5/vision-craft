@@ -48,7 +48,7 @@ All cross-module/cross-page state lives in `src/shared/store/*` as nanostores, r
 
 - `boardStore.ts` — `selectedImagesStore`: images selected in Explore (persisted).
 - `canvasStore.ts` — the core domain store: `activeCanvasConfigStore` (paper size/orientation/name, dimensions always stored in **mm**), `activeCanvasItemsStore` (the placed images/text on the active board), `savedCanvasesStore` (max 20 saved boards). Also owns the mutation API (`addItem`, `updateItem`, `bringToFront`/`sendToBack`, `saveCurrentCanvas`, `loadCanvas`, `duplicateCanvas`, `deleteCanvas`, `exportJson`/`importJson`). Prefer adding new canvas mutations here rather than mutating the store directly from components.
-- `designViewStore.ts` — small non-persistent atom toggling the Design sidebar between "selected images" and "saved canvases" views.
+- `canvasImages.ts` — non-persistent `map` of every image a stage loads (status + natural size), shared by the Konva render, the print list and the print-quality checks.
 
 Persisted stores use `persistentAtom` (`@nanostores/persistent`) with explicit `JSON.stringify`/`JSON.parse` encode/decode — this is the only persistence layer (no backend); everything lives in `localStorage`.
 
@@ -75,7 +75,7 @@ Tracking a broader "professionalize the codebase" effort, done incrementally, ph
 - [x] **Quick wins**: `lang="es"` fix, dead code archived as `.bak`, `contants/likns` typo → `constants/links`, `SearcBar` typo fixed, ESLint (flat config) + Prettier + Husky/lint-staged set up.
 - [x] **Icons**: migrated everything to `lucide-react`/`lucide-astro` (see Icons section above).
 - [x] **Componentización**: `useCanvasItemInteractions` unifies `KonvaImageItem`/`KonvaTextItem`; `DesignEditor` split into `ZoomControls`/`ItemInspector`/`DesignActionBar`; `ExportPanel` split into `ExportCanvasPreview`/`ExportPrintOptions`/`ExportDownloadOptions`/`PrintPreviewModal`/`StaticCanvasItems` plus `usePosterPrintConfig`/`useWallPreviewCapture`/`usePrintModal` hooks. Shared `useToast`/`useContainerScale`/`Toast` de-duplicate what DesignEditor and ExportPanel both had inline.
-- [x] **Shared layout**: `StudioLayout.astro` + `PageHeader`/`PageFooter` now used by all 4 module `index.astro` shells (Canvas/Design/Explore/Export).
+- [x] **Shared layout**: `StudioLayout.astro` wraps all 4 module `index.astro` shells; Canvas/Explore/Export add `PageHeader`/`PageFooter`, while Design is a full-screen editor with its own one-line `EditorHeader` and no footer (layout "Prueba de impresión": `PhotosPanel` | sheet | `PrintList`, floating `ItemToolbar`).
 - [x] **Docs**: README.md updated (nanostores, real folder structure, real data model, Unsplash+Pexels) and a "Convenciones de código" section written (naming, exports, design tokens).
 
 ## Code-quality conventions established during this pass

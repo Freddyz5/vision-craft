@@ -95,7 +95,7 @@ src/
     store/             # nanostores: fuente de verdad del dominio
       canvasStore.ts   # config + items + lienzos guardados (persistente)
       boardStore.ts    # selección de imágenes en Explore (persistente)
-      designViewStore.ts
+      canvasImages.ts  # imágenes cargadas en el lienzo (estado y tamaño real)
     components/        # TopNav, StudioLayout, PageHeader/Footer, StepperNav, Toast
     hooks/              # useToast, useContainerScale, useDebounce
     constants/
