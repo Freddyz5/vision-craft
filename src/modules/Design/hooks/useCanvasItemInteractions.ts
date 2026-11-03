@@ -1,44 +1,38 @@
-import { useEffect, useRef } from "react";
 import type Konva from "konva";
-import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
-import { updateItem } from "../../../shared/store/canvasStore";
+import { isTextItem, updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
 
 export type CanvasItemDragHandler = (id: string, e: Konva.KonvaEventObject<DragEvent>) => void;
 
+/** `additive`: Shift, Cmd or Ctrl was held, so the item joins/leaves the selection. */
+export type CanvasItemSelectHandler = (id: string, additive: boolean) => void;
+
 interface UseCanvasItemInteractionsOptions {
 	item: CanvasItem;
-	isSelected: boolean;
 	scaleFactor: number;
 	/** Ref to the underlying Konva node (Image, Text, ...) the Transformer attaches to. */
 	nodeRef: React.RefObject<Konva.Node | null>;
-	onSelect: (id: string) => void;
+	onSelect: CanvasItemSelectHandler;
 	onDragMove?: CanvasItemDragHandler;
 	onDragEnd?: CanvasItemDragHandler;
 }
 
 /**
  * Shared drag/select/resize behavior for items placed on the Konva design
- * stage (see KonvaCanvasItem). Keyboard shortcuts live in useEditorShortcuts.
+ * stage (see KonvaCanvasItem). The selection's single Transformer lives in
+ * KonvaCanvas; keyboard shortcuts in useEditorShortcuts.
  */
 export function useCanvasItemInteractions({
 	item,
-	isSelected,
 	scaleFactor,
 	nodeRef,
 	onSelect,
 	onDragMove,
 	onDragEnd,
 }: UseCanvasItemInteractionsOptions) {
-	const trRef = useRef<Konva.Transformer>(null);
-
-	useEffect(() => {
-		if (isSelected && trRef.current && nodeRef.current) {
-			trRef.current.nodes([nodeRef.current]);
-			trRef.current.getLayer()?.batchDraw();
-		}
-	}, [isSelected, nodeRef]);
-
-	const handleSelect = () => onSelect(item.id);
+	const handleSelect = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+		const evt = e.evt as MouseEvent;
+		onSelect(item.id, !!(evt.shiftKey || evt.metaKey || evt.ctrlKey));
+	};
 
 	const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => onDragMove?.(item.id, e);
 
@@ -81,5 +75,5 @@ export function useCanvasItemInteractions({
 		updateItem(item.id, patch);
 	};
 
-	return { trRef, handleSelect, handleDragMove, handleDragEnd, handleTransformEnd };
+	return { handleSelect, handleDragMove, handleDragEnd, handleTransformEnd };
 }

@@ -1,30 +1,19 @@
-import React, { useRef } from "react";
-import { Transformer } from "react-konva";
+import { useCallback, useRef } from "react";
 import type Konva from "konva";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import {
 	useCanvasItemInteractions,
 	type CanvasItemDragHandler,
+	type CanvasItemSelectHandler,
 } from "../hooks/useCanvasItemInteractions";
-
-const HANDLE_COLOR = "#7C3AED";
-
-// Text boxes resize by the corners or sideways; the font size follows the box.
-const TEXT_ANCHORS = [
-	"top-left",
-	"top-right",
-	"bottom-left",
-	"bottom-right",
-	"middle-left",
-	"middle-right",
-];
 
 interface KonvaCanvasItemProps {
 	item: CanvasItem;
-	isSelected: boolean;
-	onSelect: (id: string) => void;
+	onSelect: CanvasItemSelectHandler;
 	scaleFactor: number;
+	/** Tells the stage which Konva node draws this item, for the selection's Transformer. */
+	onNode: (id: string, node: Konva.Node | null) => void;
 	onDragMove?: CanvasItemDragHandler;
 	onDragEnd?: CanvasItemDragHandler;
 	onDragStart?: CanvasItemDragHandler;
@@ -34,12 +23,12 @@ interface KonvaCanvasItemProps {
 	onInteractionChange?: (active: boolean) => void;
 }
 
-/** A CanvasItem on the Design stage: the shared render plus selection and its Transformer. */
+/** A CanvasItem on the Design stage: the shared render plus selection, drag and transform. */
 export function KonvaCanvasItem({
 	item,
-	isSelected,
 	onSelect,
 	scaleFactor,
+	onNode,
 	onDragMove,
 	onDragEnd,
 	onDragStart,
@@ -48,16 +37,23 @@ export function KonvaCanvasItem({
 	onInteractionChange,
 }: KonvaCanvasItemProps) {
 	const nodeRef = useRef<Konva.Node>(null);
-	const isText = isTextItem(item);
-	const minWidth = isText ? 30 : 10;
+	const { id } = item;
+	// A callback ref, so the stage also hears when the node is swapped (e.g.
+	// an image that fails to load becomes a placeholder group).
+	const setNode = useCallback(
+		(node: Konva.Node | null) => {
+			nodeRef.current = node;
+			onNode(id, node);
+		},
+		[id, onNode],
+	);
 	const editText = () => {
-		if (isText) onEditText?.(item.id);
+		if (isTextItem(item)) onEditText?.(item.id);
 	};
 
-	const { trRef, handleSelect, handleDragMove, handleDragEnd, handleTransformEnd } =
+	const { handleSelect, handleDragMove, handleDragEnd, handleTransformEnd } =
 		useCanvasItemInteractions({
 			item,
-			isSelected,
 			scaleFactor,
 			nodeRef,
 			onSelect,
@@ -66,47 +62,29 @@ export function KonvaCanvasItem({
 		});
 
 	return (
-		<React.Fragment>
-			<CanvasItemShape
-				ref={nodeRef}
-				item={item}
-				scaleFactor={scaleFactor}
-				interaction={{
-					draggable: true,
-					visible: !hidden,
-					onClick: handleSelect,
-					onTap: handleSelect,
-					onDblClick: editText,
-					onDblTap: editText,
-					onDragStart: (e) => {
-						onInteractionChange?.(true);
-						onDragStart?.(item.id, e);
-					},
-					onDragMove: handleDragMove,
-					onDragEnd: handleDragEnd,
-					onTransformStart: () => onInteractionChange?.(true),
-					onTransformEnd: () => {
-						handleTransformEnd();
-						onInteractionChange?.(false);
-					},
-				}}
-			/>
-			{isSelected && (
-				<Transformer
-					ref={trRef}
-					borderStroke={HANDLE_COLOR}
-					anchorStroke={HANDLE_COLOR}
-					anchorFill="#FFFFFF"
-					anchorSize={9}
-					anchorCornerRadius={2}
-					rotateAnchorOffset={24}
-					enabledAnchors={isText ? TEXT_ANCHORS : undefined}
-					boundBoxFunc={(oldBox, newBox) => {
-						if (newBox.width < minWidth || newBox.height < 10) return oldBox;
-						return newBox;
-					}}
-				/>
-			)}
-		</React.Fragment>
+		<CanvasItemShape
+			ref={setNode}
+			item={item}
+			scaleFactor={scaleFactor}
+			interaction={{
+				draggable: true,
+				visible: !hidden,
+				onClick: handleSelect,
+				onTap: handleSelect,
+				onDblClick: editText,
+				onDblTap: editText,
+				onDragStart: (e) => {
+					onInteractionChange?.(true);
+					onDragStart?.(item.id, e);
+				},
+				onDragMove: handleDragMove,
+				onDragEnd: handleDragEnd,
+				onTransformStart: () => onInteractionChange?.(true),
+				onTransformEnd: () => {
+					handleTransformEnd();
+					onInteractionChange?.(false);
+				},
+			}}
+		/>
 	);
 }

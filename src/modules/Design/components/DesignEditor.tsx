@@ -19,6 +19,7 @@ import {
 	duplicateItems,
 	MAX_SAVED_CANVASES,
 	removeItem,
+	removeItems,
 	saveCurrentCanvas,
 	sendToBack,
 	updateItem,
@@ -52,7 +53,6 @@ import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
-import type { SelectedItemId } from "../types";
 
 const THUMBNAIL_WIDTH = 320;
 const MIN_SCALE = 0.1;
@@ -92,7 +92,7 @@ export default function DesignEditor() {
 		[logicalWidth, logicalHeight],
 	);
 
-	const [selectedId, setSelectedId] = useState<SelectedItemId>(null);
+	const [selection, setSelection] = useState<string[]>([]);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [interacting, setInteracting] = useState(false);
 	const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
@@ -100,7 +100,13 @@ export default function DesignEditor() {
 	const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
 	const [zoom, setZoom] = useState(1);
 
-	const selectedItem = items.find((i) => i.id === selectedId);
+	// Drop ids whose item is gone (removed, undone) without a separate cleanup step.
+	const selectedIds = useMemo(
+		() => selection.filter((id) => items.some((i) => i.id === id)),
+		[selection, items],
+	);
+	const selectedItem =
+		selectedIds.length === 1 ? items.find((i) => i.id === selectedIds[0]) : undefined;
 	const editingItem = items.find((i) => i.id === editingId);
 	const { rows, warningCount } = usePrintChecks(items, sheet, dismissed);
 	const warnedIds = useMemo(
@@ -121,9 +127,15 @@ export default function DesignEditor() {
 	const setScale = (next: number) =>
 		setZoom(Math.min(MAX_SCALE, Math.max(MIN_SCALE, next)) / fitScale);
 
-	const select = (id: SelectedItemId) => {
-		setSelectedId(id);
-		if (id !== editingId) setEditingId(null);
+	const select = (ids: string[]) => {
+		setSelection(ids);
+		if (editingId && !ids.includes(editingId)) setEditingId(null);
+	};
+	const selectOne = (id: string | null | undefined) => select(id ? [id] : []);
+	/** Plain click selects just this item; Shift/Cmd/Ctrl+click adds or removes it. */
+	const selectItem = (id: string, additive: boolean) => {
+		if (!additive) return select([id]);
+		select(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
 	};
 
 	const showRemovedToast = (count: number) =>
@@ -132,10 +144,11 @@ export default function DesignEditor() {
 		});
 
 	useEditorShortcuts({
-		selectedIds: selectedId ? [selectedId] : [],
-		onClearSelection: () => select(null),
+		selectedIds,
+		onClearSelection: () => select([]),
 		onRemoved: showRemovedToast,
-		onSelect: (ids) => select(ids[0] ?? null),
+		onSelect: select,
+		onSelectAll: () => select(activeCanvasItemsStore.get().map((i) => i.id)),
 	});
 
 	// A screenshot or copied photo pasted with Ctrl/Cmd+V: upload it, then place it like a picked photo.
@@ -156,7 +169,7 @@ export default function DesignEditor() {
 			}
 			const item = newPhotoItem(photo, sheet, activeCanvasItemsStore.get());
 			addItem(item);
-			select(item.id);
+			select([item.id]);
 			showToast("Imagen pegada en la hoja.");
 		} catch (err) {
 			// Cloudinary answers in English; keep the message in the product's language.
@@ -172,8 +185,8 @@ export default function DesignEditor() {
 	};
 
 	useEditorClipboard({
-		selectedIds: selectedId ? [selectedId] : [],
-		onSelect: (ids) => select(ids[0] ?? null),
+		selectedIds,
+		onSelect: select,
 		onPasteImage: handlePasteImage,
 	});
 
@@ -183,7 +196,7 @@ export default function DesignEditor() {
 		if (!viewport) return;
 		const clear = (e: PointerEvent) => {
 			if (!(e.target as HTMLElement).closest("[data-sheet]")) {
-				setSelectedId(null);
+				setSelection([]);
 				setEditingId(null);
 			}
 		};
@@ -203,7 +216,7 @@ export default function DesignEditor() {
 	const handlePickPhoto = (photo: Parameters<typeof newPhotoItem>[0]) => {
 		const existing = items.find((i) => i.imageSrc === photo.imageSrc);
 		if (existing) {
-			select(existing.id);
+			selectOne(existing.id);
 			return;
 		}
 		addItem(newPhotoItem(photo, sheet, items));
@@ -212,7 +225,7 @@ export default function DesignEditor() {
 	const handleAddText = () => {
 		const item = newTextItem(sheet, items);
 		addItem(item);
-		setSelectedId(item.id);
+		select([item.id]);
 		setEditingId(item.id);
 		setMobilePanel(null);
 	};
@@ -231,15 +244,15 @@ export default function DesignEditor() {
 	// ── Selected item actions ─────────────────────────────────────────────
 
 	const removeSelected = () => {
-		if (!selectedItem) return;
-		removeItem(selectedItem.id);
-		select(null);
-		showRemovedToast(1);
+		if (selectedIds.length === 0) return;
+		removeItems(selectedIds);
+		select([]);
+		showRemovedToast(selectedIds.length);
 	};
 
 	const handleRemoveRow = (id: string) => {
 		removeItem(id);
-		if (id === selectedId) select(null);
+		if (selectedIds.includes(id)) select(selectedIds.filter((x) => x !== id));
 		showRemovedToast(1);
 	};
 
@@ -308,16 +321,16 @@ export default function DesignEditor() {
 		onSendToBack: () => sendToBack(selectedItem.id),
 		onRemove: removeSelected,
 		onEditText: () => setEditingId(selectedItem.id),
-		onDuplicate: () => select(duplicateItems([selectedItem.id])[0] ?? null),
+		onDuplicate: () => select(duplicateItems(selectedIds)),
 	};
 
 	const printList = (
 		<PrintList
 			rows={rows}
 			warningCount={warningCount}
-			selectedId={selectedId}
-			onSelect={(id) => {
-				select(id);
+			selectedIds={selectedIds}
+			onSelect={(id, additive) => {
+				selectItem(id, additive);
 				// On mobile the half-height panel would cover the item just picked.
 				if (!isTabletUp) setMobilePanel(null);
 			}}
@@ -388,17 +401,18 @@ export default function DesignEditor() {
 										logicalWidth={logicalWidth}
 										logicalHeight={logicalHeight}
 										items={items}
-										selectedId={selectedId}
-										setSelectedId={select}
+										selectedIds={selectedIds}
+										onSelectItem={selectItem}
+										onClearSelection={() => select([])}
 										scaleFactor={scale}
 										warnedIds={warnedIds}
 										editingId={editingId}
 										onEditText={(id) => {
-											setSelectedId(id);
+											select([id]);
 											setEditingId(id);
 										}}
 										onInteractionChange={setInteracting}
-										onCopied={select}
+										onCopied={selectOne}
 									/>
 									{items.length === 0 && (
 										<p className="text-df-muted pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold">

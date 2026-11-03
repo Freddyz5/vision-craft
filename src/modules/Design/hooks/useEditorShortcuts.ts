@@ -34,6 +34,7 @@ interface UseEditorShortcutsOptions {
 	onRemoved?: (count: number) => void;
 	/** Replace the selection, e.g. with the copies Ctrl/Cmd+D just made. */
 	onSelect: (ids: string[]) => void;
+	onSelectAll: () => void;
 }
 
 /**
@@ -47,17 +48,18 @@ export function useEditorShortcuts({
 	onClearSelection,
 	onRemoved,
 	onSelect,
+	onSelectAll,
 }: UseEditorShortcutsOptions) {
 	// The listener is registered once and reads the latest options from here.
-	const latest = useRef({ selectedIds, onClearSelection, onRemoved, onSelect });
+	const latest = useRef({ selectedIds, onClearSelection, onRemoved, onSelect, onSelectAll });
 	useEffect(() => {
-		latest.current = { selectedIds, onClearSelection, onRemoved, onSelect };
+		latest.current = { selectedIds, onClearSelection, onRemoved, onSelect, onSelectAll };
 	});
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (isTypingTarget(e.target)) return;
-			const { selectedIds, onClearSelection, onRemoved, onSelect } = latest.current;
+			const { selectedIds, onClearSelection, onRemoved, onSelect, onSelectAll } = latest.current;
 			const key = e.key.toLowerCase();
 
 			if (e.ctrlKey || e.metaKey) {
@@ -68,6 +70,9 @@ export function useEditorShortcuts({
 				} else if (key === "y") {
 					e.preventDefault();
 					redo();
+				} else if (key === "a") {
+					e.preventDefault();
+					onSelectAll();
 				} else if (key === "d" && selectedIds.length > 0) {
 					// Also keeps the browser from bookmarking the page.
 					e.preventDefault();

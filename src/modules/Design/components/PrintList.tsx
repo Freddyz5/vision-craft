@@ -17,8 +17,9 @@ import { PPI_GOOD } from "../utils/printChecks";
 interface PrintListProps {
 	rows: PrintListRow[];
 	warningCount: number;
-	selectedId: string | null;
-	onSelect: (id: string) => void;
+	selectedIds: string[];
+	/** `additive`: Shift/Cmd/Ctrl+click adds the row to the selection (desktop). */
+	onSelect: (id: string, additive: boolean) => void;
 	onDismiss: (id: string, kind: PrintWarningKind) => void;
 	onRetry: (item: CanvasItem) => void;
 	onRemove: (id: string) => void;
@@ -51,7 +52,7 @@ function rowDetail(row: PrintListRow): string {
 export function PrintList({
 	rows,
 	warningCount,
-	selectedId,
+	selectedIds,
 	onSelect,
 	onDismiss,
 	onRetry,
@@ -99,7 +100,7 @@ export function PrintList({
 			<ol role="list" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-2">
 				{rows.map((row) => {
 					const { item } = row;
-					const selected = item.id === selectedId;
+					const selected = selectedIds.includes(item.id);
 					const warning = row.warnings[0];
 					return (
 						<li
@@ -113,7 +114,7 @@ export function PrintList({
 						>
 							<button
 								type="button"
-								onClick={() => onSelect(item.id)}
+								onClick={(e) => onSelect(item.id, e.shiftKey || e.metaKey || e.ctrlKey)}
 								aria-current={selected ? "true" : undefined}
 								className="focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 text-left focus-visible:outline-2"
 							>

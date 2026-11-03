@@ -1,26 +1,44 @@
-import React, { useState } from "react";
-import { Stage, Layer, Rect, Line, Group } from "react-konva";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Stage, Layer, Rect, Line, Group, Transformer } from "react-konva";
+import type Konva from "konva";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
-import { insertItemCopies, updateItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import {
+	insertItemCopies,
+	isTextItem,
+	updateItem,
+	type CanvasItem,
+} from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
-import type { CanvasItemDragHandler } from "../hooks/useCanvasItemInteractions";
-import type { SelectedItemId } from "../types";
+import type {
+	CanvasItemDragHandler,
+	CanvasItemSelectHandler,
+} from "../hooks/useCanvasItemInteractions";
 import { SAFE_MARGIN_MM } from "../utils/printChecks";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 
-/** Editor accents on the sheet: violet for guides, amber (Marigold) for print warnings. */
+/** Editor accents on the sheet: violet for guides and handles, amber (Marigold) for print warnings. */
 const GUIDE_COLOR = "#7C3AED";
 const WARNING_COLOR = "#D97706";
-import type Konva from "konva";
+
+// A lone text box resizes by the corners or sideways; the font size follows the box.
+const TEXT_ANCHORS = [
+	"top-left",
+	"top-right",
+	"bottom-left",
+	"bottom-right",
+	"middle-left",
+	"middle-right",
+];
 
 interface KonvaCanvasProps {
 	stageRef: React.RefObject<Konva.Stage | null>;
 	logicalWidth: number;
 	logicalHeight: number;
 	items: CanvasItem[];
-	selectedId: SelectedItemId;
-	setSelectedId: (id: SelectedItemId) => void;
+	selectedIds: string[];
+	onSelectItem: CanvasItemSelectHandler;
+	onClearSelection: () => void;
 	scaleFactor: number;
 	/** Items with an open print warning, outlined in amber on the sheet. */
 	warnedIds: Set<string>;
@@ -38,8 +56,9 @@ export function KonvaCanvas({
 	logicalWidth,
 	logicalHeight,
 	items,
-	selectedId,
-	setSelectedId,
+	selectedIds,
+	onSelectItem,
+	onClearSelection,
 	scaleFactor,
 	warnedIds,
 	editingId,
@@ -62,9 +81,35 @@ export function KonvaCanvas({
 	const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
 		// Deselect when clicking on empty area
 		if (e.target === e.target.getStage() || e.target.name() === "background-rect") {
-			setSelectedId(null);
+			onClearSelection();
 		}
 	};
+
+	// One Transformer for the whole selection. Items report their Konva node
+	// here; after every render the Transformer is pointed at the selected
+	// ones, but only re-attached when that set actually changed, so a
+	// transform in progress isn't interrupted.
+	const trRef = useRef<Konva.Transformer>(null);
+	const nodesRef = useRef(new Map<string, Konva.Node>());
+	const handleNode = useCallback((id: string, node: Konva.Node | null) => {
+		if (node) nodesRef.current.set(id, node);
+		else nodesRef.current.delete(id);
+	}, []);
+	useEffect(() => {
+		const tr = trRef.current;
+		if (!tr) return;
+		const next = selectedIds
+			.filter((id) => id !== editingId)
+			.map((id) => nodesRef.current.get(id))
+			.filter((node): node is Konva.Node => !!node);
+		const current = tr.nodes();
+		if (next.length !== current.length || next.some((node, i) => node !== current[i])) {
+			tr.nodes(next);
+			tr.getLayer()?.batchDraw();
+		}
+	});
+	const loneText =
+		selectedIds.length === 1 && items.some((i) => i.id === selectedIds[0] && isTextItem(i));
 
 	const handleDragMove: CanvasItemDragHandler = (id, e) => {
 		const node = e.target;
@@ -167,8 +212,8 @@ export function KonvaCanvas({
 							)}
 							<KonvaCanvasItem
 								item={item}
-								isSelected={selectedId === item.id}
-								onSelect={setSelectedId}
+								onSelect={onSelectItem}
+								onNode={handleNode}
 								scaleFactor={scaleFactor}
 								onDragMove={handleDragMove}
 								onDragStart={handleDragStart}
@@ -238,6 +283,21 @@ export function KonvaCanvas({
 							dash={[4, 4]}
 						/>
 					)}
+
+					<Transformer
+						ref={trRef}
+						borderStroke={GUIDE_COLOR}
+						anchorStroke={GUIDE_COLOR}
+						anchorFill="#FFFFFF"
+						anchorSize={9}
+						anchorCornerRadius={2}
+						rotateAnchorOffset={24}
+						enabledAnchors={loneText ? TEXT_ANCHORS : undefined}
+						boundBoxFunc={(oldBox, newBox) => {
+							if (newBox.width < (loneText ? 30 : 10) || newBox.height < 10) return oldBox;
+							return newBox;
+						}}
+					/>
 				</Layer>
 			</Stage>
 		</div>
