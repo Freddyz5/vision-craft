@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
 import type Konva from "konva";
 import { useStore } from "@nanostores/react";
-import { activeCanvasConfigStore, activeCanvasItemsStore } from "../../../shared/store/canvasStore";
+import {
+	activeCanvasConfigStore,
+	activeCanvasItemsStore,
+	markActiveCanvasExported,
+} from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import type { ExportMode } from "../types";
 import {
@@ -78,7 +82,10 @@ export default function ExportPanel() {
 						})
 					: false;
 
-		if (started) return;
+		if (started) {
+			markActiveCanvasExported();
+			return;
+		}
 
 		const win = printIframeRef.current?.contentWindow as any;
 		if (!win) {
@@ -91,6 +98,7 @@ export default function ExportPanel() {
 			}
 			win.focus?.();
 			win.print?.();
+			markActiveCanvasExported();
 		} catch (err: any) {
 			showToast("No se pudo iniciar la impresión: " + (err?.message || "Error"));
 		}
@@ -145,6 +153,7 @@ export default function ExportPanel() {
 			quality: mimeType === "image/jpeg" ? 0.92 : undefined,
 		});
 		downloadDataUrl(dataURL, `${config.name || "vision-board"}.${extension}`);
+		markActiveCanvasExported();
 		showToast(`${extension.toUpperCase()} descargado.`);
 	};
 

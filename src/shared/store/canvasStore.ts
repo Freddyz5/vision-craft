@@ -122,6 +122,23 @@ export const activeCanvasIdStore = persistentAtom<string | null | undefined>(
 	{ encode, decode },
 );
 
+/**
+ * Whether the active canvas, as it is now, was downloaded or printed from
+ * Export (drives the "Exporta" step's check mark). Any edit makes it stale.
+ */
+export const activeCanvasExportedStore = persistentAtom<boolean>("vc-canvas-exported", false, {
+	encode,
+	decode,
+});
+
+activeCanvasItemsStore.listen(() => activeCanvasExportedStore.set(false));
+activeCanvasConfigStore.listen(() => activeCanvasExportedStore.set(false));
+
+/** Call when the active canvas was downloaded or sent to print. */
+export function markActiveCanvasExported(): void {
+	activeCanvasExportedStore.set(true);
+}
+
 /** Saved boards live in localStorage; past this many, saving asks to delete one first. */
 export const MAX_SAVED_CANVASES = 20;
 

@@ -13,6 +13,7 @@ import { LINKS } from "../constants/links";
 import { selectedImagesStore } from "../store/boardStore";
 import {
 	activeCanvasConfigStore,
+	activeCanvasExportedStore,
 	activeCanvasItemsStore,
 	autoSaveActiveCanvas,
 } from "../store/canvasStore";
@@ -29,20 +30,24 @@ const STEP_ICONS: Record<string, LucideIcon> = {
 	export: ImageDown,
 };
 
-function isStepCompleted(
-	id: string,
-	selectedCount: number,
-	canvasName: string,
-	itemsCount: number,
-): boolean {
+interface StepProgress {
+	selectedCount: number;
+	canvasName: string;
+	itemsCount: number;
+	exported: boolean;
+}
+
+function isStepCompleted(id: string, progress: StepProgress): boolean {
 	switch (id) {
 		case "explore":
-			return selectedCount > 0;
+			return progress.selectedCount > 0;
 		case "canvas":
-			return canvasName.trim() !== "";
+			return progress.canvasName.trim() !== "";
 		case "design":
+			return progress.itemsCount > 0;
 		case "export":
-			return itemsCount > 0;
+			// Only once the board, as it is now, was downloaded or printed.
+			return progress.exported;
 		default:
 			return false;
 	}
@@ -55,6 +60,7 @@ export default function StepperNav({ activeItem }: Props) {
 	const selectedImages = useStore(selectedImagesStore);
 	const canvasConfig = useStore(activeCanvasConfigStore);
 	const canvasItems = useStore(activeCanvasItemsStore);
+	const exported = useStore(activeCanvasExportedStore);
 
 	const currentIndex = LINKS.findIndex((link) => link.id === activeItem);
 	// currentIndex === -1 means we are on a page outside the 4-step wizard
@@ -97,7 +103,12 @@ export default function StepperNav({ activeItem }: Props) {
 					const isCompleted =
 						isWizardStep &&
 						!isCurrent &&
-						isStepCompleted(link.id, selectedImages.length, canvasConfig.name, canvasItems.length);
+						isStepCompleted(link.id, {
+							selectedCount: selectedImages.length,
+							canvasName: canvasConfig.name,
+							itemsCount: canvasItems.length,
+							exported,
+						});
 
 					const badge = (
 						<span
