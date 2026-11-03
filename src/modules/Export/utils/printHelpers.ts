@@ -1,124 +1,24 @@
-import {
-	TEXT_DEFAULTS,
-	isTextItem,
-	type CanvasConfig,
-	type CanvasItem,
-} from "../../../shared/store/canvasStore";
+import type { CanvasConfig } from "../../../shared/store/canvasStore";
 import type { PrintConfig } from "../types";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 
-// Items in the store are positioned in "logical Stage pixels" on a 96dpi
-// basis (see CanvasItem doc-comment in canvasStore.ts). To render reliably
-// across browsers/printers we convert everything to mm ONCE here and emit
-// only mm-based CSS — never px — inside the printable HTML. px↔mm rounding
-// and DPI assumptions are what caused Bug 2 (wrong-sized / shifted prints).
-const PX_TO_MM = 1 / MM_TO_PX;
-
-function pxToMm(px: number): number {
-	return px * PX_TO_MM;
-}
-
-function escapeHtml(text: string): string {
-	return text
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&#039;");
-}
+// Each printed page is an image captured from the Export stage, which draws
+// items with the same CanvasItemShape as the editor: crops, shapes and every
+// later property print exactly as designed instead of being re-created in
+// CSS. Page and image sizes are emitted in mm only — never px — because px↔mm
+// rounding and DPI assumptions are what caused wrong-sized / shifted prints.
 
 function escapeAttr(text: string): string {
-	return escapeHtml(text).replaceAll("`", "&#096;");
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;");
 }
 
-function getCanvasHtml(
-	config: CanvasConfig,
-	items: CanvasItem[],
-	offsetXMm = 0,
-	offsetYMm = 0,
-	scale = 1,
-): string {
-	const widthMm = config.widthMm * scale;
-	const heightMm = config.heightMm * scale;
-
-	// Sort items by zIndex ascending so the highest zIndex is rendered last
-	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
-
-	const itemsHtml = sortedItems
-		.map((item) => {
-			const xMm = pxToMm(item.x) * scale;
-			const yMm = pxToMm(item.y) * scale;
-			const wMm = pxToMm(item.width) * scale;
-			const hMm = pxToMm(item.height) * scale;
-
-			// Mirrors CanvasItemShape: Konva rotates a node around its top-left
-			// corner, stretches images to their box and clips text to its box.
-			if (isTextItem(item)) {
-				const text = escapeHtml(item.text ?? "");
-				const fontSizeMm = pxToMm(item.fontSize || TEXT_DEFAULTS.fontSize) * scale;
-				const fillColor = escapeAttr(item.fillColor || TEXT_DEFAULTS.fillColor);
-				const fontFamily = escapeAttr(item.fontFamily || TEXT_DEFAULTS.fontFamily);
-				const fontStyle = escapeAttr(item.fontStyle || TEXT_DEFAULTS.fontStyle);
-				return `
-                <div
-                    style="
-                        position: absolute;
-                        left: ${xMm}mm;
-                        top: ${yMm}mm;
-                        width: ${wMm}mm;
-                        height: ${hMm}mm;
-                        transform: rotate(${item.rotation}deg);
-                        transform-origin: 0 0;
-                        font-size: ${fontSizeMm}mm;
-                        font-family: ${fontFamily};
-                        font-style: ${fontStyle};
-                        color: ${fillColor};
-                        white-space: pre-wrap;
-                        overflow-wrap: break-word;
-                        overflow: hidden;
-                        line-height: ${TEXT_DEFAULTS.lineHeight};
-                    "
-                >${text}</div>
-            `;
-			}
-
-			if (!item.imageSrc) return "";
-
-			const src = escapeAttr(item.imageSrc);
-			const alt = escapeAttr(item.alt ?? "");
-			return `
-            <img
-                src="${src}"
-                alt="${alt}"
-                style="
-                    position: absolute;
-                    left: ${xMm}mm;
-                    top: ${yMm}mm;
-                    width: ${wMm}mm;
-                    height: ${hMm}mm;
-                    transform: rotate(${item.rotation}deg);
-                    transform-origin: 0 0;
-                    object-fit: fill;
-                "
-            />
-        `;
-		})
-		.join("");
-
-	return `
-        <div style="
-            position: absolute;
-            left: ${-offsetXMm}mm;
-            top: ${-offsetYMm}mm;
-            width: ${widthMm}mm;
-            height: ${heightMm}mm;
-            background-color: white;
-            overflow: hidden;
-            pointer-events: none;
-        ">
-            ${itemsHtml}
-        </div>
-    `;
+/** One captured page image, sized in mm. */
+function pageImageHtml(src: string, widthMm: number, heightMm: number): string {
+	return `<img src="${escapeAttr(src)}" alt="" style="display: block; width: ${widthMm}mm; height: ${heightMm}mm;" />`;
 }
 
 export type DirectPrintMode = "trueSize" | "fitToPaper";
@@ -162,13 +62,14 @@ export interface PrintBehaviorOptions {
 
 export interface DirectPrintRenderOptions extends DirectPrintOptions, PrintBehaviorOptions {}
 
+/** `pageImage`: the whole canvas captured from the stage. */
 export function buildDirectPrintHtml(
+	pageImage: string,
 	config: CanvasConfig,
-	items: CanvasItem[],
 	options: DirectPrintRenderOptions = {},
 ): string {
 	const mode: DirectPrintMode = options.mode ?? "trueSize";
-	const htmlCanvas = getCanvasHtml(config, items, 0, 0, 1);
+	const htmlCanvas = pageImageHtml(pageImage, config.widthMm, config.heightMm);
 
 	const canvasWidthMm = config.widthMm;
 	const canvasHeightMm = config.heightMm;
@@ -246,9 +147,9 @@ export function buildDirectPrintHtml(
 
 export type TiledPrintRenderOptions = PrintBehaviorOptions;
 
+/** `tileImages`: one capture per printConfig tile, in the same order. */
 export function buildTiledPrintHtml(
-	config: CanvasConfig,
-	items: CanvasItem[],
+	tileImages: string[],
 	printConfig: PrintConfig,
 	options: TiledPrintRenderOptions = {},
 ): string {
@@ -256,14 +157,13 @@ export function buildTiledPrintHtml(
 
 	const paperWidthMm = printConfig.paperWidthMm;
 	const paperHeightMm = printConfig.paperHeightMm;
-	const canvasScale = printConfig.canvasScale ?? 1;
 
 	// Only used for the on-screen preview viewport-fit math (JS reads
 	// window.innerWidth in px). Never used for the actual @page sizing.
 	const paperWidthPx = paperWidthMm * MM_TO_PX;
 	const paperHeightPx = paperHeightMm * MM_TO_PX;
 
-	printConfig.tiles.forEach((tile, index) => {
+	printConfig.tiles.forEach((_tile, index) => {
 		const pageInner = `
             <div class="page" style="
                 width: ${paperWidthMm}mm; 
@@ -272,13 +172,7 @@ export function buildTiledPrintHtml(
                 position: relative;
                 background: white;
             ">
-                ${getCanvasHtml(
-									config,
-									items,
-									tile.offsetXMm * canvasScale,
-									tile.offsetYMm * canvasScale,
-									canvasScale,
-								)}
+                ${pageImageHtml(tileImages[index], paperWidthMm, paperHeightMm)}
             </div>
         `;
 
@@ -473,49 +367,11 @@ function writeHtmlToWindow(targetWindow: Window, html: string) {
 	doc.close();
 }
 
-export function createDirectPrintIframe(
-	config: CanvasConfig,
-	items: CanvasItem[],
-	options: DirectPrintOptions = {},
-): boolean {
-	const html = buildDirectPrintHtml(config, items, {
-		...options,
-		autoPrint: true,
-		closeAfterPrint: true,
-	});
-
-	const printWindow = tryOpenPrintWindow();
-	if (printWindow) {
-		writeHtmlToWindow(printWindow, html);
-		return true;
-	}
-
-	const iframe = document.createElement("iframe");
-	iframe.style.display = "none";
-	document.body.appendChild(iframe);
-
-	const doc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
-	if (!doc) {
-		if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-		return false;
-	}
-
-	doc.open();
-	doc.write(html);
-	doc.close();
-	return true;
-}
-
-export function createTiledPrintIframe(
-	config: CanvasConfig,
-	items: CanvasItem[],
-	printConfig: PrintConfig,
-): boolean {
-	const html = buildTiledPrintHtml(config, items, printConfig, {
-		autoPrint: true,
-		closeAfterPrint: true,
-	});
-
+/**
+ * Open `html` (built with autoPrint) in a print window, or in a hidden
+ * iframe when pop-ups are blocked. False if neither could be created.
+ */
+export function printHtml(html: string): boolean {
 	const printWindow = tryOpenPrintWindow();
 	if (printWindow) {
 		writeHtmlToWindow(printWindow, html);

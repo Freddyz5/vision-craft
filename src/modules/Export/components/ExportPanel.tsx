@@ -8,12 +8,7 @@ import {
 } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import type { ExportMode } from "../types";
-import {
-	buildDirectPrintHtml,
-	buildTiledPrintHtml,
-	createDirectPrintIframe,
-	createTiledPrintIframe,
-} from "../utils/printHelpers";
+import { buildDirectPrintHtml, buildTiledPrintHtml, printHtml } from "../utils/printHelpers";
 import { usePosterPrintConfig } from "../hooks/usePosterPrintConfig";
 import { useWallPreviewCapture } from "../hooks/useWallPreviewCapture";
 import { usePrintModal } from "../hooks/usePrintModal";
@@ -25,6 +20,12 @@ import { ExportCanvasPreview } from "./ExportCanvasPreview";
 import { ExportPrintOptions } from "./ExportPrintOptions";
 import { ExportDownloadOptions } from "./ExportDownloadOptions";
 import { PrintPreviewModal } from "./PrintPreviewModal";
+
+/**
+ * Resolution of printed pages. 250 ppp keeps photos sharp on paper while an
+ * A3 page (the largest sheet offered) stays under Safari's ~16.7 MP canvas cap.
+ */
+const PRINT_DPI = 250;
 
 export default function ExportPanel() {
 	const config = useStore(activeCanvasConfigStore);
@@ -54,7 +55,7 @@ export default function ExportPanel() {
 	// Canvas scaling state
 	const containerRef = useRef<HTMLDivElement>(null);
 	const scaleFactor = useContainerScale(containerRef, logicalWidth, logicalHeight);
-	const { toast, showToast } = useToast();
+	const { toast, showToast, dismissToast } = useToast();
 	const printModal = usePrintModal();
 	const printIframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -70,19 +71,50 @@ export default function ExportPanel() {
 		items,
 	});
 
-	const handleModalPrint = async () => {
-		const started =
-			exportMode === "poster" && transposePrintConfig
-				? createTiledPrintIframe(config, items, transposePrintConfig)
-				: exportMode === "fit-page"
-					? createDirectPrintIframe(config, items, {
-							mode: "fitToPaper",
-							paperWidthMm: selectedPaper.widthMm,
-							paperHeightMm: selectedPaper.heightMm,
-						})
-					: false;
+	// Pages are captured from the preview stage, which draws items with the
+	// editor's own renderer, so crops, shapes and effects print as designed.
+	const printPagesRef = useRef<string[]>([]);
 
-		if (started) {
+	const capturePrintPages = (): string[] => {
+		const stage = stageRef.current;
+		if (!stage) return [];
+		const jpeg = { mimeType: "image/jpeg" as const, quality: 0.95 };
+		if (exportMode === "poster" && transposePrintConfig) {
+			const pc = transposePrintConfig;
+			return pc.tiles.map((tile) =>
+				captureStage(stage, {
+					...jpeg,
+					scaleFactor,
+					// Canvas px are printed `canvasScale` times bigger on the tiles.
+					pixelRatio: (PRINT_DPI / 96) * pc.canvasScale,
+					region: {
+						x: tile.offsetXMm * MM_TO_PX,
+						y: tile.offsetYMm * MM_TO_PX,
+						width: pc.pageViewportWidthMm * MM_TO_PX,
+						height: pc.pageViewportHeightMm * MM_TO_PX,
+					},
+				}),
+			);
+		}
+		// Fit-page prints the canvas at fitPageScale (never enlarged).
+		return [
+			captureStage(stage, { ...jpeg, scaleFactor, pixelRatio: (PRINT_DPI / 96) * fitPageScale }),
+		];
+	};
+
+	const buildPrintHtml = (pages: string[], autoPrint: boolean) =>
+		exportMode === "poster" && transposePrintConfig
+			? buildTiledPrintHtml(pages, transposePrintConfig, { autoPrint, closeAfterPrint: autoPrint })
+			: buildDirectPrintHtml(pages[0], config, {
+					mode: "fitToPaper",
+					paperWidthMm: selectedPaper.widthMm,
+					paperHeightMm: selectedPaper.heightMm,
+					autoPrint,
+					closeAfterPrint: autoPrint,
+				});
+
+	const handleModalPrint = async () => {
+		if (printHtml(buildPrintHtml(printPagesRef.current, true))) {
 			markActiveCanvasExported();
 			return;
 		}
@@ -104,30 +136,24 @@ export default function ExportPanel() {
 		}
 	};
 
-	const handlePrintPreview = () => {
-		if (exportMode === "poster" && transposePrintConfig) {
-			printModal.open(
-				buildTiledPrintHtml(config, items, transposePrintConfig, {
-					autoPrint: false,
-					closeAfterPrint: false,
-				}),
-				`Imprimir (${transposePrintConfig.tiles.length} hojas)`,
-			);
+	const handlePrintPreview = async () => {
+		if (exportMode === "image") return;
+		// Capturing big pages blocks for a moment: say so first.
+		showToast("Preparando la impresión…", { tone: "progress", durationMs: 60_000 });
+		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+		try {
+			printPagesRef.current = capturePrintPages();
+		} catch {
+			showToast("No se pudo preparar la impresión.", { tone: "error" });
 			return;
 		}
-		if (exportMode === "fit-page") {
-			printModal.open(
-				buildDirectPrintHtml(config, items, {
-					mode: "fitToPaper",
-					paperWidthMm: selectedPaper.widthMm,
-					paperHeightMm: selectedPaper.heightMm,
-					autoPrint: false,
-					closeAfterPrint: false,
-				}),
-				`Imprimir (ajustado a ${selectedPaper.label})`,
-			);
-			return;
-		}
+		dismissToast();
+		printModal.open(
+			buildPrintHtml(printPagesRef.current, false),
+			exportMode === "poster" && transposePrintConfig
+				? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
+				: `Imprimir (ajustado a ${selectedPaper.label})`,
+		);
 	};
 
 	const [exportDpi, setExportDpi] = useState<150 | 300>(150);
@@ -205,7 +231,7 @@ export default function ExportPanel() {
 				</div>
 			</aside>
 
-			<Toast message={toast?.message ?? null} tone={toast?.tone} />
+			<Toast message={toast?.message ?? null} tone={toast?.tone} onDismiss={dismissToast} />
 
 			<PrintPreviewModal
 				open={printModal.isOpen}

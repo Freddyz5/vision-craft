@@ -29,7 +29,7 @@ export function captureStage(stage: Konva.Stage, options: CaptureStageOptions): 
 	);
 	hidden.forEach((node) => node.visible(false));
 	try {
-		return stage.toDataURL({
+		const area = {
 			...(region && {
 				x: region.x * scaleFactor,
 				y: region.y * scaleFactor,
@@ -37,9 +37,20 @@ export function captureStage(stage: Konva.Stage, options: CaptureStageOptions): 
 				height: region.height * scaleFactor,
 			}),
 			pixelRatio: pixelRatio / scaleFactor,
-			mimeType,
-			quality,
-		});
+		};
+		if (mimeType !== "image/jpeg") return stage.toDataURL({ ...area, mimeType, quality });
+		// JPEG has no transparency: anything the stage doesn't paint would turn
+		// black, so composite onto white paper first.
+		const drawn = stage.toCanvas(area);
+		const paper = document.createElement("canvas");
+		paper.width = drawn.width;
+		paper.height = drawn.height;
+		const ctx = paper.getContext("2d");
+		if (!ctx) return drawn.toDataURL(mimeType, quality);
+		ctx.fillStyle = "#ffffff";
+		ctx.fillRect(0, 0, paper.width, paper.height);
+		ctx.drawImage(drawn, 0, 0);
+		return paper.toDataURL(mimeType, quality);
 	} finally {
 		hidden.forEach((node) => node.visible(true));
 	}
