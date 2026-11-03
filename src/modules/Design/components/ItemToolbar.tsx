@@ -5,6 +5,7 @@ import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
 import { AdjustMenu } from "./AdjustMenu";
+import { FrameMenu } from "./FrameMenu";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 
@@ -151,7 +152,12 @@ export function ItemToolbar({
 					</ToolButton>
 					<ShapeMenu shape={item.shape} onChange={(shape) => onUpdate({ shape })} docked={docked} />
 					{/* Desktop only, per the editor brief. */}
-					{!docked && <AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} />}
+					{!docked && (
+						<>
+							<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} />
+							<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} />
+						</>
+					)}
 					<Divider docked={docked} />
 				</>
 			)}

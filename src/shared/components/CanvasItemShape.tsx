@@ -6,6 +6,7 @@ import {
 	Group,
 	Image as KonvaImage,
 	Rect,
+	Shape,
 	Text as KonvaText,
 	type KonvaNodeEvents,
 } from "react-konva";
@@ -13,6 +14,7 @@ import { TEXT_DEFAULTS, isTextItem, type CanvasItem, type ImageAdjust } from "..
 import { useCanvasImage } from "../hooks/useCanvasImage";
 import { EDITOR_ONLY } from "../utils/stageCapture";
 import { traceShape } from "../utils/shapePath";
+import { coverRegion, polaroidPhotoBox, type Box } from "../utils/frame";
 
 /** Konva props an interactive stage (the Design editor) layers on top of the plain render. */
 export type CanvasItemInteraction = KonvaNodeEvents & {
@@ -67,10 +69,16 @@ function photoFilters(adjust: ImageAdjust | undefined): Filter[] {
 	return filters;
 }
 
+/** Logical px per mm (96 dpi), for frame thicknesses stored in mm. */
+const PX_PER_MM = 96 / 25.4;
+const SHADOW_COLOR = "rgba(17, 24, 39, 0.35)";
+
 /**
- * A photo is an outer Group (geometry, events, opacity, shape clip: what the
- * Transformer grabs) around the Image (crop, flip, filters), so flipping
- * never fights the Transformer's own scaling.
+ * A photo is an outer Group (geometry, events, opacity: what the Transformer
+ * grabs) holding, back to front: a base that casts the soft shadow (and is
+ * the white card of a polaroid), the Image clipped to the photo's shape
+ * (crop, flip, filters), and the border. Flipping lives on the inner Image
+ * so it never fights the Transformer's own scaling.
  */
 function CanvasImageShape(props: CanvasItemShapeProps) {
 	const { item, scaleFactor, interaction, ref } = props;
@@ -78,16 +86,39 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 	const photoRef = useRef<Konva.Image>(null);
 	const width = item.width * scaleFactor;
 	const height = item.height * scaleFactor;
-	const adjust = item.adjust;
+	const { adjust, frame, shape } = item;
+	// A polaroid card keeps the photo in its window; otherwise it fills the box.
+	const photoBox = frame?.polaroid
+		? polaroidPhotoBox(width, height)
+		: { x: 0, y: 0, width, height };
 	const filters = photoFilters(adjust);
-	// The photo's own pixels across the box (only the cropped part of it).
-	const sourceWidth = image ? image.naturalWidth * (item.crop?.width ?? 1) : 0;
+
+	// The part of the source photo that's drawn, in its own pixels: the crop,
+	// trimmed (centred) to the window's shape when a polaroid changes it.
+	let region: Box | undefined;
+	if (image) {
+		const c = item.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+		region = {
+			x: c.x * image.naturalWidth,
+			y: c.y * image.naturalHeight,
+			width: c.width * image.naturalWidth,
+			height: c.height * image.naturalHeight,
+		};
+		if (frame?.polaroid) region = coverRegion(region, photoBox.width / photoBox.height);
+	}
+	const sourceWidth = region?.width ?? 0;
 
 	// Konva only applies filters to a cached node. Cache at the photo's own
 	// resolution (bounded), not the screen's, so a 300 ppp export of a
 	// filtered photo is as sharp as an unfiltered one.
 	const cacheKey = filters.length
-		? [width, height, sourceWidth, JSON.stringify(item.crop), JSON.stringify(adjust)].join("|")
+		? [
+				photoBox.width,
+				photoBox.height,
+				sourceWidth,
+				JSON.stringify(region),
+				JSON.stringify(adjust),
+			].join("|")
 		: "";
 	useEffect(() => {
 		const node = photoRef.current;
@@ -96,15 +127,21 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 			node.clearCache();
 			return;
 		}
-		const fullRatio = Math.max(1, sourceWidth / Math.max(width, 1));
-		const capRatio = Math.sqrt(MAX_FILTER_CACHE_PIXELS / Math.max(width * height, 1));
+		const fullRatio = Math.max(1, sourceWidth / Math.max(photoBox.width, 1));
+		const capRatio = Math.sqrt(
+			MAX_FILTER_CACHE_PIXELS / Math.max(photoBox.width * photoBox.height, 1),
+		);
 		node.cache({ pixelRatio: Math.min(fullRatio, capRatio) });
 		node.getLayer()?.batchDraw();
-	}, [image, cacheKey, sourceWidth, width, height]);
+	}, [image, cacheKey, sourceWidth, photoBox.width, photoBox.height]);
 
 	if (status === "error") return <MissingImagePlaceholder {...props} />;
-	const c = item.crop;
-	const shape = item.shape;
+
+	// A polaroid is a rectangular card; otherwise the outline is the photo's shape.
+	const outlineShape = frame?.polaroid ? undefined : shape;
+	const minSide = Math.min(width, height);
+	const borderWidth = (frame?.borderMm ?? 0) * PX_PER_MM * scaleFactor;
+	const needsBase = frame?.polaroid || frame?.shadow;
 
 	return (
 		<Group
@@ -112,34 +149,64 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 			{...itemGeometry(item, scaleFactor)}
 			opacity={adjust?.opacity ?? 1}
 			{...interaction}
-			clipFunc={shape ? (ctx) => traceShape(ctx, shape, 0, 0, width, height) : undefined}
 		>
-			<KonvaImage
-				ref={photoRef}
-				image={image}
-				// Konva crops in source pixels; the store keeps fractions.
-				crop={
-					c && image
-						? {
-								x: c.x * image.naturalWidth,
-								y: c.y * image.naturalHeight,
-								width: c.width * image.naturalWidth,
-								height: c.height * image.naturalHeight,
-							}
-						: undefined
+			{needsBase && (
+				<Shape
+					sceneFunc={(ctx, node) => {
+						ctx.beginPath();
+						traceShape(ctx, outlineShape, 0, 0, width, height);
+						ctx.fillStrokeShape(node);
+					}}
+					fill="#FFFFFF"
+					// Shadow sized to the photo, so it looks the same at any zoom or DPI.
+					shadowEnabled={!!frame?.shadow}
+					shadowColor={SHADOW_COLOR}
+					shadowBlur={minSide * 0.05}
+					shadowOffsetY={minSide * 0.02}
+				/>
+			)}
+			<Group
+				clipFunc={(ctx) =>
+					traceShape(ctx, shape, photoBox.x, photoBox.y, photoBox.width, photoBox.height)
 				}
-				width={width}
-				height={height}
-				x={adjust?.flipX ? width : 0}
-				y={adjust?.flipY ? height : 0}
-				scaleX={adjust?.flipX ? -1 : 1}
-				scaleY={adjust?.flipY ? -1 : 1}
-				filters={filters}
-				brightness={adjust?.brightness ?? 0}
-				contrast={adjust?.contrast ?? 0}
-				// Blur is stored relative to the photo, so it looks the same at any size.
-				blurRadius={(adjust?.blur ?? 0) * sourceWidth}
-			/>
+			>
+				<KonvaImage
+					ref={photoRef}
+					image={image}
+					crop={region}
+					width={photoBox.width}
+					height={photoBox.height}
+					x={photoBox.x + (adjust?.flipX ? photoBox.width : 0)}
+					y={photoBox.y + (adjust?.flipY ? photoBox.height : 0)}
+					scaleX={adjust?.flipX ? -1 : 1}
+					scaleY={adjust?.flipY ? -1 : 1}
+					filters={filters}
+					brightness={adjust?.brightness ?? 0}
+					contrast={adjust?.contrast ?? 0}
+					// Blur is stored relative to the photo, so it looks the same at any size.
+					blurRadius={(adjust?.blur ?? 0) * sourceWidth}
+				/>
+			</Group>
+			{borderWidth > 0 && (
+				<Shape
+					listening={false}
+					// Drawn inside the outline, so the border never grows the item.
+					sceneFunc={(ctx, node) => {
+						ctx.beginPath();
+						traceShape(
+							ctx,
+							outlineShape,
+							borderWidth / 2,
+							borderWidth / 2,
+							width - borderWidth,
+							height - borderWidth,
+						);
+						ctx.fillStrokeShape(node);
+					}}
+					stroke={frame?.borderColor ?? "#FFFFFF"}
+					strokeWidth={borderWidth}
+				/>
+			)}
 		</Group>
 	);
 }

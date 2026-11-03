@@ -1,6 +1,7 @@
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import type { CanvasImageEntry } from "../../../shared/store/canvasImages";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
+import { polaroidPhotoBox } from "../../../shared/utils/frame";
 
 /** Home printers can't reach the paper's edge; keep text this far inside it. */
 export const SAFE_MARGIN_MM = 5;
@@ -50,9 +51,13 @@ export function imagePpi(item: CanvasItem, image?: CanvasImageEntry): number | n
 	if (!image?.naturalWidth || !image.naturalHeight || item.width <= 0 || item.height <= 0) {
 		return null;
 	}
-	// Only the cropped part of the photo is spread over the printed box.
-	const ppiX = (image.naturalWidth * (item.crop?.width ?? 1)) / (item.width / 96);
-	const ppiY = (image.naturalHeight * (item.crop?.height ?? 1)) / (item.height / 96);
+	// Only the cropped part of the photo is spread over the printed box (or
+	// over a polaroid's smaller window).
+	const box = item.frame?.polaroid
+		? polaroidPhotoBox(item.width, item.height)
+		: { width: item.width, height: item.height };
+	const ppiX = (image.naturalWidth * (item.crop?.width ?? 1)) / (box.width / 96);
+	const ppiY = (image.naturalHeight * (item.crop?.height ?? 1)) / (box.height / 96);
 	return Math.round(Math.min(ppiX, ppiY));
 }
 

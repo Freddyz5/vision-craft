@@ -110,7 +110,7 @@ export function PanelSlider({
 	suffix?: string;
 }) {
 	return (
-		<label className="text-df-muted dark:text-df-muted-dark grid grid-cols-[5.5rem_1fr_2.5rem] items-center gap-2 text-xs font-semibold">
+		<label className="text-df-muted dark:text-df-muted-dark grid grid-cols-[5.5rem_1fr_3.25rem] items-center gap-2 text-xs font-semibold">
 			{label}
 			<input
 				type="range"

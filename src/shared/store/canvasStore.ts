@@ -55,6 +55,18 @@ export interface CanvasItem {
 	shape?: ImageShape;
 	/** Images only: look adjustments, applied when drawing; the photo itself is never changed. */
 	adjust?: ImageAdjust;
+	/** Images only: border, polaroid card and shadow. */
+	frame?: ImageFrame;
+}
+
+export interface ImageFrame {
+	/** Border thickness in mm (0 or absent = none), drawn inside the photo's outline. */
+	borderMm?: number;
+	borderColor?: string;
+	/** A white card around the photo, wider at the bottom; the photo fills its window. */
+	polaroid?: boolean;
+	/** Soft drop shadow under the photo. */
+	shadow?: boolean;
 }
 
 export interface ImageAdjust {

@@ -9,6 +9,7 @@ export const DESKTOP_ONLY_FEATURES = [
 	"Seleccionar varios elementos a la vez",
 	"Alinear y repartir",
 	"Ajustes de foto: opacidad, voltear, filtros, brillo y contraste",
+	"Marcos: borde, polaroid y sombra",
 	"Duplicar, y Alt + arrastrar para copiar",
 	"Pegar imágenes copiadas (Ctrl/⌘ + V)",
 	"Atajos de teclado",
