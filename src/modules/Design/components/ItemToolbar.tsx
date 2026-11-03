@@ -1,5 +1,5 @@
 import type React from "react";
-import { BringToFront, PenLine, SendToBack, Trash2 } from "lucide-react";
+import { BringToFront, CopyPlus, PenLine, SendToBack, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 
 const FONTS = [
@@ -8,6 +8,11 @@ const FONTS = [
 	{ value: "Courier New", label: "Courier" },
 	{ value: "Comic Sans MS", label: "Comic" },
 ];
+
+/** "⌘" on Apple keyboards, "Ctrl" elsewhere, for shortcut hints. */
+function modKey(): string {
+	return /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
+}
 
 /** Konva font sizes are logical px at 96 dpi; people pick sizes in points. */
 const PX_PER_PT = 96 / 72;
@@ -21,6 +26,7 @@ interface ItemToolbarProps {
 	onSendToBack: () => void;
 	onRemove: () => void;
 	onEditText: () => void;
+	onDuplicate: () => void;
 	style?: React.CSSProperties;
 }
 
@@ -36,6 +42,7 @@ export function ItemToolbar({
 	onSendToBack,
 	onRemove,
 	onEditText,
+	onDuplicate,
 	style,
 }: ItemToolbarProps) {
 	const text = isTextItem(item);
@@ -114,6 +121,12 @@ export function ItemToolbar({
 				<SendToBack className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
 			<Divider docked={docked} />
+			{/* Desktop only, per the editor brief; on mobile it waits for "Más en computadora". */}
+			{!docked && (
+				<ToolButton docked={docked} label={`Duplicar (${modKey()}+D)`} onClick={onDuplicate}>
+					<CopyPlus className="h-4 w-4" aria-hidden="true" />
+				</ToolButton>
+			)}
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>

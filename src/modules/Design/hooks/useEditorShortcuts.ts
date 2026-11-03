@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
 	activeCanvasItemsStore,
+	duplicateItems,
 	removeItems,
 	updateItems,
 	type CanvasItem,
@@ -30,6 +31,8 @@ interface UseEditorShortcutsOptions {
 	onClearSelection: () => void;
 	/** After Supr/Retroceso removed `count` items (e.g. to offer "Deshacer"). */
 	onRemoved?: (count: number) => void;
+	/** Replace the selection, e.g. with the copies Ctrl/Cmd+D just made. */
+	onSelect: (ids: string[]) => void;
 }
 
 /**
@@ -42,17 +45,18 @@ export function useEditorShortcuts({
 	selectedIds,
 	onClearSelection,
 	onRemoved,
+	onSelect,
 }: UseEditorShortcutsOptions) {
 	// The listener is registered once and reads the latest options from here.
-	const latest = useRef({ selectedIds, onClearSelection, onRemoved });
+	const latest = useRef({ selectedIds, onClearSelection, onRemoved, onSelect });
 	useEffect(() => {
-		latest.current = { selectedIds, onClearSelection, onRemoved };
+		latest.current = { selectedIds, onClearSelection, onRemoved, onSelect };
 	});
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (isTypingTarget(e.target)) return;
-			const { selectedIds, onClearSelection, onRemoved } = latest.current;
+			const { selectedIds, onClearSelection, onRemoved, onSelect } = latest.current;
 			const key = e.key.toLowerCase();
 
 			if (e.ctrlKey || e.metaKey) {
@@ -63,6 +67,10 @@ export function useEditorShortcuts({
 				} else if (key === "y") {
 					e.preventDefault();
 					redo();
+				} else if (key === "d" && selectedIds.length > 0) {
+					// Also keeps the browser from bookmarking the page.
+					e.preventDefault();
+					onSelect(duplicateItems(selectedIds));
 				}
 				return;
 			}

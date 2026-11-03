@@ -16,6 +16,7 @@ import {
 	addItem,
 	autoSaveActiveCanvas,
 	bringToFront,
+	duplicateItems,
 	MAX_SAVED_CANVASES,
 	removeItem,
 	saveCurrentCanvas,
@@ -124,6 +125,7 @@ export default function DesignEditor() {
 		selectedIds: selectedId ? [selectedId] : [],
 		onClearSelection: () => select(null),
 		onRemoved: showRemovedToast,
+		onSelect: (ids) => select(ids[0] ?? null),
 	});
 
 	// A press on the empty space around the sheet clears the selection.
@@ -254,6 +256,7 @@ export default function DesignEditor() {
 		onSendToBack: () => sendToBack(selectedItem.id),
 		onRemove: removeSelected,
 		onEditText: () => setEditingId(selectedItem.id),
+		onDuplicate: () => select(duplicateItems([selectedItem.id])[0] ?? null),
 	};
 
 	const printList = (
