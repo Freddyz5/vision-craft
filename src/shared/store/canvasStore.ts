@@ -45,6 +45,19 @@ export interface CanvasItem {
 	rotation: number;
 	/** Higher = on top */
 	zIndex: number;
+	/**
+	 * Images only: the visible part of the source photo, as fractions (0–1)
+	 * of its natural size, so it survives the photo URL changing resolution.
+	 * Absent = the whole photo. The item's width/height is the cropped box.
+	 */
+	crop?: ImageCrop;
+}
+
+export interface ImageCrop {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
 /** Text styling used when an item doesn't set its own (editor, export and print share it). */

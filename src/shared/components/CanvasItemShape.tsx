@@ -53,10 +53,22 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 	const { item, scaleFactor, interaction, ref } = props;
 	const { image, status } = useCanvasImage(item.imageSrc);
 	if (status === "error") return <MissingImagePlaceholder {...props} />;
+	const c = item.crop;
 	return (
 		<KonvaImage
 			ref={ref as React.Ref<Konva.Image>}
 			image={image}
+			// Konva crops in source pixels; the store keeps fractions.
+			crop={
+				c && image
+					? {
+							x: c.x * image.naturalWidth,
+							y: c.y * image.naturalHeight,
+							width: c.width * image.naturalWidth,
+							height: c.height * image.naturalHeight,
+						}
+					: undefined
+			}
 			{...itemGeometry(item, scaleFactor)}
 			{...interaction}
 		/>

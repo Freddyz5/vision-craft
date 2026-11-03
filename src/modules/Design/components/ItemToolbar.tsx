@@ -1,9 +1,10 @@
 import type React from "react";
-import { BringToFront, CopyPlus, PenLine, SendToBack, Trash2 } from "lucide-react";
+import { BringToFront, CopyPlus, Crop, PenLine, SendToBack, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
+import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 
 const FONTS = [
 	{ value: "Inter", label: "Inter" },
@@ -31,6 +32,8 @@ interface ItemToolbarProps {
 	onRemove: () => void;
 	onEditText: () => void;
 	onDuplicate: () => void;
+	/** Set when the selection is one photo that can be cropped. */
+	onCrop?: () => void;
 	onAlign: (edge: AlignEdge, reference: AlignReference) => void;
 	onDistribute: (axis: DistributeAxis) => void;
 	style?: React.CSSProperties;
@@ -49,6 +52,7 @@ export function ItemToolbar({
 	onRemove,
 	onEditText,
 	onDuplicate,
+	onCrop,
 	onAlign,
 	onDistribute,
 	style,
@@ -138,6 +142,14 @@ export function ItemToolbar({
 				</>
 			)}
 
+			{onCrop && (
+				<>
+					<ToolButton docked={docked} label="Recortar" onClick={onCrop}>
+						<Crop className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
+					<Divider docked={docked} />
+				</>
+			)}
 			<ToolButton docked={docked} label="Al frente" onClick={onBringToFront}>
 				<BringToFront className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
@@ -203,5 +215,73 @@ function Divider({ docked }: { docked: boolean }) {
 			className={`bg-df-hairline dark:bg-df-hairline-dark w-px shrink-0 ${docked ? "my-3" : "h-5"}`}
 			aria-hidden="true"
 		/>
+	);
+}
+
+interface CropToolbarProps {
+	variant: "floating" | "docked";
+	aspect: CropAspectId;
+	onAspect: (aspect: CropAspectId) => void;
+	onCancel: () => void;
+	onDone: () => void;
+	style?: React.CSSProperties;
+}
+
+/** What the item toolbar turns into during crop mode. Enter = Listo, Esc = Cancelar. */
+export function CropToolbar({
+	variant,
+	aspect,
+	onAspect,
+	onCancel,
+	onDone,
+	style,
+}: CropToolbarProps) {
+	const docked = variant === "docked";
+	return (
+		<div
+			role="toolbar"
+			aria-label="Recorte"
+			style={style}
+			className={
+				docked
+					? "bg-df-surface dark:bg-df-surface-dark flex h-full items-center gap-2 overflow-x-auto px-3"
+					: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center gap-1 rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
+			}
+		>
+			<div role="group" aria-label="Proporción" className="flex shrink-0 items-center gap-0.5">
+				{CROP_ASPECTS.map((a) => (
+					<button
+						key={a.id}
+						type="button"
+						aria-pressed={aspect === a.id}
+						onClick={() => onAspect(a.id)}
+						className={[
+							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-2",
+							docked ? "h-11" : "h-8",
+							aspect === a.id
+								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
+								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",
+						].join(" ")}
+					>
+						{a.label}
+					</button>
+				))}
+			</div>
+			<Divider docked={docked} />
+			<button
+				type="button"
+				onClick={onCancel}
+				className={`text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full px-3 text-sm font-semibold focus-visible:outline-2 ${docked ? "h-11" : "h-8"}`}
+			>
+				Cancelar
+			</button>
+			<button
+				type="button"
+				onClick={onDone}
+				className={`bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full px-4 text-sm font-bold text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 ${docked ? "h-11" : "h-8"}`}
+			>
+				Listo
+			</button>
+		</div>
 	);
 }

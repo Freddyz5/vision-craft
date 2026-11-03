@@ -50,8 +50,9 @@ export function imagePpi(item: CanvasItem, image?: CanvasImageEntry): number | n
 	if (!image?.naturalWidth || !image.naturalHeight || item.width <= 0 || item.height <= 0) {
 		return null;
 	}
-	const ppiX = image.naturalWidth / (item.width / 96);
-	const ppiY = image.naturalHeight / (item.height / 96);
+	// Only the cropped part of the photo is spread over the printed box.
+	const ppiX = (image.naturalWidth * (item.crop?.width ?? 1)) / (item.width / 96);
+	const ppiY = (image.naturalHeight * (item.crop?.height ?? 1)) / (item.height / 96);
 	return Math.round(Math.min(ppiX, ppiY));
 }
 

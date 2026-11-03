@@ -8,7 +8,7 @@ import { PrintList } from "./PrintList";
 import { SheetToolbar } from "./SheetToolbar";
 import { SheetRuler, RULER_SIZE } from "./SheetRuler";
 import { KonvaCanvas } from "./KonvaCanvas";
-import { ItemToolbar } from "./ItemToolbar";
+import { CropToolbar, ItemToolbar } from "./ItemToolbar";
 import { TextEditOverlay } from "./TextEditOverlay";
 import {
 	activeCanvasConfigStore,
@@ -17,6 +17,7 @@ import {
 	autoSaveActiveCanvas,
 	bringItemsToFront,
 	duplicateItems,
+	isTextItem,
 	MAX_SAVED_CANVASES,
 	removeItem,
 	removeItems,
@@ -54,6 +55,14 @@ import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
+import {
+	applyCrop,
+	CROP_ASPECTS,
+	fitAspect,
+	fullImageRect,
+	type CropAspectId,
+	type LocalRect,
+} from "../utils/crop";
 import {
 	alignPatches,
 	distributePatches,
@@ -102,6 +111,10 @@ export default function DesignEditor() {
 
 	const [selection, setSelection] = useState<string[]>([]);
 	const [editingId, setEditingId] = useState<string | null>(null);
+	// Crop mode: the photo being cropped, its crop box (item frame, logical px) and locked ratio.
+	const [croppingId, setCroppingId] = useState<string | null>(null);
+	const [cropRect, setCropRect] = useState<LocalRect | null>(null);
+	const [cropAspect, setCropAspect] = useState<CropAspectId>("free");
 	const [interacting, setInteracting] = useState(false);
 	const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
 	const [listDrawerOpen, setListDrawerOpen] = useState(false);
@@ -119,6 +132,7 @@ export default function DesignEditor() {
 	);
 	const selectedItem = selectedItems.length === 1 ? selectedItems[0] : undefined;
 	const editingItem = items.find((i) => i.id === editingId);
+	const croppingItem = items.find((i) => i.id === croppingId);
 	const { rows, warningCount } = usePrintChecks(items, sheet, dismissed);
 	const warnedIds = useMemo(
 		() => new Set(rows.filter((r) => r.warnings.length > 0).map((r) => r.item.id)),
@@ -138,9 +152,64 @@ export default function DesignEditor() {
 	const setScale = (next: number) =>
 		setZoom(Math.min(MAX_SCALE, Math.max(MIN_SCALE, next)) / fitScale);
 
+	// ── Crop mode ─────────────────────────────────────────────────────────
+
+	const startCrop = (id: string) => {
+		const item = items.find((i) => i.id === id);
+		if (!item) return;
+		setSelection([id]);
+		setEditingId(null);
+		setCroppingId(id);
+		setCropRect({ x: 0, y: 0, width: item.width, height: item.height });
+		setCropAspect("free");
+	};
+	const commitCrop = () => {
+		if (croppingItem && cropRect) updateItem(croppingItem.id, applyCrop(croppingItem, cropRect));
+		setCroppingId(null);
+	};
+	const cancelCrop = () => setCroppingId(null);
+	const changeCropAspect = (id: CropAspectId) => {
+		setCropAspect(id);
+		const ratio = CROP_ASPECTS.find((a) => a.id === id)?.ratio;
+		if (croppingItem && cropRect && ratio) {
+			setCropRect(fitAspect(cropRect, ratio, fullImageRect(croppingItem)));
+		}
+	};
+
+	const commitCropRef = useRef(commitCrop);
+	useEffect(() => {
+		commitCropRef.current = commitCrop;
+	});
+	// Enter keeps the crop, Esc drops it; caught before the editor's shortcuts.
+	useEffect(() => {
+		if (!croppingId) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key !== "Enter" && e.key !== "Escape") return;
+			e.preventDefault();
+			e.stopPropagation();
+			if (e.key === "Enter") commitCropRef.current();
+			else setCroppingId(null);
+		};
+		document.addEventListener("keydown", onKey, true);
+		return () => document.removeEventListener("keydown", onKey, true);
+	}, [croppingId]);
 	const select = (ids: string[]) => {
+		// Picking something else ends crop mode, keeping the crop.
+		if (croppingId) commitCrop();
 		setSelection(ids);
 		if (editingId && !ids.includes(editingId)) setEditingId(null);
+	};
+
+	/** Double click/tap: a text is edited in place, a photo is cropped. */
+	const handleDoubleClick = (id: string) => {
+		const item = items.find((i) => i.id === id);
+		if (!item) return;
+		if (isTextItem(item)) {
+			select([id]);
+			setEditingId(id);
+		} else if (!rows.find((r) => r.item.id === id)?.warnings.some((w) => w.kind === "load-error")) {
+			startCrop(id);
+		}
 	};
 	const selectOne = (id: string | null | undefined) => select(id ? [id] : []);
 	/** Drag-select result: replaces the selection, or joins it with Shift/Cmd/Ctrl. */
@@ -204,15 +273,21 @@ export default function DesignEditor() {
 		onPasteImage: handlePasteImage,
 	});
 
-	// A press on the empty space around the sheet clears the selection.
+	// A press on the empty space around the sheet clears the selection (and
+	// confirms a crop in progress).
+	const outsidePressRef = useRef(() => {});
+	useEffect(() => {
+		outsidePressRef.current = () => {
+			if (croppingId) commitCrop();
+			setSelection([]);
+			setEditingId(null);
+		};
+	});
 	useEffect(() => {
 		const viewport = viewportRef.current;
 		if (!viewport) return;
 		const clear = (e: PointerEvent) => {
-			if (!(e.target as HTMLElement).closest("[data-sheet]")) {
-				setSelection([]);
-				setEditingId(null);
-			}
+			if (!(e.target as HTMLElement).closest("[data-sheet]")) outsidePressRef.current();
 		};
 		viewport.addEventListener("pointerdown", clear);
 		return () => viewport.removeEventListener("pointerdown", clear);
@@ -344,6 +419,14 @@ export default function DesignEditor() {
 		onRemove: removeSelected,
 		onEditText: () => selectedItem && setEditingId(selectedItem.id),
 		onDuplicate: () => select(duplicateItems(selectedIds)),
+		onCrop:
+			selectedItem &&
+			!isTextItem(selectedItem) &&
+			!rows
+				.find((r) => r.item.id === selectedItem.id)
+				?.warnings.some((w) => w.kind === "load-error")
+				? () => startCrop(selectedItem.id)
+				: undefined,
 		onAlign: (edge: AlignEdge, reference: AlignReference) =>
 			updateItems(alignPatches(selectedItems, edge, reference, sheet)),
 		onDistribute: (axis: DistributeAxis) => updateItems(distributePatches(selectedItems, axis)),
@@ -432,11 +515,19 @@ export default function DesignEditor() {
 										onMarqueeSelect={selectMany}
 										scaleFactor={scale}
 										warnedIds={warnedIds}
-										editingId={editingId}
-										onEditText={(id) => {
-											select([id]);
-											setEditingId(id);
-										}}
+										editingId={editingId ?? croppingId}
+										onDoubleClickItem={handleDoubleClick}
+										crop={
+											croppingItem && cropRect
+												? {
+														item: croppingItem,
+														rect: cropRect,
+														aspect: CROP_ASPECTS.find((a) => a.id === cropAspect)?.ratio ?? null,
+														onChange: setCropRect,
+														onCommit: commitCrop,
+													}
+												: null
+										}
 										onInteractionChange={setInteracting}
 										onCopied={select}
 									/>
@@ -454,7 +545,17 @@ export default function DesignEditor() {
 											onCancel={() => setEditingId(null)}
 										/>
 									)}
-									{isTabletUp && toolbarActions && toolbarStyle && (
+									{isTabletUp && toolbarStyle && croppingItem && (
+										<CropToolbar
+											variant="floating"
+											style={toolbarStyle}
+											aspect={cropAspect}
+											onAspect={changeCropAspect}
+											onCancel={cancelCrop}
+											onDone={commitCrop}
+										/>
+									)}
+									{isTabletUp && toolbarActions && toolbarStyle && !croppingItem && (
 										<ItemToolbar {...toolbarActions} variant="floating" style={toolbarStyle} />
 									)}
 								</div>
@@ -496,7 +597,15 @@ export default function DesignEditor() {
 					aria-label={toolbarActions ? "Acciones del elemento" : "Paneles del editor"}
 					className="border-df-hairline dark:border-df-hairline-dark bg-df-surface dark:bg-df-surface-dark h-16 border-t"
 				>
-					{toolbarActions && !editingId ? (
+					{croppingItem ? (
+						<CropToolbar
+							variant="docked"
+							aspect={cropAspect}
+							onAspect={changeCropAspect}
+							onCancel={cancelCrop}
+							onDone={commitCrop}
+						/>
+					) : toolbarActions && !editingId ? (
 						<ItemToolbar {...toolbarActions} variant="docked" />
 					) : (
 						<div className="grid h-full grid-cols-2">

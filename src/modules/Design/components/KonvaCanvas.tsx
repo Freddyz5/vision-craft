@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect, Line, Group, Transformer } from "react-konva";
 import type Konva from "konva";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
+import { CropOverlay } from "./CropOverlay";
 import {
 	insertItemCopies,
 	isTextItem,
@@ -44,9 +45,14 @@ interface KonvaCanvasProps {
 	scaleFactor: number;
 	/** Items with an open print warning, outlined in amber on the sheet. */
 	warnedIds: Set<string>;
-	/** Text item being edited in place (hidden on the stage meanwhile). */
+	/** Item being edited in place, its text or its crop (hidden on the stage meanwhile). */
 	editingId: string | null;
-	onEditText: (id: string) => void;
+	onDoubleClickItem: (id: string) => void;
+	/** Crop mode for one photo; drawn over the sheet. */
+	crop: Omit<
+		React.ComponentProps<typeof CropOverlay>,
+		"scaleFactor" | "stageWidth" | "stageHeight"
+	> | null;
 	/** True while an item is dragged or transformed. */
 	onInteractionChange: (active: boolean) => void;
 	/** Alt+drag made copies: select them. */
@@ -65,7 +71,8 @@ export function KonvaCanvas({
 	scaleFactor,
 	warnedIds,
 	editingId,
-	onEditText,
+	onDoubleClickItem,
+	crop,
 	onInteractionChange,
 	onCopied,
 }: KonvaCanvasProps) {
@@ -331,7 +338,7 @@ export function KonvaCanvas({
 								onDragStart={handleDragStart}
 								onDragEnd={handleDragEnd}
 								hidden={item.id === editingId}
-								onEditText={onEditText}
+								onDoubleClick={onDoubleClickItem}
 								onInteractionChange={onInteractionChange}
 							/>
 						</React.Fragment>
@@ -393,6 +400,15 @@ export function KonvaCanvas({
 							stroke={GUIDE_COLOR}
 							strokeWidth={1}
 							dash={[4, 4]}
+						/>
+					)}
+
+					{crop && (
+						<CropOverlay
+							{...crop}
+							scaleFactor={scaleFactor}
+							stageWidth={logicalWidth * scaleFactor}
+							stageHeight={logicalHeight * scaleFactor}
 						/>
 					)}
 

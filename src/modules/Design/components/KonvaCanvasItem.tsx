@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type Konva from "konva";
-import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import type { CanvasItem } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import {
 	useCanvasItemInteractions,
@@ -19,7 +19,8 @@ interface KonvaCanvasItemProps {
 	onDragStart?: CanvasItemDragHandler;
 	/** Hidden while its text is edited in place over the sheet. */
 	hidden?: boolean;
-	onEditText?: (id: string) => void;
+	/** Double click/tap: edit a text in place, crop a photo. */
+	onDoubleClick?: (id: string) => void;
 	onInteractionChange?: (active: boolean) => void;
 }
 
@@ -33,7 +34,7 @@ export function KonvaCanvasItem({
 	onDragEnd,
 	onDragStart,
 	hidden = false,
-	onEditText,
+	onDoubleClick,
 	onInteractionChange,
 }: KonvaCanvasItemProps) {
 	const { id } = item;
@@ -45,9 +46,7 @@ export function KonvaCanvasItem({
 		},
 		[id, onNode],
 	);
-	const editText = () => {
-		if (isTextItem(item)) onEditText?.(item.id);
-	};
+	const doubleClick = () => onDoubleClick?.(item.id);
 
 	const { handleSelect, handleDragMove, handleDragEnd } = useCanvasItemInteractions({
 		item,
@@ -67,8 +66,8 @@ export function KonvaCanvasItem({
 				visible: !hidden,
 				onClick: handleSelect,
 				onTap: handleSelect,
-				onDblClick: editText,
-				onDblTap: editText,
+				onDblClick: doubleClick,
+				onDblTap: doubleClick,
 				onDragStart: (e) => {
 					onInteractionChange?.(true);
 					onDragStart?.(item.id, e);
