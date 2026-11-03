@@ -10,6 +10,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import { LINKS } from "../constants/links";
+import { useHydrated } from "../hooks/useHydrated";
 import { selectedImagesStore } from "../store/boardStore";
 import {
 	activeCanvasConfigStore,
@@ -61,6 +62,8 @@ export default function StepperNav({ activeItem }: Props) {
 	const canvasConfig = useStore(activeCanvasConfigStore);
 	const canvasItems = useStore(activeCanvasItemsStore);
 	const exported = useStore(activeCanvasExportedStore);
+	// Progress comes from localStorage, which the server render can't see.
+	const hydrated = useHydrated();
 
 	const currentIndex = LINKS.findIndex((link) => link.id === activeItem);
 	// currentIndex === -1 means we are on a page outside the 4-step wizard
@@ -101,6 +104,7 @@ export default function StepperNav({ activeItem }: Props) {
 					const StepIcon = STEP_ICONS[link.id];
 					const isCurrent = isWizardStep && activeItem === link.id;
 					const isCompleted =
+						hydrated &&
 						isWizardStep &&
 						!isCurrent &&
 						isStepCompleted(link.id, {
