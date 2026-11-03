@@ -2,6 +2,7 @@ import type React from "react";
 import { BringToFront, CopyPlus, PenLine, SendToBack, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { AlignMenu } from "./AlignMenu";
+import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 
 const FONTS = [
@@ -156,6 +157,12 @@ export function ItemToolbar({
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
+			{docked && (
+				<>
+					<Divider docked={docked} />
+					<DesktopOnlyChip />
+				</>
+			)}
 		</div>
 	);
 }
