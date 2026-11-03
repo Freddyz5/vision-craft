@@ -16,6 +16,8 @@ interface ContextMenuProps {
 	x: number;
 	y: number;
 	entries: ContextMenuEntry[];
+	/** Accessible name, e.g. "Acciones del elemento". */
+	label: string;
 	onClose: () => void;
 }
 
@@ -23,7 +25,7 @@ interface ContextMenuProps {
  * The editor's right-click menu (desktop). A real menu: focus starts on the
  * first entry, arrows move, Enter picks, Esc / click outside / scroll close.
  */
-export function ContextMenu({ x, y, entries, onClose }: ContextMenuProps) {
+export function ContextMenu({ x, y, entries, label, onClose }: ContextMenuProps) {
 	const ref = useRef<HTMLDivElement>(null);
 	const [pos, setPos] = useState({ left: x, top: y });
 
@@ -76,7 +78,7 @@ export function ContextMenu({ x, y, entries, onClose }: ContextMenuProps) {
 		<div
 			ref={ref}
 			role="menu"
-			aria-label="Acciones"
+			aria-label={label}
 			tabIndex={-1}
 			onKeyDown={onKeyDown}
 			onContextMenu={(e) => e.preventDefault()}

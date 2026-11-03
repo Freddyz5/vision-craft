@@ -59,6 +59,7 @@ import { MAX_SCALE, MIN_SCALE, useViewportNavigation } from "../hooks/useViewpor
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
+import { shortcut } from "../utils/shortcuts";
 import { collagePatches, type CollageLayout } from "../utils/collage";
 import { copyItems, hasCopiedItems, pasteCopiedItems } from "../utils/editorClipboard";
 import {
@@ -432,10 +433,9 @@ export default function DesignEditor() {
 	};
 
 	const contextMenuEntries = (ids: string[]): ContextMenuEntry[] => {
-		const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
 		const paste: ContextMenuEntry = {
 			label: "Pegar",
-			hint: `${mod}V`,
+			hint: shortcut("V"),
 			disabled: !hasCopiedItems(),
 			onSelect: () => select(pasteCopiedItems()),
 		};
@@ -444,7 +444,7 @@ export default function DesignEditor() {
 				paste,
 				{
 					label: "Seleccionar todo",
-					hint: `${mod}A`,
+					hint: shortcut("A"),
 					disabled: items.length === 0,
 					onSelect: () => select(items.map((i) => i.id)),
 				},
@@ -454,11 +454,18 @@ export default function DesignEditor() {
 		const targets = items.filter((i) => ids.includes(i.id));
 		const copy: ContextMenuEntry = {
 			label: "Copiar",
-			hint: `${mod}C`,
+			hint: shortcut("C"),
 			onSelect: () => copyItems(ids),
 		};
 		if (targets.some((i) => i.locked)) {
-			return [copy, { label: "Desbloquear", hint: `${mod}⇧L`, onSelect: () => toggleLock(ids) }];
+			return [
+				copy,
+				{
+					label: "Desbloquear",
+					hint: shortcut("L", { shift: true }),
+					onSelect: () => toggleLock(ids),
+				},
+			];
 		}
 		const single = targets.length === 1 ? targets[0] : undefined;
 		const entries: ContextMenuEntry[] = [];
@@ -471,17 +478,34 @@ export default function DesignEditor() {
 		entries.push(
 			{ ...copy, separated: entries.length > 0 },
 			paste,
-			{ label: "Duplicar", hint: `${mod}D`, onSelect: () => select(duplicateItems(ids)) },
+			{ label: "Duplicar", hint: shortcut("D"), onSelect: () => select(duplicateItems(ids)) },
 			{
 				label: "Subir una capa",
-				hint: `${mod}]`,
+				hint: shortcut("]"),
 				separated: true,
 				onSelect: () => moveItemsOneLayer(ids, "up"),
 			},
-			{ label: "Bajar una capa", hint: `${mod}[`, onSelect: () => moveItemsOneLayer(ids, "down") },
-			{ label: "Al frente", hint: `${mod}⇧]`, onSelect: () => bringItemsToFront(ids) },
-			{ label: "Al fondo", hint: `${mod}⇧[`, onSelect: () => sendItemsToBack(ids) },
-			{ label: "Bloquear", hint: `${mod}⇧L`, separated: true, onSelect: () => toggleLock(ids) },
+			{
+				label: "Bajar una capa",
+				hint: shortcut("["),
+				onSelect: () => moveItemsOneLayer(ids, "down"),
+			},
+			{
+				label: "Al frente",
+				hint: shortcut("]", { shift: true }),
+				onSelect: () => bringItemsToFront(ids),
+			},
+			{
+				label: "Al fondo",
+				hint: shortcut("[", { shift: true }),
+				onSelect: () => sendItemsToBack(ids),
+			},
+			{
+				label: "Bloquear",
+				hint: shortcut("L", { shift: true }),
+				separated: true,
+				onSelect: () => toggleLock(ids),
+			},
 			{
 				label: "Quitar",
 				hint: "Supr",
@@ -690,7 +714,7 @@ export default function DesignEditor() {
 									/>
 									{items.length === 0 && (
 										<p className="text-df-muted pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold">
-											Toca una foto para añadirla
+											Agrega una foto desde el panel Fotos para empezar
 										</p>
 									)}
 									{editingItem && (
@@ -812,6 +836,13 @@ export default function DesignEditor() {
 					x={contextMenu.x}
 					y={contextMenu.y}
 					entries={contextMenuEntries(contextMenu.ids)}
+					label={
+						contextMenu.ids.length === 0
+							? "Acciones de la hoja"
+							: contextMenu.ids.length === 1
+								? "Acciones del elemento"
+								: `Acciones de ${contextMenu.ids.length} elementos`
+					}
 					onClose={closeContextMenu}
 				/>
 			)}

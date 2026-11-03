@@ -210,6 +210,16 @@ export function PrintList({
 										{warning ? warning.message : rowDetail(row)}
 										{row.warnings.length > 1 && ` (+${row.warnings.length - 1})`}
 									</span>
+									{/* The selected row says what to do about its warnings. */}
+									{selected &&
+										row.warnings.map((w) => (
+											<span
+												key={w.kind}
+												className="text-df-muted dark:text-df-muted-dark mt-1 block text-xs leading-snug"
+											>
+												{w.hint}
+											</span>
+										))}
 								</span>
 							</button>
 
@@ -219,6 +229,7 @@ export function PrintList({
 								}
 								onClick={() => onToggleLock(item.id)}
 								pressed={!!item.locked}
+								revealOnHover={!item.locked}
 							>
 								{item.locked ? (
 									<Lock className="h-3.5 w-3.5" aria-hidden="true" />
@@ -230,6 +241,7 @@ export function PrintList({
 								label={item.hidden ? `Mostrar «${rowName(item)}»` : `Ocultar «${rowName(item)}»`}
 								onClick={() => onToggleHidden(item.id)}
 								pressed={!!item.hidden}
+								revealOnHover={!item.hidden}
 							>
 								{item.hidden ? (
 									<EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
@@ -295,11 +307,14 @@ function RowAction({
 	label,
 	onClick,
 	pressed,
+	revealOnHover = false,
 	children,
 }: {
 	label: string;
 	onClick: () => void;
 	pressed?: boolean;
+	/** With a mouse: only shown while the row is hovered or focused, to give the name room. */
+	revealOnHover?: boolean;
 	children: React.ReactNode;
 }) {
 	return (
@@ -309,7 +324,7 @@ function RowAction({
 			aria-label={label}
 			aria-pressed={pressed}
 			title={label}
-			className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-surface dark:hover:bg-df-surface-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 md:h-8 md:w-8"
+			className={`text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-surface dark:hover:bg-df-surface-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 pointer-fine:h-8 pointer-fine:w-8 ${revealOnHover ? "pointer-fine:hidden pointer-fine:group-focus-within:flex pointer-fine:group-hover:flex" : ""}`}
 		>
 			{children}
 		</button>

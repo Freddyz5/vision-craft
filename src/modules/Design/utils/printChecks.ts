@@ -17,6 +17,8 @@ export type PrintWarningKind = "load-error" | "outside" | "margin" | "low-qualit
 export interface PrintWarning {
 	kind: PrintWarningKind;
 	message: string;
+	/** What to do about it. */
+	hint: string;
 }
 
 export interface Sheet {
@@ -71,7 +73,11 @@ export function checkItem(
 	const text = isTextItem(item);
 
 	if (!text && image?.status === "error") {
-		warnings.push({ kind: "load-error", message: "No se pudo cargar" });
+		warnings.push({
+			kind: "load-error",
+			message: "No se pudo cargar",
+			hint: "Reintenta la carga o quítala; así no saldrá en lo impreso.",
+		});
 	}
 
 	const b = itemBounds(item);
@@ -81,18 +87,30 @@ export function checkItem(
 		b.maxX > sheet.width + TOLERANCE_PX ||
 		b.maxY > sheet.height + TOLERANCE_PX;
 	if (outside) {
-		warnings.push({ kind: "outside", message: "Se sale del papel" });
+		warnings.push({
+			kind: "outside",
+			message: "Se sale del papel",
+			hint: "Lo que queda fuera de la hoja no se imprime. Muévelo o hazlo más pequeño.",
+		});
 	} else if (text) {
 		const m = SAFE_MARGIN_MM * MM_TO_PX - TOLERANCE_PX;
 		if (b.minX < m || b.minY < m || b.maxX > sheet.width - m || b.maxY > sheet.height - m) {
-			warnings.push({ kind: "margin", message: "Texto en el margen" });
+			warnings.push({
+				kind: "margin",
+				message: "Texto en el margen",
+				hint: "La impresora puede cortar los últimos 5 mm. Aleja el texto del borde.",
+			});
 		}
 	}
 
 	if (!text) {
 		const ppi = imagePpi(item, image);
 		if (ppi !== null && ppi < PPI_MIN) {
-			warnings.push({ kind: "low-quality", message: `Baja calidad · ${ppi} ppp` });
+			warnings.push({
+				kind: "low-quality",
+				message: `Baja calidad · ${ppi} ppp`,
+				hint: "Se verá borrosa en papel. Hazla más pequeña o usa una foto más grande.",
+			});
 		}
 	}
 

@@ -9,6 +9,7 @@ import { FrameMenu } from "./FrameMenu";
 import { MoreMenu } from "./MoreMenu";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
+import { shortcut } from "../utils/shortcuts";
 
 const FONTS = [
 	{ value: "Inter", label: "Inter" },
@@ -16,11 +17,6 @@ const FONTS = [
 	{ value: "Courier New", label: "Courier" },
 	{ value: "Comic Sans MS", label: "Comic" },
 ];
-
-/** "⌘" on Apple keyboards, "Ctrl" elsewhere, for shortcut hints. */
-function modKey(): string {
-	return /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
-}
 
 /** Konva font sizes are logical px at 96 dpi; people pick sizes in points. */
 const PX_PER_PT = 96 / 72;
@@ -195,14 +191,14 @@ export function ItemToolbar({
 			)}
 			<ToolButton
 				docked={docked}
-				label={docked ? "Subir" : `Subir una capa (${modKey()}+])`}
+				label={docked ? "Subir" : `Subir una capa (${shortcut("]")})`}
 				onClick={() => onMoveLayer("up")}
 			>
 				<ArrowUp className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
 			<ToolButton
 				docked={docked}
-				label={docked ? "Bajar" : `Bajar una capa (${modKey()}+[)`}
+				label={docked ? "Bajar" : `Bajar una capa (${shortcut("[")})`}
 				onClick={() => onMoveLayer("down")}
 			>
 				<ArrowDown className="h-4 w-4" aria-hidden="true" />
@@ -212,12 +208,16 @@ export function ItemToolbar({
 			{!docked && (
 				<>
 					<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
-					<ToolButton docked={docked} label={`Duplicar (${modKey()}+D)`} onClick={onDuplicate}>
+					<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
 						<CopyPlus className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
 				</>
 			)}
-			<ToolButton docked={docked} label="Bloquear" onClick={onToggleLock}>
+			<ToolButton
+				docked={docked}
+				label={docked ? "Bloquear" : `Bloquear (${shortcut("L", { shift: true })})`}
+				onClick={onToggleLock}
+			>
 				<Lock className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>

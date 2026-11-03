@@ -1,5 +1,6 @@
 import type React from "react";
 import { Minus, Plus, Redo2, Undo2 } from "lucide-react";
+import { shortcut } from "../utils/shortcuts";
 
 interface SheetToolbarProps {
 	canUndo: boolean;
@@ -29,10 +30,14 @@ export function SheetToolbar({
 	return (
 		<div className="flex h-11 shrink-0 items-center justify-between gap-2 px-3">
 			<div className="flex items-center gap-0.5">
-				<BarButton label="Deshacer (Ctrl+Z)" onClick={onUndo} disabled={!canUndo}>
+				<BarButton label={`Deshacer (${shortcut("Z")})`} onClick={onUndo} disabled={!canUndo}>
 					<Undo2 className="h-4 w-4" aria-hidden="true" />
 				</BarButton>
-				<BarButton label="Rehacer (Ctrl+Mayús+Z)" onClick={onRedo} disabled={!canRedo}>
+				<BarButton
+					label={`Rehacer (${shortcut("Z", { shift: true })})`}
+					onClick={onRedo}
+					disabled={!canRedo}
+				>
 					<Redo2 className="h-4 w-4" aria-hidden="true" />
 				</BarButton>
 			</div>

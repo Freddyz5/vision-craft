@@ -12,7 +12,7 @@ export const DESKTOP_ONLY_FEATURES = [
 	"Marcos: borde, polaroid y sombra",
 	"Posición y tamaño exactos en cm",
 	"Menú de clic derecho",
-	"Duplicar, y Alt + arrastrar para copiar",
+	"Duplicar y copiar con Alt + arrastrar",
 	"Pegar imágenes copiadas (Ctrl/⌘ + V)",
 	"Atajos de teclado",
 ];
