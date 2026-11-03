@@ -213,16 +213,55 @@ export function addItem(item: CanvasItem): void {
 	activeCanvasItemsStore.set([...activeCanvasItemsStore.get(), item]);
 }
 
+// The batch mutations below write the store exactly once: canvasHistory
+// records one undo step per burst of writes, and every write is also a
+// localStorage write, so acting on a whole selection stays a single step.
+
 /** Remove an image item from the active canvas */
 export function removeItem(id: string): void {
-	activeCanvasItemsStore.set(activeCanvasItemsStore.get().filter((i) => i.id !== id));
+	removeItems([id]);
+}
+
+/** Remove several items in one write. */
+export function removeItems(ids: string[]): void {
+	const doomed = new Set(ids);
+	activeCanvasItemsStore.set(activeCanvasItemsStore.get().filter((i) => !doomed.has(i.id)));
 }
 
 /** Update properties of an existing canvas item */
 export function updateItem(id: string, patch: Partial<CanvasItem>): void {
+	updateItems({ [id]: patch });
+}
+
+/** Patch several items in one write, keyed by item id. */
+export function updateItems(patches: Record<string, Partial<CanvasItem>>): void {
 	activeCanvasItemsStore.set(
-		activeCanvasItemsStore.get().map((i) => (i.id === id ? { ...i, ...patch } : i)),
+		activeCanvasItemsStore.get().map((i) => (patches[i.id] ? { ...i, ...patches[i.id] } : i)),
 	);
+}
+
+/** How far (logical px) a duplicate lands from its original. */
+export const DUPLICATE_OFFSET = 20;
+
+/**
+ * Copy `ids` in one write: each copy gets a new id, is shifted by `offset`
+ * and goes on top of everything, keeping the originals' stacking order.
+ * Returns the new ids in that same order.
+ */
+export function duplicateItems(ids: string[], offset = DUPLICATE_OFFSET): string[] {
+	const items = activeCanvasItemsStore.get();
+	const wanted = new Set(ids);
+	const originals = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
+	const copies = originals.map((item, rank) => ({
+		...item,
+		id: crypto.randomUUID(),
+		x: item.x + offset,
+		y: item.y + offset,
+		zIndex: maxZ + 1 + rank,
+	}));
+	activeCanvasItemsStore.set([...items, ...copies]);
+	return copies.map((c) => c.id);
 }
 
 /** Bring an item to the front (max zIndex + 1) */
