@@ -1,6 +1,6 @@
-import type { CanvasConfig, CanvasItem } from '../../../shared/store/canvasStore';
-import type { PrintConfig } from '../types';
-import { MM_TO_PX } from '../../Canvas/constants/presets';
+import type { CanvasConfig, CanvasItem } from "../../../shared/store/canvasStore";
+import type { PrintConfig } from "../types";
+import { MM_TO_PX } from "../../Canvas/constants/presets";
 
 // Items in the store are positioned in "logical Stage pixels" on a 96dpi
 // basis (see CanvasItem doc-comment in canvasStore.ts). To render reliably
@@ -10,48 +10,49 @@ import { MM_TO_PX } from '../../Canvas/constants/presets';
 const PX_TO_MM = 1 / MM_TO_PX;
 
 function pxToMm(px: number): number {
-    return px * PX_TO_MM;
+	return px * PX_TO_MM;
 }
 
 function escapeHtml(text: string): string {
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#039;");
 }
 
 function escapeAttr(text: string): string {
-    return escapeHtml(text).replaceAll('`', '&#096;');
+	return escapeHtml(text).replaceAll("`", "&#096;");
 }
 
 function getCanvasHtml(
-    config: CanvasConfig,
-    items: CanvasItem[],
-    offsetXMm = 0,
-    offsetYMm = 0,
-    scale = 1,
+	config: CanvasConfig,
+	items: CanvasItem[],
+	offsetXMm = 0,
+	offsetYMm = 0,
+	scale = 1,
 ): string {
-    const widthMm = config.widthMm * scale;
-    const heightMm = config.heightMm * scale;
-    
-    // Sort items by zIndex ascending so the highest zIndex is rendered last
-    const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
+	const widthMm = config.widthMm * scale;
+	const heightMm = config.heightMm * scale;
 
-    const itemsHtml = sortedItems.map((item) => {
-        const xMm = pxToMm(item.x) * scale;
-        const yMm = pxToMm(item.y) * scale;
-        const wMm = pxToMm(item.width) * scale;
-        const hMm = pxToMm(item.height) * scale;
+	// Sort items by zIndex ascending so the highest zIndex is rendered last
+	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
 
-        if (item.type === 'text' || (!!item.text && !item.imageSrc)) {
-            const text = escapeHtml(item.text ?? '');
-            const fontSizeMm = pxToMm(item.fontSize ?? 24) * scale;
-            const fillColor = escapeAttr(item.fillColor ?? '#111827');
-            const fontFamily = escapeAttr(item.fontFamily ?? 'Inter');
-            const fontStyle = escapeAttr(item.fontStyle ?? 'normal');
-            return `
+	const itemsHtml = sortedItems
+		.map((item) => {
+			const xMm = pxToMm(item.x) * scale;
+			const yMm = pxToMm(item.y) * scale;
+			const wMm = pxToMm(item.width) * scale;
+			const hMm = pxToMm(item.height) * scale;
+
+			if (item.type === "text" || (!!item.text && !item.imageSrc)) {
+				const text = escapeHtml(item.text ?? "");
+				const fontSizeMm = pxToMm(item.fontSize ?? 24) * scale;
+				const fillColor = escapeAttr(item.fillColor ?? "#111827");
+				const fontFamily = escapeAttr(item.fontFamily ?? "Inter");
+				const fontStyle = escapeAttr(item.fontStyle ?? "normal");
+				return `
                 <div
                     style="
                         position: absolute;
@@ -70,13 +71,13 @@ function getCanvasHtml(
                     "
                 >${text}</div>
             `;
-        }
+			}
 
-        if (!item.imageSrc) return '';
+			if (!item.imageSrc) return "";
 
-        const src = escapeAttr(item.imageSrc);
-        const alt = escapeAttr(item.alt ?? '');
-        return `
+			const src = escapeAttr(item.imageSrc);
+			const alt = escapeAttr(item.alt ?? "");
+			return `
             <img
                 src="${src}"
                 alt="${alt}"
@@ -92,9 +93,10 @@ function getCanvasHtml(
                 "
             />
         `;
-    }).join('');
+		})
+		.join("");
 
-    return `
+	return `
         <div style="
             position: absolute;
             left: ${-offsetXMm}mm;
@@ -110,15 +112,15 @@ function getCanvasHtml(
     `;
 }
 
-export type DirectPrintMode = 'trueSize' | 'fitToPaper';
+export type DirectPrintMode = "trueSize" | "fitToPaper";
 export interface DirectPrintOptions {
-    mode?: DirectPrintMode;
-    paperWidthMm?: number;
-    paperHeightMm?: number;
+	mode?: DirectPrintMode;
+	paperWidthMm?: number;
+	paperHeightMm?: number;
 }
 
 function buildWaitForAssetsScript(): string {
-    return `
+	return `
         (() => {
             const imgs = Array.from(document.images || []);
             const waitForImage = (img) => {
@@ -139,44 +141,45 @@ function buildWaitForAssetsScript(): string {
 }
 
 function buildWaitForAssetsFunctionScript(): string {
-    return `
+	return `
         window.__waitForAssets = () => (${buildWaitForAssetsScript()});
     `;
 }
 
 export interface PrintBehaviorOptions {
-    autoPrint?: boolean;
-    closeAfterPrint?: boolean;
+	autoPrint?: boolean;
+	closeAfterPrint?: boolean;
 }
 
 export interface DirectPrintRenderOptions extends DirectPrintOptions, PrintBehaviorOptions {}
 
 export function buildDirectPrintHtml(
-    config: CanvasConfig,
-    items: CanvasItem[],
-    options: DirectPrintRenderOptions = {},
+	config: CanvasConfig,
+	items: CanvasItem[],
+	options: DirectPrintRenderOptions = {},
 ): string {
-    const mode: DirectPrintMode = options.mode ?? 'trueSize';
-    const htmlCanvas = getCanvasHtml(config, items, 0, 0, 1);
+	const mode: DirectPrintMode = options.mode ?? "trueSize";
+	const htmlCanvas = getCanvasHtml(config, items, 0, 0, 1);
 
-    const canvasWidthMm = config.widthMm;
-    const canvasHeightMm = config.heightMm;
+	const canvasWidthMm = config.widthMm;
+	const canvasHeightMm = config.heightMm;
 
-    const paperWidthMm = options.paperWidthMm ?? config.widthMm;
-    const paperHeightMm = options.paperHeightMm ?? config.heightMm;
+	const paperWidthMm = options.paperWidthMm ?? config.widthMm;
+	const paperHeightMm = options.paperHeightMm ?? config.heightMm;
 
-    // fitToPaper scales the whole canvas down (never up) to fit a single sheet.
-    const scale = mode === 'fitToPaper'
-        ? Math.min(paperWidthMm / canvasWidthMm, paperHeightMm / canvasHeightMm, 1)
-        : 1;
+	// fitToPaper scales the whole canvas down (never up) to fit a single sheet.
+	const scale =
+		mode === "fitToPaper"
+			? Math.min(paperWidthMm / canvasWidthMm, paperHeightMm / canvasHeightMm, 1)
+			: 1;
 
-    const autoPrint = options.autoPrint ?? false;
-    const closeAfterPrint = options.closeAfterPrint ?? false;
+	const autoPrint = options.autoPrint ?? false;
+	const closeAfterPrint = options.closeAfterPrint ?? false;
 
-    const script = `
+	const script = `
         ${buildWaitForAssetsFunctionScript()}
         window.addEventListener('load', () => {
-            if (!${autoPrint ? 'true' : 'false'}) return;
+            if (!${autoPrint ? "true" : "false"}) return;
             Promise.resolve()
                 .then(() => window.__waitForAssets?.())
                 .then(() => {
@@ -185,7 +188,7 @@ export function buildDirectPrintHtml(
                 });
         });
         window.addEventListener('afterprint', () => {
-            if (!${closeAfterPrint ? 'true' : 'false'}) return;
+            if (!${closeAfterPrint ? "true" : "false"}) return;
             try { window.close(); } catch {}
             if (window.frameElement && window.frameElement.parentNode) {
                 try { window.frameElement.parentNode.removeChild(window.frameElement); } catch {}
@@ -193,7 +196,7 @@ export function buildDirectPrintHtml(
         });
     `;
 
-    return `
+	return `
         <html>
             <head>
                 <meta charset="utf-8" />
@@ -232,27 +235,27 @@ export function buildDirectPrintHtml(
     `;
 }
 
-export interface TiledPrintRenderOptions extends PrintBehaviorOptions {}
+export type TiledPrintRenderOptions = PrintBehaviorOptions;
 
 export function buildTiledPrintHtml(
-    config: CanvasConfig,
-    items: CanvasItem[],
-    printConfig: PrintConfig,
-    options: TiledPrintRenderOptions = {},
+	config: CanvasConfig,
+	items: CanvasItem[],
+	printConfig: PrintConfig,
+	options: TiledPrintRenderOptions = {},
 ): string {
-    let pagesHtml = '';
+	let pagesHtml = "";
 
-    const paperWidthMm = printConfig.paperWidthMm;
-    const paperHeightMm = printConfig.paperHeightMm;
-    const canvasScale = printConfig.canvasScale ?? 1;
+	const paperWidthMm = printConfig.paperWidthMm;
+	const paperHeightMm = printConfig.paperHeightMm;
+	const canvasScale = printConfig.canvasScale ?? 1;
 
-    // Only used for the on-screen preview viewport-fit math (JS reads
-    // window.innerWidth in px). Never used for the actual @page sizing.
-    const paperWidthPx = paperWidthMm * MM_TO_PX;
-    const paperHeightPx = paperHeightMm * MM_TO_PX;
+	// Only used for the on-screen preview viewport-fit math (JS reads
+	// window.innerWidth in px). Never used for the actual @page sizing.
+	const paperWidthPx = paperWidthMm * MM_TO_PX;
+	const paperHeightPx = paperHeightMm * MM_TO_PX;
 
-    printConfig.tiles.forEach((tile, index) => {
-        const pageInner = `
+	printConfig.tiles.forEach((tile, index) => {
+		const pageInner = `
             <div class="page" style="
                 width: ${paperWidthMm}mm; 
                 height: ${paperHeightMm}mm; 
@@ -261,37 +264,37 @@ export function buildTiledPrintHtml(
                 background: white;
             ">
                 ${getCanvasHtml(
-                    config,
-                    items,
-                    tile.offsetXMm * canvasScale,
-                    tile.offsetYMm * canvasScale,
-                    canvasScale,
-                )}
+									config,
+									items,
+									tile.offsetXMm * canvasScale,
+									tile.offsetYMm * canvasScale,
+									canvasScale,
+								)}
             </div>
         `;
 
-        const isPreview = (options.autoPrint ?? false) === false;
-        if (isPreview) {
-            pagesHtml += `
+		const isPreview = (options.autoPrint ?? false) === false;
+		if (isPreview) {
+			pagesHtml += `
                 <section class="sheet">
                     <div class="sheet-label">Hoja ${index + 1} de ${printConfig.tiles.length} • ${printConfig.paperPresetId.toUpperCase()}</div>
                     ${pageInner}
                 </section>
             `;
-            return;
-        }
+			return;
+		}
 
-        pagesHtml += pageInner;
-    });
+		pagesHtml += pageInner;
+	});
 
-    const autoPrint = options.autoPrint ?? false;
-    const closeAfterPrint = options.closeAfterPrint ?? false;
-    const isPreview = autoPrint === false;
+	const autoPrint = options.autoPrint ?? false;
+	const closeAfterPrint = options.closeAfterPrint ?? false;
+	const isPreview = autoPrint === false;
 
-    const script = `
+	const script = `
         ${buildWaitForAssetsFunctionScript()}
         window.addEventListener('load', () => {
-            if (!${autoPrint ? 'true' : 'false'}) return;
+            if (!${autoPrint ? "true" : "false"}) return;
             Promise.resolve()
                 .then(() => window.__waitForAssets?.())
                 .then(() => {
@@ -300,7 +303,7 @@ export function buildTiledPrintHtml(
                 });
         });
         window.addEventListener('afterprint', () => {
-            if (!${closeAfterPrint ? 'true' : 'false'}) return;
+            if (!${closeAfterPrint ? "true" : "false"}) return;
             try { window.close(); } catch {}
             if (window.frameElement && window.frameElement.parentNode) {
                 try { window.frameElement.parentNode.removeChild(window.frameElement); } catch {}
@@ -308,8 +311,8 @@ export function buildTiledPrintHtml(
         });
     `;
 
-    const previewScript = isPreview
-        ? `
+	const previewScript = isPreview
+		? `
             (function () {
                 const paperW = ${paperWidthPx};
                 const paperH = ${paperHeightPx};
@@ -331,9 +334,9 @@ export function buildTiledPrintHtml(
                 document.documentElement.style.setProperty('--paper-h', String(paperH));
             });
         `
-        : '';
+		: "";
 
-    return `
+	return `
         <html>
             <head>
                 <meta charset="utf-8" />
@@ -364,7 +367,9 @@ export function buildTiledPrintHtml(
                         --paper-h: ${paperHeightPx};
                     }
 
-                    ${isPreview ? `
+                    ${
+											isPreview
+												? `
                         /* ── Screen-only preview styles ─────────────────────────────────────────
                            MUST be inside @media screen so they never bleed into printing.
                            Bug: transform:scale + page-break-after:auto were leaking into
@@ -431,7 +436,9 @@ export function buildTiledPrintHtml(
                             /* direct descendant of the block-formatting context.     */
                             .sheet { display: contents; }
                         }
-                    ` : ''}
+                    `
+												: ""
+										}
                 </style>
             </head>
             <body>
@@ -443,77 +450,81 @@ export function buildTiledPrintHtml(
 }
 
 function tryOpenPrintWindow(): Window | null {
-    try {
-        return window.open('', '_blank', 'popup=yes');
-    } catch {
-        return null;
-    }
+	try {
+		return window.open("", "_blank", "popup=yes");
+	} catch {
+		return null;
+	}
 }
 
 function writeHtmlToWindow(targetWindow: Window, html: string) {
-    const doc = targetWindow.document;
-    doc.open();
-    doc.write(html);
-    doc.close();
+	const doc = targetWindow.document;
+	doc.open();
+	doc.write(html);
+	doc.close();
 }
 
 export function createDirectPrintIframe(
-    config: CanvasConfig,
-    items: CanvasItem[],
-    options: DirectPrintOptions = {},
-) : boolean {
-    const html = buildDirectPrintHtml(config, items, {
-        ...options,
-        autoPrint: true,
-        closeAfterPrint: true,
-    });
+	config: CanvasConfig,
+	items: CanvasItem[],
+	options: DirectPrintOptions = {},
+): boolean {
+	const html = buildDirectPrintHtml(config, items, {
+		...options,
+		autoPrint: true,
+		closeAfterPrint: true,
+	});
 
-    const printWindow = tryOpenPrintWindow();
-    if (printWindow) {
-        writeHtmlToWindow(printWindow, html);
-        return true;
-    }
+	const printWindow = tryOpenPrintWindow();
+	if (printWindow) {
+		writeHtmlToWindow(printWindow, html);
+		return true;
+	}
 
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
+	const iframe = document.createElement("iframe");
+	iframe.style.display = "none";
+	document.body.appendChild(iframe);
 
-    const doc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
-    if (!doc) {
-        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        return false;
-    }
+	const doc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
+	if (!doc) {
+		if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+		return false;
+	}
 
-    doc.open();
-    doc.write(html);
-    doc.close();
-    return true;
+	doc.open();
+	doc.write(html);
+	doc.close();
+	return true;
 }
 
-export function createTiledPrintIframe(config: CanvasConfig, items: CanvasItem[], printConfig: PrintConfig): boolean {
-    const html = buildTiledPrintHtml(config, items, printConfig, {
-        autoPrint: true,
-        closeAfterPrint: true,
-    });
+export function createTiledPrintIframe(
+	config: CanvasConfig,
+	items: CanvasItem[],
+	printConfig: PrintConfig,
+): boolean {
+	const html = buildTiledPrintHtml(config, items, printConfig, {
+		autoPrint: true,
+		closeAfterPrint: true,
+	});
 
-    const printWindow = tryOpenPrintWindow();
-    if (printWindow) {
-        writeHtmlToWindow(printWindow, html);
-        return true;
-    }
+	const printWindow = tryOpenPrintWindow();
+	if (printWindow) {
+		writeHtmlToWindow(printWindow, html);
+		return true;
+	}
 
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
+	const iframe = document.createElement("iframe");
+	iframe.style.display = "none";
+	document.body.appendChild(iframe);
 
-    const doc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
-    if (!doc) {
-        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        return false;
-    }
+	const doc = iframe.contentDocument ?? iframe.contentWindow?.document ?? null;
+	if (!doc) {
+		if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+		return false;
+	}
 
-    doc.open();
-    doc.write(html);
-    doc.close();
-    return true;
+	doc.open();
+	doc.write(html);
+	doc.close();
+	return true;
 }
