@@ -57,6 +57,8 @@ interface KonvaCanvasProps {
 	onInteractionChange: (active: boolean) => void;
 	/** Alt+drag made copies: select them. */
 	onCopied: (ids: string[]) => void;
+	/** Right click at viewport (x, y), on an item or on the empty sheet (itemId null). */
+	onContextMenu: (at: { x: number; y: number; itemId: string | null }) => void;
 }
 
 export function KonvaCanvas({
@@ -75,6 +77,7 @@ export function KonvaCanvas({
 	crop,
 	onInteractionChange,
 	onCopied,
+	onContextMenu,
 }: KonvaCanvasProps) {
 	// What a drag moves: the whole selection when the dragged item is part of
 	// it (the Transformer carries the other nodes along), else just that item.
@@ -313,6 +316,13 @@ export function KonvaCanvas({
 				ref={stageRef}
 				onMouseDown={handleMouseDown}
 				onTouchStart={handleMouseDown}
+				onContextMenu={(e) => {
+					e.evt.preventDefault();
+					// The clicked shape may be part of an item (a photo's image, a frame): walk up to it.
+					let node: Konva.Node | null = e.target;
+					while (node && !node.hasName("canvas-item")) node = node.getParent();
+					onContextMenu({ x: e.evt.clientX, y: e.evt.clientY, itemId: node?.id() ?? null });
+				}}
 				className="bg-white"
 			>
 				<Layer>

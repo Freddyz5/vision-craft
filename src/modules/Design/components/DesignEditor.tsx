@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Images, ListChecks, X } from "lucide-react";
 import { useStore } from "@nanostores/react";
 import type Konva from "konva";
@@ -10,6 +10,7 @@ import { SheetRuler, RULER_SIZE } from "./SheetRuler";
 import { KonvaCanvas } from "./KonvaCanvas";
 import { CropToolbar, ItemToolbar } from "./ItemToolbar";
 import { TextEditOverlay } from "./TextEditOverlay";
+import { ContextMenu, type ContextMenuEntry } from "./ContextMenu";
 import {
 	activeCanvasConfigStore,
 	activeCanvasItemsStore,
@@ -57,6 +58,7 @@ import { useEditorClipboard } from "../hooks/useEditorClipboard";
 import { usePrintChecks } from "../hooks/usePrintChecks";
 import { itemBounds, warningKey, type PrintWarningKind } from "../utils/printChecks";
 import { newPhotoItem, newTextItem } from "../utils/newItems";
+import { copyItems, hasCopiedItems, pasteCopiedItems } from "../utils/editorClipboard";
 import {
 	applyCrop,
 	CROP_ASPECTS,
@@ -363,6 +365,90 @@ export default function DesignEditor() {
 		updateItems(Object.fromEntries(ids.map((id) => [id, { locked: lock || undefined }])));
 	};
 
+	// ── Right-click menu (desktop) ────────────────────────────────────────
+
+	// `ids`: what the menu acts on (empty = the bare sheet), fixed when it opens.
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; ids: string[] } | null>(
+		null,
+	);
+	const closeContextMenu = useCallback(() => setContextMenu(null), []);
+
+	const openContextMenu = ({ x, y, itemId }: { x: number; y: number; itemId: string | null }) => {
+		if (croppingId || editingId) return;
+		let ids: string[] = [];
+		if (itemId) {
+			// Right-clicking outside the selection selects that item first.
+			ids = selectedIds.includes(itemId) ? selectedIds : [itemId];
+			if (ids !== selectedIds) select(ids);
+		}
+		setContextMenu({ x, y, ids });
+	};
+
+	const contextMenuEntries = (ids: string[]): ContextMenuEntry[] => {
+		const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
+		const paste: ContextMenuEntry = {
+			label: "Pegar",
+			hint: `${mod}V`,
+			disabled: !hasCopiedItems(),
+			onSelect: () => select(pasteCopiedItems()),
+		};
+		if (ids.length === 0) {
+			return [
+				paste,
+				{
+					label: "Seleccionar todo",
+					hint: `${mod}A`,
+					disabled: items.length === 0,
+					onSelect: () => select(items.map((i) => i.id)),
+				},
+				{ label: "Agregar texto", onSelect: handleAddText, separated: true },
+			];
+		}
+		const targets = items.filter((i) => ids.includes(i.id));
+		const copy: ContextMenuEntry = {
+			label: "Copiar",
+			hint: `${mod}C`,
+			onSelect: () => copyItems(ids),
+		};
+		if (targets.some((i) => i.locked)) {
+			return [copy, { label: "Desbloquear", hint: `${mod}⇧L`, onSelect: () => toggleLock(ids) }];
+		}
+		const single = targets.length === 1 ? targets[0] : undefined;
+		const entries: ContextMenuEntry[] = [];
+		if (single && isTextItem(single)) {
+			entries.push({ label: "Editar texto", onSelect: () => setEditingId(single.id) });
+		}
+		if (single && !isTextItem(single) && toolbarActions && toolbarActions.onCrop) {
+			entries.push({ label: "Recortar", onSelect: () => startCrop(single.id) });
+		}
+		entries.push(
+			{ ...copy, separated: entries.length > 0 },
+			paste,
+			{ label: "Duplicar", hint: `${mod}D`, onSelect: () => select(duplicateItems(ids)) },
+			{
+				label: "Subir una capa",
+				hint: `${mod}]`,
+				separated: true,
+				onSelect: () => moveItemsOneLayer(ids, "up"),
+			},
+			{ label: "Bajar una capa", hint: `${mod}[`, onSelect: () => moveItemsOneLayer(ids, "down") },
+			{ label: "Al frente", hint: `${mod}⇧]`, onSelect: () => bringItemsToFront(ids) },
+			{ label: "Al fondo", hint: `${mod}⇧[`, onSelect: () => sendItemsToBack(ids) },
+			{ label: "Bloquear", hint: `${mod}⇧L`, separated: true, onSelect: () => toggleLock(ids) },
+			{
+				label: "Quitar",
+				hint: "Supr",
+				danger: true,
+				onSelect: () => {
+					removeItems(ids);
+					select([]);
+					showRemovedToast(ids.length);
+				},
+			},
+		);
+		return entries;
+	};
+
 	// ── Saving and leaving ────────────────────────────────────────────────
 
 	// Small JPEG so 20 saved boards stay well inside the localStorage quota.
@@ -546,6 +632,7 @@ export default function DesignEditor() {
 										}
 										onInteractionChange={setInteracting}
 										onCopied={select}
+										onContextMenu={openContextMenu}
 									/>
 									{items.length === 0 && (
 										<p className="text-df-muted pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold">
@@ -661,6 +748,15 @@ export default function DesignEditor() {
 					</button>
 					{printList}
 				</div>
+			)}
+
+			{contextMenu && (
+				<ContextMenu
+					x={contextMenu.x}
+					y={contextMenu.y}
+					entries={contextMenuEntries(contextMenu.ids)}
+					onClose={closeContextMenu}
+				/>
 			)}
 
 			<Toast
