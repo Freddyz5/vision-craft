@@ -30,7 +30,8 @@
 					"#a78bfa",
 					"#c4b5fd",
 					"#ede9fe"
-				]
+				],
+				"onColor": "#0f172a"
 			},
 			"lagoon": {
 				"role": "secondary",
@@ -457,6 +458,10 @@
 				"name": "The Night Twin Rule",
 				"body": "Every `df-*` color is written with its `-dark` twin (`bg-df-surface dark:bg-df-surface-dark`). A light token used alone is a bug in night mode.",
 				"section": "colors"
+			},
+			{
+				"name": "The Ink-on-Violet Rule",
+				"body": "At night, text and icons on a filled Studio Violet (night) or on the night gradient are Midnight Navy (`text-white dark:text-df-on-primary-dark`), never white: white on #a78bfa is 2.7:1 and on #2dd4bf 1.8:1, while Midnight gives 7:1 and 9.7:1. A large violet panel that holds white copy at several opacities (the print-options panel, the landing feature card) keeps the day violet (#7c3aed) at night instead, where white reads at 5.7:1."
 			},
 			{
 				"name": "The Violet Second Line Rule",

@@ -35,7 +35,7 @@ export function ZoomControls({ zoom, onZoomOut, onZoomIn, onReset }: ZoomControl
 			<button
 				type="button"
 				onClick={onReset}
-				className="btn btn-xs bg-df-primary hover:bg-df-primary/60 dark:bg-df-primary-dark text-[10px] font-bold text-white uppercase dark:text-white"
+				className="btn btn-xs bg-df-primary hover:bg-df-primary/60 dark:bg-df-primary-dark dark:text-df-on-primary-dark text-[10px] font-bold text-white uppercase"
 				title="100%"
 			>
 				100%

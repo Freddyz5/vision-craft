@@ -52,7 +52,7 @@ export function DesignActionBar({
 
 			<button
 				onClick={onExport}
-				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-linear-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-linear-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 			>
 				Exportar
 				<ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />

@@ -172,7 +172,7 @@ export default function CustomDimensions({
 						className={[
 							"flex flex-1 items-center justify-center gap-2.5 rounded-2xl border-2 py-3 text-sm font-semibold transition-all duration-150",
 							isPortrait
-								? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 border-transparent text-white shadow-md"
+								? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark border-transparent text-white shadow-md"
 								: "text-df-ink dark:text-df-ink-dark bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 border-gray-200 hover:shadow-sm dark:border-gray-700",
 						].join(" ")}
 					>
@@ -189,7 +189,7 @@ export default function CustomDimensions({
 						className={[
 							"flex flex-1 items-center justify-center gap-2.5 rounded-2xl border-2 py-3 text-sm font-semibold transition-all duration-150",
 							!isPortrait
-								? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 border-transparent text-white shadow-md"
+								? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark border-transparent text-white shadow-md"
 								: "text-df-ink dark:text-df-ink-dark bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 border-gray-200 hover:shadow-sm dark:border-gray-700",
 						].join(" ")}
 					>

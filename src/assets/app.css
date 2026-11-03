@@ -26,6 +26,9 @@
 	--color-df-ink-dark: #f9fafb; /* texto claro */
 	--color-df-muted-dark: #94a3b8; /* texto secundario */
 	--color-df-accent-dark: #2dd4bf; /* turquesa claro */
+	/* Texto sobre relleno violeta o degradado nocturno: el blanco sobre #a78bfa
+	   no llega a AA (2,7:1); esta tinta da 7:1 sobre el violeta y 9,7:1 sobre el turquesa. */
+	--color-df-on-primary-dark: #0f172a;
 
 	/* ── Typography ── */
 	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;

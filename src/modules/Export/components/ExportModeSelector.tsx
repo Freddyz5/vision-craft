@@ -19,7 +19,7 @@ export default function ExportModeSelector({ value, onChange }: ExportModeSelect
 					key={mode}
 					className={`grid flex-1 cursor-pointer grid-cols-[1fr_auto] items-center gap-x-3 rounded-xl border-2 p-3 transition-all duration-150 ${
 						value === mode
-							? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 border-transparent text-white shadow-md"
+							? "bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark border-transparent text-white shadow-md"
 							: "text-df-ink dark:text-df-ink-dark bg-df-surface dark:bg-df-surface-dark hover:border-df-primary/40 dark:hover:border-df-primary-dark/40 border-gray-200 hover:shadow-sm dark:border-gray-700"
 					} `}
 				>
@@ -35,7 +35,7 @@ export default function ExportModeSelector({ value, onChange }: ExportModeSelect
 						checked={value === mode}
 						onChange={() => onChange(mode)}
 					/>
-					<span className="text-xs opacity-70">{description}</span>
+					<span className="text-xs opacity-85">{description}</span>
 				</label>
 			))}
 		</>
