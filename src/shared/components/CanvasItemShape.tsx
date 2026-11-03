@@ -1,5 +1,7 @@
 import type React from "react";
-import type Konva from "konva";
+import { useEffect, useRef } from "react";
+import Konva from "konva";
+import type { Filter } from "konva/lib/Node";
 import {
 	Group,
 	Image as KonvaImage,
@@ -7,7 +9,7 @@ import {
 	Text as KonvaText,
 	type KonvaNodeEvents,
 } from "react-konva";
-import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../store/canvasStore";
+import { TEXT_DEFAULTS, isTextItem, type CanvasItem, type ImageAdjust } from "../store/canvasStore";
 import { useCanvasImage } from "../hooks/useCanvasImage";
 import { EDITOR_ONLY } from "../utils/stageCapture";
 import { traceShape } from "../utils/shapePath";
@@ -50,47 +52,94 @@ function itemGeometry(item: CanvasItem, scaleFactor: number) {
 	};
 }
 
+/** Biggest bitmap a filtered photo is cached at (px), to bound memory. */
+const MAX_FILTER_CACHE_PIXELS = 12_000_000;
+
+/** Konva filters for an item's adjustments, in a stable order. */
+function photoFilters(adjust: ImageAdjust | undefined): Filter[] {
+	if (!adjust) return [];
+	const filters: Filter[] = [];
+	if (adjust.filter === "bw") filters.push(Konva.Filters.Grayscale);
+	if (adjust.filter === "sepia") filters.push(Konva.Filters.Sepia);
+	if (adjust.brightness) filters.push(Konva.Filters.Brighten);
+	if (adjust.contrast) filters.push(Konva.Filters.Contrast);
+	if (adjust.blur) filters.push(Konva.Filters.Blur);
+	return filters;
+}
+
+/**
+ * A photo is an outer Group (geometry, events, opacity, shape clip: what the
+ * Transformer grabs) around the Image (crop, flip, filters), so flipping
+ * never fights the Transformer's own scaling.
+ */
 function CanvasImageShape(props: CanvasItemShapeProps) {
 	const { item, scaleFactor, interaction, ref } = props;
 	const { image, status } = useCanvasImage(item.imageSrc);
-	if (status === "error") return <MissingImagePlaceholder {...props} />;
-	const c = item.crop;
-	// Konva crops in source pixels; the store keeps fractions.
-	const crop =
-		c && image
-			? {
-					x: c.x * image.naturalWidth,
-					y: c.y * image.naturalHeight,
-					width: c.width * image.naturalWidth,
-					height: c.height * image.naturalHeight,
-				}
-			: undefined;
-
-	if (!item.shape) {
-		return (
-			<KonvaImage
-				ref={ref as React.Ref<Konva.Image>}
-				image={image}
-				crop={crop}
-				{...itemGeometry(item, scaleFactor)}
-				{...interaction}
-			/>
-		);
-	}
-
-	// A masked photo: the group is the item (it carries geometry, events and
-	// the Transformer) and clips the image to the shape.
+	const photoRef = useRef<Konva.Image>(null);
 	const width = item.width * scaleFactor;
 	const height = item.height * scaleFactor;
+	const adjust = item.adjust;
+	const filters = photoFilters(adjust);
+	// The photo's own pixels across the box (only the cropped part of it).
+	const sourceWidth = image ? image.naturalWidth * (item.crop?.width ?? 1) : 0;
+
+	// Konva only applies filters to a cached node. Cache at the photo's own
+	// resolution (bounded), not the screen's, so a 300 ppp export of a
+	// filtered photo is as sharp as an unfiltered one.
+	const cacheKey = filters.length
+		? [width, height, sourceWidth, JSON.stringify(item.crop), JSON.stringify(adjust)].join("|")
+		: "";
+	useEffect(() => {
+		const node = photoRef.current;
+		if (!node || !image) return;
+		if (!cacheKey) {
+			node.clearCache();
+			return;
+		}
+		const fullRatio = Math.max(1, sourceWidth / Math.max(width, 1));
+		const capRatio = Math.sqrt(MAX_FILTER_CACHE_PIXELS / Math.max(width * height, 1));
+		node.cache({ pixelRatio: Math.min(fullRatio, capRatio) });
+		node.getLayer()?.batchDraw();
+	}, [image, cacheKey, sourceWidth, width, height]);
+
+	if (status === "error") return <MissingImagePlaceholder {...props} />;
+	const c = item.crop;
 	const shape = item.shape;
+
 	return (
 		<Group
 			ref={ref as React.Ref<Konva.Group>}
 			{...itemGeometry(item, scaleFactor)}
+			opacity={adjust?.opacity ?? 1}
 			{...interaction}
-			clipFunc={(ctx) => traceShape(ctx, shape, 0, 0, width, height)}
+			clipFunc={shape ? (ctx) => traceShape(ctx, shape, 0, 0, width, height) : undefined}
 		>
-			<KonvaImage image={image} crop={crop} width={width} height={height} />
+			<KonvaImage
+				ref={photoRef}
+				image={image}
+				// Konva crops in source pixels; the store keeps fractions.
+				crop={
+					c && image
+						? {
+								x: c.x * image.naturalWidth,
+								y: c.y * image.naturalHeight,
+								width: c.width * image.naturalWidth,
+								height: c.height * image.naturalHeight,
+							}
+						: undefined
+				}
+				width={width}
+				height={height}
+				x={adjust?.flipX ? width : 0}
+				y={adjust?.flipY ? height : 0}
+				scaleX={adjust?.flipX ? -1 : 1}
+				scaleY={adjust?.flipY ? -1 : 1}
+				filters={filters}
+				brightness={adjust?.brightness ?? 0}
+				contrast={adjust?.contrast ?? 0}
+				// Blur is stored relative to the photo, so it looks the same at any size.
+				blurRadius={(adjust?.blur ?? 0) * sourceWidth}
+			/>
 		</Group>
 	);
 }

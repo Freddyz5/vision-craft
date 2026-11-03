@@ -8,6 +8,7 @@ import { Monitor, X } from "lucide-react";
 export const DESKTOP_ONLY_FEATURES = [
 	"Seleccionar varios elementos a la vez",
 	"Alinear y repartir",
+	"Ajustes de foto: opacidad, voltear, filtros, brillo y contraste",
 	"Duplicar, y Alt + arrastrar para copiar",
 	"Pegar imágenes copiadas (Ctrl/⌘ + V)",
 	"Atajos de teclado",

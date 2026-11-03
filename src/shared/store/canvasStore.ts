@@ -53,6 +53,22 @@ export interface CanvasItem {
 	crop?: ImageCrop;
 	/** Images only: the mask the photo is cut to. Absent = rectangle. */
 	shape?: ImageShape;
+	/** Images only: look adjustments, applied when drawing; the photo itself is never changed. */
+	adjust?: ImageAdjust;
+}
+
+export interface ImageAdjust {
+	/** 0–1 (default 1). */
+	opacity?: number;
+	flipX?: boolean;
+	flipY?: boolean;
+	filter?: "bw" | "sepia";
+	/** -0.5…0.5, Konva Brighten. */
+	brightness?: number;
+	/** -50…50, Konva Contrast. */
+	contrast?: number;
+	/** Blur radius as a fraction of the photo's width (0–0.02). */
+	blur?: number;
 }
 
 /** `radius`: corner radius as a fraction (0–0.5) of the box's shorter side. */

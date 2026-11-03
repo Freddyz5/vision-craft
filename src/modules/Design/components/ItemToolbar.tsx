@@ -4,6 +4,7 @@ import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/stor
 import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
+import { AdjustMenu } from "./AdjustMenu";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 
@@ -149,6 +150,8 @@ export function ItemToolbar({
 						<Crop className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
 					<ShapeMenu shape={item.shape} onChange={(shape) => onUpdate({ shape })} docked={docked} />
+					{/* Desktop only, per the editor brief. */}
+					{!docked && <AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} />}
 					<Divider docked={docked} />
 				</>
 			)}
