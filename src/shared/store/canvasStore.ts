@@ -59,6 +59,8 @@ export interface CanvasItem {
 	frame?: ImageFrame;
 	/** Hidden from the sheet and from every export or print; still listed. */
 	hidden?: boolean;
+	/** Can't be moved, resized or deleted until unlocked. */
+	locked?: boolean;
 }
 
 export interface ImageFrame {
@@ -365,6 +367,8 @@ export function insertItemCopies(originals: CanvasItem[], offset: number): strin
 		.sort((a, b) => a.zIndex - b.zIndex)
 		.map((item, rank) => ({
 			...item,
+			// A copy is meant to be moved, so it starts unlocked.
+			locked: undefined,
 			id: crypto.randomUUID(),
 			x: item.x + offset,
 			y: item.y + offset,
@@ -391,6 +395,29 @@ export function sendToBack(id: string): void {
 export function reorderItems(frontToBack: string[]): void {
 	const n = frontToBack.length;
 	updateItems(Object.fromEntries(frontToBack.map((id, i) => [id, { zIndex: n - i }])));
+}
+
+/**
+ * Move `ids` one layer up (or down): each passes the nearest item that isn't
+ * selected, so a group keeps its own order. One write.
+ */
+export function moveItemsOneLayer(ids: string[], direction: "up" | "down"): void {
+	const wanted = new Set(ids);
+	const backToFront = [...activeCanvasItemsStore.get()]
+		.sort((a, b) => a.zIndex - b.zIndex)
+		.map((i) => i.id);
+	const swap = (i: number, j: number) =>
+		([backToFront[i], backToFront[j]] = [backToFront[j], backToFront[i]]);
+	if (direction === "up") {
+		for (let i = backToFront.length - 2; i >= 0; i--) {
+			if (wanted.has(backToFront[i]) && !wanted.has(backToFront[i + 1])) swap(i, i + 1);
+		}
+	} else {
+		for (let i = 1; i < backToFront.length; i++) {
+			if (wanted.has(backToFront[i]) && !wanted.has(backToFront[i - 1])) swap(i, i - 1);
+		}
+	}
+	reorderItems(backToFront.reverse());
 }
 
 /** Put `ids` above everything else, keeping their order among themselves. One write. */

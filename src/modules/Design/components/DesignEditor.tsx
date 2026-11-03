@@ -20,6 +20,7 @@ import {
 	isTextItem,
 	MAX_SAVED_CANVASES,
 	removeItem,
+	moveItemsOneLayer,
 	removeItems,
 	reorderItems,
 	saveCurrentCanvas,
@@ -356,6 +357,12 @@ export default function DesignEditor() {
 		setEditingId(null);
 	};
 
+	/** Lock `ids`, or unlock them all when any is already locked. One write. */
+	const toggleLock = (ids: string[]) => {
+		const lock = !items.some((i) => ids.includes(i.id) && i.locked);
+		updateItems(Object.fromEntries(ids.map((id) => [id, { locked: lock || undefined }])));
+	};
+
 	// ── Saving and leaving ────────────────────────────────────────────────
 
 	// Small JPEG so 20 saved boards stay well inside the localStorage quota.
@@ -417,6 +424,8 @@ export default function DesignEditor() {
 			selectedItem && updateItem(selectedItem.id, patch),
 		onBringToFront: () => bringItemsToFront(selectedIds),
 		onSendToBack: () => sendItemsToBack(selectedIds),
+		onMoveLayer: (direction: "up" | "down") => moveItemsOneLayer(selectedIds, direction),
+		onToggleLock: () => toggleLock(selectedIds),
 		onRemove: removeSelected,
 		onEditText: () => selectedItem && setEditingId(selectedItem.id),
 		onDuplicate: () => select(duplicateItems(selectedIds)),
@@ -451,6 +460,7 @@ export default function DesignEditor() {
 				if (item) updateItem(id, { hidden: !item.hidden });
 			}}
 			onReorder={reorderItems}
+			onToggleLock={(id) => toggleLock([id])}
 			onSave={handleSave}
 			onExport={handleExport}
 		/>

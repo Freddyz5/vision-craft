@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
 import {
 	activeCanvasItemsStore,
+	bringItemsToFront,
 	duplicateItems,
+	moveItemsOneLayer,
 	removeItems,
+	sendItemsToBack,
 	updateItems,
 	type CanvasItem,
 } from "../../../shared/store/canvasStore";
@@ -61,8 +64,32 @@ export function useEditorShortcuts({
 			if (isTypingTarget(e.target)) return;
 			const { selectedIds, onClearSelection, onRemoved, onSelect, onSelectAll } = latest.current;
 			const key = e.key.toLowerCase();
+			// Locked items can't be moved or removed from the keyboard either.
+			const lockedIds = new Set(
+				activeCanvasItemsStore
+					.get()
+					.filter((i) => i.locked)
+					.map((i) => i.id),
+			);
+			const movable = selectedIds.filter((id) => !lockedIds.has(id));
 
 			if (e.ctrlKey || e.metaKey) {
+				// Layers by key position (Shift turns ] into } on most layouts).
+				if ((e.code === "BracketRight" || e.code === "BracketLeft") && selectedIds.length > 0) {
+					e.preventDefault();
+					const up = e.code === "BracketRight";
+					if (e.shiftKey) (up ? bringItemsToFront : sendItemsToBack)(selectedIds);
+					else moveItemsOneLayer(selectedIds, up ? "up" : "down");
+					return;
+				}
+				if (key === "l" && e.shiftKey && selectedIds.length > 0) {
+					e.preventDefault();
+					const lock = selectedIds.some((id) => !lockedIds.has(id));
+					updateItems(
+						Object.fromEntries(selectedIds.map((id) => [id, { locked: lock || undefined }])),
+					);
+					return;
+				}
 				if (key === "z") {
 					e.preventDefault();
 					if (e.shiftKey) redo();
@@ -86,13 +113,13 @@ export function useEditorShortcuts({
 				return;
 			}
 
-			if (selectedIds.length === 0) return;
+			if (movable.length === 0) return;
 
 			if (e.key === "Delete" || e.key === "Backspace") {
 				e.preventDefault();
-				removeItems(selectedIds);
+				removeItems(movable);
 				onClearSelection();
-				onRemoved?.(selectedIds.length);
+				onRemoved?.(movable.length);
 				return;
 			}
 
@@ -101,7 +128,7 @@ export function useEditorShortcuts({
 			// Keep the page from scrolling while nudging.
 			e.preventDefault();
 			const step = (e.shiftKey ? NUDGE_SHIFT_MM : NUDGE_MM) * MM_TO_PX;
-			const selected = new Set(selectedIds);
+			const selected = new Set(movable);
 			const patches: Record<string, Partial<CanvasItem>> = {};
 			for (const item of activeCanvasItemsStore.get()) {
 				if (!selected.has(item.id)) continue;

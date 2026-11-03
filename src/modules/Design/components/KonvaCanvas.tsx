@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Stage, Layer, Rect, Line, Group, Transformer } from "react-konva";
+import { Stage, Layer, Rect, Line, Group, Transformer, Circle, Path } from "react-konva";
 import type Konva from "konva";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
 import { CropOverlay } from "./CropOverlay";
@@ -80,7 +80,7 @@ export function KonvaCanvas({
 	// it (the Transformer carries the other nodes along), else just that item.
 	const dragGroup = (id: string): CanvasItem[] =>
 		selectedIds.includes(id)
-			? items.filter((i) => selectedIds.includes(i.id))
+			? items.filter((i) => selectedIds.includes(i.id) && !i.locked)
 			: items.filter((i) => i.id === id);
 
 	// Alt+drag (Option on Mac): the originals stay put, drawn here as ghosts,
@@ -146,7 +146,7 @@ export function KonvaCanvas({
 			const top = Math.min(m.y0, m.y1) / scaleFactor;
 			const bottom = Math.max(m.y0, m.y1) / scaleFactor;
 			const touched = items.filter((item) => {
-				if (item.hidden) return false;
+				if (item.hidden || item.locked) return false;
 				const b = itemBounds(item);
 				return b.maxX >= left && b.minX <= right && b.maxY >= top && b.minY <= bottom;
 			});
@@ -176,7 +176,8 @@ export function KonvaCanvas({
 	useEffect(() => {
 		const tr = trRef.current;
 		if (!tr) return;
-		const hiddenIds = new Set(items.filter((i) => i.hidden).map((i) => i.id));
+		// Hidden and locked items aren't handled by the Transformer.
+		const hiddenIds = new Set(items.filter((i) => i.hidden || i.locked).map((i) => i.id));
 		const next = selectedIds
 			.filter((id) => id !== editingId && !hiddenIds.has(id))
 			.map((id) => nodesRef.current.get(id))
@@ -405,6 +406,33 @@ export function KonvaCanvas({
 						/>
 					)}
 
+					{/* Locked items: a padlock badge on the sheet, and a dashed outline when selected. */}
+					<Group name={EDITOR_ONLY} listening={false}>
+						{sortedItems
+							.filter((item) => item.locked && !item.hidden)
+							.map((item) => {
+								const b = itemBounds(item);
+								const selected = selectedIds.includes(item.id);
+								return (
+									<React.Fragment key={item.id}>
+										{selected && (
+											<Rect
+												x={item.x * scaleFactor}
+												y={item.y * scaleFactor}
+												width={item.width * scaleFactor}
+												height={item.height * scaleFactor}
+												rotation={item.rotation}
+												stroke={GUIDE_COLOR}
+												strokeWidth={1.5}
+												dash={[4, 4]}
+											/>
+										)}
+										<LockBadge x={b.maxX * scaleFactor - 12} y={b.minY * scaleFactor + 12} />
+									</React.Fragment>
+								);
+							})}
+					</Group>
+
 					{crop && (
 						<CropOverlay
 							{...crop}
@@ -447,5 +475,31 @@ export function KonvaCanvas({
 				</Layer>
 			</Stage>
 		</div>
+	);
+}
+
+/** A small padlock (lucide's "lock", drawn in Konva) in a white disc, centred at x, y. */
+function LockBadge({ x, y }: { x: number; y: number }) {
+	return (
+		<Group x={x} y={y}>
+			<Circle radius={10} fill="#FFFFFF" stroke={GUIDE_COLOR} strokeWidth={1.5} />
+			<Group x={-6} y={-6} scaleX={0.5} scaleY={0.5}>
+				<Rect
+					x={3}
+					y={11}
+					width={18}
+					height={11}
+					cornerRadius={2}
+					stroke={GUIDE_COLOR}
+					strokeWidth={2.5}
+				/>
+				<Path
+					data="M7 11V7a5 5 0 0 1 10 0v4"
+					stroke={GUIDE_COLOR}
+					strokeWidth={2.5}
+					lineCap="round"
+				/>
+			</Group>
+		</Group>
 	);
 }

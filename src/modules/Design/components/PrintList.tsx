@@ -6,6 +6,8 @@ import {
 	Eye,
 	EyeOff,
 	ImageOff,
+	Lock,
+	LockOpen,
 	RotateCw,
 	Trash2,
 	TriangleAlert,
@@ -27,6 +29,7 @@ interface PrintListProps {
 	onRetry: (item: CanvasItem) => void;
 	onRemove: (id: string) => void;
 	onToggleHidden: (id: string) => void;
+	onToggleLock: (id: string) => void;
 	/** New stacking order, every id front-most first (drag a row to reorder, desktop). */
 	onReorder: (frontToBack: string[]) => void;
 	onSave: () => void;
@@ -66,6 +69,7 @@ export function PrintList({
 	onRetry,
 	onRemove,
 	onToggleHidden,
+	onToggleLock,
 	onReorder,
 	onSave,
 	onExport,
@@ -209,6 +213,19 @@ export function PrintList({
 								</span>
 							</button>
 
+							<RowAction
+								label={
+									item.locked ? `Desbloquear «${rowName(item)}»` : `Bloquear «${rowName(item)}»`
+								}
+								onClick={() => onToggleLock(item.id)}
+								pressed={!!item.locked}
+							>
+								{item.locked ? (
+									<Lock className="h-3.5 w-3.5" aria-hidden="true" />
+								) : (
+									<LockOpen className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
+								)}
+							</RowAction>
 							<RowAction
 								label={item.hidden ? `Mostrar «${rowName(item)}»` : `Ocultar «${rowName(item)}»`}
 								onClick={() => onToggleHidden(item.id)}

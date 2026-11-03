@@ -1,11 +1,12 @@
 import type React from "react";
-import { BringToFront, CopyPlus, Crop, PenLine, SendToBack, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, CopyPlus, Crop, Lock, LockOpen, PenLine, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
 import { AdjustMenu } from "./AdjustMenu";
 import { FrameMenu } from "./FrameMenu";
+import { MoreMenu } from "./MoreMenu";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 
@@ -32,6 +33,10 @@ interface ItemToolbarProps {
 	onUpdate: (patch: Partial<CanvasItem>) => void;
 	onBringToFront: () => void;
 	onSendToBack: () => void;
+	/** One layer up or down. */
+	onMoveLayer: (direction: "up" | "down") => void;
+	/** Lock the selection, or unlock it when any of it is locked. */
+	onToggleLock: () => void;
 	onRemove: () => void;
 	onEditText: () => void;
 	onDuplicate: () => void;
@@ -52,6 +57,8 @@ export function ItemToolbar({
 	onUpdate,
 	onBringToFront,
 	onSendToBack,
+	onMoveLayer,
+	onToggleLock,
 	onRemove,
 	onEditText,
 	onDuplicate,
@@ -65,6 +72,31 @@ export function ItemToolbar({
 	const text = !group && isTextItem(item);
 	const docked = variant === "docked";
 	const fontSize = item.fontSize || TEXT_DEFAULTS.fontSize;
+
+	// Anything locked in the selection: the only action is to unlock it.
+	if (items.some((i) => i.locked)) {
+		return (
+			<div
+				role="toolbar"
+				aria-label="Elemento bloqueado"
+				style={style}
+				className={
+					docked
+						? "bg-df-surface dark:bg-df-surface-dark flex h-full items-center justify-center px-2"
+						: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
+				}
+			>
+				<button
+					type="button"
+					onClick={onToggleLock}
+					className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold focus-visible:outline-2 md:h-9"
+				>
+					<LockOpen className="h-4 w-4" aria-hidden="true" />
+					Desbloquear
+				</button>
+			</div>
+		);
+	}
 
 	const setPointSize = (pt: number) => {
 		if (!Number.isFinite(pt) || pt < 6) return;
@@ -161,11 +193,19 @@ export function ItemToolbar({
 					<Divider docked={docked} />
 				</>
 			)}
-			<ToolButton docked={docked} label="Al frente" onClick={onBringToFront}>
-				<BringToFront className="h-4 w-4" aria-hidden="true" />
+			<ToolButton
+				docked={docked}
+				label={docked ? "Subir" : `Subir una capa (${modKey()}+])`}
+				onClick={() => onMoveLayer("up")}
+			>
+				<ArrowUp className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
-			<ToolButton docked={docked} label="Al fondo" onClick={onSendToBack}>
-				<SendToBack className="h-4 w-4" aria-hidden="true" />
+			<ToolButton
+				docked={docked}
+				label={docked ? "Bajar" : `Bajar una capa (${modKey()}+[)`}
+				onClick={() => onMoveLayer("down")}
+			>
+				<ArrowDown className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
 			<Divider docked={docked} />
 			{/* Desktop only, per the editor brief; on mobile they wait for "Más en computadora". */}
@@ -177,9 +217,20 @@ export function ItemToolbar({
 					</ToolButton>
 				</>
 			)}
+			<ToolButton docked={docked} label="Bloquear" onClick={onToggleLock}>
+				<Lock className="h-4 w-4" aria-hidden="true" />
+			</ToolButton>
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
+			{!docked && (
+				<MoreMenu
+					item={group ? undefined : item}
+					onBringToFront={onBringToFront}
+					onSendToBack={onSendToBack}
+					onUpdate={onUpdate}
+				/>
+			)}
 			{docked && (
 				<>
 					<Divider docked={docked} />

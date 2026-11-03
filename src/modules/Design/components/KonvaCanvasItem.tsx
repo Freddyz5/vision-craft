@@ -62,7 +62,7 @@ export function KonvaCanvasItem({
 			item={item}
 			scaleFactor={scaleFactor}
 			interaction={{
-				draggable: true,
+				draggable: !item.locked,
 				visible: !hidden,
 				onClick: handleSelect,
 				onTap: handleSelect,
