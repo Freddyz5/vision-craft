@@ -1,24 +1,37 @@
 import { useRef, useState } from "react";
+import type Konva from "konva";
 import { useStore } from "@nanostores/react";
-import { activeCanvasConfigStore, activeCanvasItemsStore } from "../../../shared/store/canvasStore";
-import { MM_TO_PX } from "../../Canvas/constants/presets";
-import type { ExportMode } from "../types";
 import {
-	buildDirectPrintHtml,
-	buildTiledPrintHtml,
-	createDirectPrintIframe,
-	createTiledPrintIframe,
-} from "../utils/printHelpers";
+	activeCanvasConfigStore,
+	activeCanvasItemsStore,
+	markActiveCanvasExported,
+} from "../../../shared/store/canvasStore";
+import { MM_TO_PX } from "../../Canvas/constants/presets";
+import { sheetCount, type ExportMode } from "../types";
+import { buildDirectPrintHtml, buildTiledPrintHtml, printHtml } from "../utils/printHelpers";
 import { usePosterPrintConfig } from "../hooks/usePosterPrintConfig";
 import { useWallPreviewCapture } from "../hooks/useWallPreviewCapture";
 import { usePrintModal } from "../hooks/usePrintModal";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
+import { captureStage } from "../../../shared/utils/stageCapture";
 import { Toast } from "../../../shared/components/Toast";
 import { ExportCanvasPreview } from "./ExportCanvasPreview";
 import { ExportPrintOptions } from "./ExportPrintOptions";
 import { ExportDownloadOptions } from "./ExportDownloadOptions";
 import { PrintPreviewModal } from "./PrintPreviewModal";
+
+/**
+ * Resolution of printed pages. 250 ppp keeps photos sharp on paper while an
+ * A3 page (the largest sheet offered) stays under Safari's ~16.7 MP canvas cap.
+ */
+const PRINT_DPI = 250;
+
+/** Resolves after the browser has painted, e.g. a toast set just before. */
+const nextPaint = () =>
+	new Promise<void>((resolve) =>
+		requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+	);
 
 export default function ExportPanel() {
 	const config = useStore(activeCanvasConfigStore);
@@ -48,12 +61,12 @@ export default function ExportPanel() {
 	// Canvas scaling state
 	const containerRef = useRef<HTMLDivElement>(null);
 	const scaleFactor = useContainerScale(containerRef, logicalWidth, logicalHeight);
-	const { toastMessage, showToast } = useToast();
+	const { toast, showToast, dismissToast } = useToast();
 	const printModal = usePrintModal();
 	const printIframeRef = useRef<HTMLIFrameElement>(null);
 
 	// Konva stage ref for PNG export
-	const stageRef = useRef<any>(null);
+	const stageRef = useRef<Konva.Stage>(null);
 
 	const showPosterPreview = exportMode === "poster" && !!transposePrintConfig;
 	const wallPreviewSrc = useWallPreviewCapture({
@@ -64,23 +77,74 @@ export default function ExportPanel() {
 		items,
 	});
 
-	const handleModalPrint = async () => {
-		const started =
-			exportMode === "poster" && transposePrintConfig
-				? createTiledPrintIframe(config, items, transposePrintConfig)
-				: exportMode === "fit-page"
-					? createDirectPrintIframe(config, items, {
-							mode: "fitToPaper",
-							paperWidthMm: selectedPaper.widthMm,
-							paperHeightMm: selectedPaper.heightMm,
-						})
-					: false;
+	// Pages are captured from the preview stage, which draws items with the
+	// editor's own renderer, so crops, shapes and effects print as designed.
+	const printPagesRef = useRef<string[]>([]);
+	const preparingPrintRef = useRef(false);
 
-		if (started) return;
+	/**
+	 * Each page blocks the main thread while it's drawn, so the toast says
+	 * which one is on and gets a frame to paint before every page.
+	 */
+	const capturePrintPages = async (): Promise<string[]> => {
+		const stage = stageRef.current;
+		if (!stage) return [];
+		const jpeg = { mimeType: "image/jpeg" as const, quality: 0.95 };
+		if (exportMode === "poster" && transposePrintConfig) {
+			const pc = transposePrintConfig;
+			const pages: string[] = [];
+			for (const [i, tile] of pc.tiles.entries()) {
+				if (pc.tiles.length > 1) {
+					showToast(`Preparando la hoja ${i + 1} de ${pc.tiles.length}…`, {
+						tone: "progress",
+						durationMs: 60_000,
+					});
+				}
+				await nextPaint();
+				pages.push(
+					captureStage(stage, {
+						...jpeg,
+						scaleFactor,
+						// Canvas px are printed `canvasScale` times bigger on the tiles.
+						pixelRatio: (PRINT_DPI / 96) * pc.canvasScale,
+						region: {
+							x: tile.offsetXMm * MM_TO_PX,
+							y: tile.offsetYMm * MM_TO_PX,
+							width: pc.pageViewportWidthMm * MM_TO_PX,
+							height: pc.pageViewportHeightMm * MM_TO_PX,
+						},
+					}),
+				);
+			}
+			return pages;
+		}
+		await nextPaint();
+		// Fit-page prints the canvas at fitPageScale (never enlarged).
+		return [
+			captureStage(stage, { ...jpeg, scaleFactor, pixelRatio: (PRINT_DPI / 96) * fitPageScale }),
+		];
+	};
+
+	const buildPrintHtml = (pages: string[], autoPrint: boolean) =>
+		exportMode === "poster" && transposePrintConfig
+			? buildTiledPrintHtml(pages, transposePrintConfig, { autoPrint, closeAfterPrint: autoPrint })
+			: buildDirectPrintHtml(pages[0], config, {
+					mode: "fitToPaper",
+					paperWidthMm: selectedPaper.widthMm,
+					paperHeightMm: selectedPaper.heightMm,
+					autoPrint,
+					closeAfterPrint: autoPrint,
+				});
+
+	const handleModalPrint = async () => {
+		if (printHtml(buildPrintHtml(printPagesRef.current, true))) {
+			markActiveCanvasExported();
+			return;
+		}
 
 		const win = printIframeRef.current?.contentWindow as any;
 		if (!win) {
-			showToast("No se pudo iniciar la impresión.");
+			showToast("No se pudo iniciar la impresión.", { tone: "error" });
 			return;
 		}
 		try {
@@ -89,39 +153,36 @@ export default function ExportPanel() {
 			}
 			win.focus?.();
 			win.print?.();
+			markActiveCanvasExported();
 		} catch (err: any) {
-			showToast("No se pudo iniciar la impresión: " + (err?.message || "Error"));
+			showToast("No se pudo iniciar la impresión: " + (err?.message || "Error"), { tone: "error" });
 		}
 	};
 
-	const handlePrintPreview = () => {
-		if (exportMode === "poster" && transposePrintConfig) {
-			printModal.open(
-				buildTiledPrintHtml(config, items, transposePrintConfig, {
-					autoPrint: false,
-					closeAfterPrint: false,
-				}),
-				`Imprimir (${transposePrintConfig.tiles.length} hojas)`,
-			);
+	const handlePrintPreview = async () => {
+		// A second click while pages are still being drawn would draw them twice.
+		if (exportMode === "image" || preparingPrintRef.current) return;
+		preparingPrintRef.current = true;
+		// Capturing big pages blocks for a moment: say so first.
+		showToast("Preparando la impresión…", { tone: "progress", durationMs: 60_000 });
+		try {
+			printPagesRef.current = await capturePrintPages();
+		} catch {
+			showToast("No se pudo preparar la impresión.", { tone: "error" });
 			return;
+		} finally {
+			preparingPrintRef.current = false;
 		}
-		if (exportMode === "fit-page") {
-			printModal.open(
-				buildDirectPrintHtml(config, items, {
-					mode: "fitToPaper",
-					paperWidthMm: selectedPaper.widthMm,
-					paperHeightMm: selectedPaper.heightMm,
-					autoPrint: false,
-					closeAfterPrint: false,
-				}),
-				`Imprimir (ajustado a ${selectedPaper.label})`,
-			);
-			return;
-		}
+		dismissToast();
+		printModal.open(
+			buildPrintHtml(printPagesRef.current, false),
+			exportMode === "poster" && transposePrintConfig
+				? `Imprimir (${sheetCount(transposePrintConfig.tiles.length)})`
+				: `Imprimir (ajustado a ${selectedPaper.label})`,
+		);
 	};
 
 	const [exportDpi, setExportDpi] = useState<150 | 300>(150);
-	const getExportPixelRatio = () => exportDpi / 96;
 
 	const downloadDataUrl = (dataURL: string, filename: string) => {
 		const link = document.createElement("a");
@@ -132,48 +193,20 @@ export default function ExportPanel() {
 		document.body.removeChild(link);
 	};
 
-	const handleDownloadPng = () => {
-		if (stageRef.current) {
-			// Unscale it back to original resolution for export
-			const originalScale = stageRef.current.scale();
-			stageRef.current.scale({ x: 1, y: 1 });
-			stageRef.current.width(logicalWidth);
-			stageRef.current.height(logicalHeight);
-
-			const dataURL = stageRef.current.toDataURL({
-				pixelRatio: getExportPixelRatio(),
-			});
-
-			// Restore scale
-			stageRef.current.scale(originalScale);
-			stageRef.current.width(logicalWidth * scaleFactor);
-			stageRef.current.height(logicalHeight * scaleFactor);
-
-			downloadDataUrl(dataURL, `${config.name || "vision-board"}.png`);
-			showToast("PNG descargado.");
-		}
-	};
-
-	const handleDownloadJpg = () => {
-		if (stageRef.current) {
-			const originalScale = stageRef.current.scale();
-			stageRef.current.scale({ x: 1, y: 1 });
-			stageRef.current.width(logicalWidth);
-			stageRef.current.height(logicalHeight);
-
-			const dataURL = stageRef.current.toDataURL({
-				pixelRatio: getExportPixelRatio(),
-				mimeType: "image/jpeg",
-				quality: 0.92,
-			});
-
-			stageRef.current.scale(originalScale);
-			stageRef.current.width(logicalWidth * scaleFactor);
-			stageRef.current.height(logicalHeight * scaleFactor);
-
-			downloadDataUrl(dataURL, `${config.name || "vision-board"}.jpg`);
-			showToast("JPG descargado.");
-		}
+	// Captured from the preview stage at the chosen DPI, independent of how
+	// big the preview happens to be drawn on screen.
+	const downloadImage = (mimeType: "image/png" | "image/jpeg", extension: "png" | "jpg") => {
+		const stage = stageRef.current;
+		if (!stage) return;
+		const dataURL = captureStage(stage, {
+			scaleFactor,
+			pixelRatio: exportDpi / 96,
+			mimeType,
+			quality: mimeType === "image/jpeg" ? 0.92 : undefined,
+		});
+		downloadDataUrl(dataURL, `${config.name || "vision-board"}.${extension}`);
+		markActiveCanvasExported();
+		showToast(`${extension.toUpperCase()} descargado.`);
 	};
 
 	return (
@@ -218,13 +251,13 @@ export default function ExportPanel() {
 						exportMode={exportMode}
 						exportDpi={exportDpi}
 						onExportDpiChange={setExportDpi}
-						onDownloadPng={handleDownloadPng}
-						onDownloadJpg={handleDownloadJpg}
+						onDownloadPng={() => downloadImage("image/png", "png")}
+						onDownloadJpg={() => downloadImage("image/jpeg", "jpg")}
 					/>
 				</div>
 			</aside>
 
-			<Toast message={toastMessage} />
+			<Toast message={toast?.message ?? null} tone={toast?.tone} onDismiss={dismissToast} />
 
 			<PrintPreviewModal
 				open={printModal.isOpen}

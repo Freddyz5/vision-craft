@@ -68,7 +68,11 @@ export default function ImageCard({
 							aria-hidden="true"
 							className="bg-df-primary dark:bg-df-primary-dark absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full shadow-md"
 						>
-							<Check className="h-3.5 w-3.5 text-white" strokeWidth={3} aria-hidden="true" />
+							<Check
+								className="dark:text-df-on-primary-dark h-3.5 w-3.5 text-white"
+								strokeWidth={3}
+								aria-hidden="true"
+							/>
 						</div>
 					)}
 				</div>

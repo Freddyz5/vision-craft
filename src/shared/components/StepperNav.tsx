@@ -10,9 +10,11 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import { LINKS } from "../constants/links";
+import { useHydrated } from "../hooks/useHydrated";
 import { selectedImagesStore } from "../store/boardStore";
 import {
 	activeCanvasConfigStore,
+	activeCanvasExportedStore,
 	activeCanvasItemsStore,
 	autoSaveActiveCanvas,
 } from "../store/canvasStore";
@@ -29,20 +31,24 @@ const STEP_ICONS: Record<string, LucideIcon> = {
 	export: ImageDown,
 };
 
-function isStepCompleted(
-	id: string,
-	selectedCount: number,
-	canvasName: string,
-	itemsCount: number,
-): boolean {
+interface StepProgress {
+	selectedCount: number;
+	canvasName: string;
+	itemsCount: number;
+	exported: boolean;
+}
+
+function isStepCompleted(id: string, progress: StepProgress): boolean {
 	switch (id) {
 		case "explore":
-			return selectedCount > 0;
+			return progress.selectedCount > 0;
 		case "canvas":
-			return canvasName.trim() !== "";
+			return progress.canvasName.trim() !== "";
 		case "design":
+			return progress.itemsCount > 0;
 		case "export":
-			return itemsCount > 0;
+			// Only once the board, as it is now, was downloaded or printed.
+			return progress.exported;
 		default:
 			return false;
 	}
@@ -55,6 +61,9 @@ export default function StepperNav({ activeItem }: Props) {
 	const selectedImages = useStore(selectedImagesStore);
 	const canvasConfig = useStore(activeCanvasConfigStore);
 	const canvasItems = useStore(activeCanvasItemsStore);
+	const exported = useStore(activeCanvasExportedStore);
+	// Progress comes from localStorage, which the server render can't see.
+	const hydrated = useHydrated();
 
 	const currentIndex = LINKS.findIndex((link) => link.id === activeItem);
 	// currentIndex === -1 means we are on a page outside the 4-step wizard
@@ -95,9 +104,15 @@ export default function StepperNav({ activeItem }: Props) {
 					const StepIcon = STEP_ICONS[link.id];
 					const isCurrent = isWizardStep && activeItem === link.id;
 					const isCompleted =
+						hydrated &&
 						isWizardStep &&
 						!isCurrent &&
-						isStepCompleted(link.id, selectedImages.length, canvasConfig.name, canvasItems.length);
+						isStepCompleted(link.id, {
+							selectedCount: selectedImages.length,
+							canvasName: canvasConfig.name,
+							itemsCount: canvasItems.length,
+							exported,
+						});
 
 					const badge = (
 						<span
@@ -106,9 +121,9 @@ export default function StepperNav({ activeItem }: Props) {
 								!isWizardStep
 									? "text-df-muted dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800"
 									: isCurrent
-										? "bg-white/20 text-white"
+										? "dark:bg-df-on-primary-dark/10 dark:text-df-on-primary-dark bg-white/20 text-white"
 										: isCompleted
-											? "bg-df-primary dark:bg-df-primary-dark text-white"
+											? "bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark text-white"
 											: "text-df-muted dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800",
 							].join(" ")}
 							aria-hidden="true"
@@ -140,7 +155,7 @@ export default function StepperNav({ activeItem }: Props) {
 									className={[
 										"flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
 										isCurrent
-											? "bg-df-primary dark:bg-df-primary-dark text-white"
+											? "bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark text-white"
 											: isCompleted
 												? "text-df-ink dark:text-df-ink-dark hover:bg-gray-100 dark:hover:bg-gray-800"
 												: "text-df-muted dark:text-df-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800",

@@ -137,29 +137,47 @@ function normalizePexels(img: PexelsPhoto): NormalizedImage {
 	};
 }
 
-/** Carga un enlace directo a imagen para leer sus dimensiones reales sin re-subirla. */
-function loadDirectImage(src: string): Promise<NormalizedImage> {
-	return new Promise((resolve, reject) => {
+/** Resuelve si `src` carga como imagen, con o sin `crossOrigin`. */
+function probeImage(src: string, cors: boolean): Promise<HTMLImageElement | null> {
+	return new Promise((resolve) => {
 		const img = new Image();
-		img.onload = () => {
-			if (!img.naturalWidth || !img.naturalHeight) {
-				reject(new Error("El enlace no parece apuntar a una imagen válida."));
-				return;
-			}
-			resolve({
-				width: img.naturalWidth,
-				height: img.naturalHeight,
-				imageSrc: src,
-				alt: "Imagen desde enlace",
-			});
-		};
-		img.onerror = () => {
-			const error = new Error(
-				"No se pudo cargar la imagen desde el enlace. Asegúrate de que sea una URL pública y directa a la imagen.",
-			);
-			errorLogger.warn("Direct image link failed to load", { src });
-			reject(error);
-		};
+		if (cors) img.crossOrigin = "anonymous";
+		img.onload = () => resolve(img);
+		img.onerror = () => resolve(null);
 		img.src = src;
 	});
+}
+
+/**
+ * Carga un enlace directo a imagen para leer sus dimensiones reales sin re-subirla.
+ *
+ * Se valida con `crossOrigin`, igual que la carga el lienzo de Diseña: si el
+ * servidor no envía cabeceras CORS la imagen se vería aquí pero quedaría
+ * invisible en el lienzo y no se podría exportar.
+ */
+async function loadDirectImage(src: string): Promise<NormalizedImage> {
+	const img = await probeImage(src, true);
+	if (img) {
+		if (!img.naturalWidth || !img.naturalHeight) {
+			throw new Error("El enlace no parece apuntar a una imagen válida.");
+		}
+		return {
+			width: img.naturalWidth,
+			height: img.naturalHeight,
+			imageSrc: src,
+			alt: "Imagen desde enlace",
+		};
+	}
+
+	// Distingue "el sitio no deja usarla fuera de su página" de "no es una imagen".
+	const blockedByCors = (await probeImage(src, false)) !== null;
+	errorLogger.warn("Direct image link failed to load", { src, blockedByCors });
+	if (blockedByCors) {
+		throw new Error(
+			"Ese sitio no permite usar su imagen en otras páginas. Descárgala y agrégala con «O sube tu propia imagen».",
+		);
+	}
+	throw new Error(
+		"No se pudo cargar la imagen desde el enlace. Asegúrate de que sea una URL pública y directa a la imagen.",
+	);
 }

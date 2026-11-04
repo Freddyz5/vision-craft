@@ -1,0 +1,513 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-11-03T02:50:20Z",
+	"title": "Design System: Vision Craft",
+	"extensions": {
+		"colorMeta": {
+			"violet": {
+				"role": "primary",
+				"displayName": "Studio Violet",
+				"tonalRamp": [
+					"#2e1065",
+					"#4c1d95",
+					"#6d28d9",
+					"#7c3aed",
+					"#8b5cf6",
+					"#a78bfa",
+					"#c4b5fd",
+					"#ede9fe"
+				]
+			},
+			"violet-night": {
+				"role": "primary",
+				"displayName": "Studio Violet (night)",
+				"tonalRamp": [
+					"#2e1065",
+					"#4c1d95",
+					"#6d28d9",
+					"#7c3aed",
+					"#8b5cf6",
+					"#a78bfa",
+					"#c4b5fd",
+					"#ede9fe"
+				],
+				"onColor": "#0f172a"
+			},
+			"lagoon": {
+				"role": "secondary",
+				"displayName": "Lagoon Teal",
+				"tonalRamp": [
+					"#042f2e",
+					"#134e4a",
+					"#0f766e",
+					"#0d9488",
+					"#14b8a6",
+					"#2dd4bf",
+					"#5eead4",
+					"#ccfbf1"
+				]
+			},
+			"lagoon-night": {
+				"role": "secondary",
+				"displayName": "Lagoon Teal (night)",
+				"tonalRamp": [
+					"#042f2e",
+					"#134e4a",
+					"#0f766e",
+					"#0d9488",
+					"#14b8a6",
+					"#2dd4bf",
+					"#5eead4",
+					"#ccfbf1"
+				]
+			},
+			"marigold": {
+				"role": "tertiary",
+				"displayName": "Marigold (reserved)",
+				"tonalRamp": [
+					"#451a03",
+					"#78350f",
+					"#b45309",
+					"#d97706",
+					"#f59e0b",
+					"#fbbf24",
+					"#fcd34d",
+					"#fef3c7"
+				]
+			},
+			"marigold-night": {
+				"role": "tertiary",
+				"displayName": "Marigold (night, reserved)",
+				"tonalRamp": [
+					"#451a03",
+					"#78350f",
+					"#b45309",
+					"#d97706",
+					"#f59e0b",
+					"#fbbf24",
+					"#fcd34d",
+					"#fef3c7"
+				]
+			},
+			"studio-mist": {
+				"role": "neutral",
+				"displayName": "Studio Mist",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"paper": {
+				"role": "neutral",
+				"displayName": "Paper White",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"graphite-ink": {
+				"role": "neutral",
+				"displayName": "Graphite Ink",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"pewter": {
+				"role": "neutral",
+				"displayName": "Pewter",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"hairline": {
+				"role": "neutral",
+				"displayName": "Hairline Gray",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"well": {
+				"role": "neutral",
+				"displayName": "Well Gray",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"midnight": {
+				"role": "neutral",
+				"displayName": "Midnight Navy",
+				"tonalRamp": [
+					"#020617",
+					"#0f172a",
+					"#1e293b",
+					"#334155",
+					"#64748b",
+					"#94a3b8",
+					"#cbd5e1",
+					"#f1f5f9"
+				]
+			},
+			"slate-surface": {
+				"role": "neutral",
+				"displayName": "Slate Surface",
+				"tonalRamp": [
+					"#020617",
+					"#0f172a",
+					"#1e293b",
+					"#334155",
+					"#64748b",
+					"#94a3b8",
+					"#cbd5e1",
+					"#f1f5f9"
+				]
+			},
+			"moonlight-ink": {
+				"role": "neutral",
+				"displayName": "Moonlight Ink",
+				"tonalRamp": [
+					"#020617",
+					"#0f172a",
+					"#1e293b",
+					"#334155",
+					"#64748b",
+					"#94a3b8",
+					"#cbd5e1",
+					"#f1f5f9"
+				]
+			},
+			"slate-muted": {
+				"role": "neutral",
+				"displayName": "Slate Muted",
+				"tonalRamp": [
+					"#020617",
+					"#0f172a",
+					"#1e293b",
+					"#334155",
+					"#64748b",
+					"#94a3b8",
+					"#cbd5e1",
+					"#f1f5f9"
+				]
+			},
+			"night-hairline": {
+				"role": "neutral",
+				"displayName": "Night Hairline",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			},
+			"night-well": {
+				"role": "neutral",
+				"displayName": "Night Well",
+				"tonalRamp": [
+					"#030712",
+					"#111827",
+					"#374151",
+					"#6b7280",
+					"#9ca3af",
+					"#d1d5db",
+					"#e5e7eb",
+					"#f9fafb"
+				]
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Display",
+				"purpose": "Landing hero only; 2.25rem → 3rem (sm) → 3.75rem (lg)."
+			},
+			"headline": {
+				"displayName": "Headline",
+				"purpose": "Two-line wizard step heading, violet second line ending in a period; 1.875rem → 2.25rem (sm) → 3rem (lg)."
+			},
+			"title": {
+				"displayName": "Title",
+				"purpose": "Card titles, board names, export option labels."
+			},
+			"body": {
+				"displayName": "Body",
+				"purpose": "Descriptions and help text, ~24–28rem measure; marketing paragraphs step up to 1rem."
+			},
+			"control": {
+				"displayName": "Control",
+				"purpose": "Button labels."
+			},
+			"nav": {
+				"displayName": "Nav",
+				"purpose": "Stepper and top-bar links."
+			},
+			"label": {
+				"displayName": "Label",
+				"purpose": "Uppercase tracked eyebrows and section labels in Pewter; never below 10px."
+			}
+		},
+		"shadows": [
+			{
+				"name": "rest",
+				"value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+				"purpose": "Cards, search field, solid buttons at rest."
+			},
+			{
+				"name": "lift",
+				"value": "0 10px 15px -3px rgb(124 58 237 / 0.1), 0 4px 6px -4px rgb(124 58 237 / 0.1)",
+				"purpose": "Hovered or selected tile/preset card, with translateY(-2px)."
+			},
+			{
+				"name": "glow",
+				"value": "0 25px 50px -12px rgb(124 58 237 / 0.3)",
+				"purpose": "The gradient main CTA only."
+			},
+			{
+				"name": "float",
+				"value": "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+				"purpose": "Modals and the floating selection bar."
+			}
+		],
+		"motion": [
+			{
+				"name": "duration-quick",
+				"value": "150ms",
+				"purpose": "Hover opacity and color changes on controls."
+			},
+			{
+				"name": "duration-standard",
+				"value": "200ms",
+				"purpose": "Lift, ring and border transitions on tiles and cards."
+			},
+			{
+				"name": "duration-theme",
+				"value": "300ms",
+				"purpose": "Page background/text color change when toggling theme."
+			},
+			{
+				"name": "duration-photo",
+				"value": "500ms",
+				"purpose": "Photo zoom to 104% on tile hover."
+			},
+			{
+				"name": "ease-standard",
+				"value": "ease-out",
+				"purpose": "Default easing for all state transitions."
+			},
+			{
+				"name": "ring-pulse",
+				"value": "ring-pulse 1.5s ease-out infinite",
+				"purpose": "Violet 0→28px ring behind the floating selection bar; the only looping animation."
+			},
+			{
+				"name": "press",
+				"value": "scale(0.95)",
+				"purpose": "Active state of the gradient main CTA."
+			}
+		],
+		"breakpoints": [
+			{
+				"name": "sm",
+				"value": "640px"
+			},
+			{
+				"name": "md",
+				"value": "768px"
+			},
+			{
+				"name": "lg",
+				"value": "1024px"
+			},
+			{
+				"name": "xl",
+				"value": "1280px"
+			}
+		]
+	},
+	"components": [
+		{
+			"name": "Primary Button",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "Solid violet pill for primary actions that aren't the screen's main forward step.",
+			"html": "<button class=\"ds-btn-primary\">Guardar tablero</button>",
+			"css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--color-df-primary, #7c3aed); color: #fff; font: 600 0.875rem/1.25 Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 20px; border: none; border-radius: 9999px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); cursor: pointer; transition: opacity 150ms ease-out; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+		},
+		{
+			"name": "Main CTA (gradient)",
+			"kind": "button",
+			"refersTo": "button-cta",
+			"description": "The single main forward action on a screen; violet-to-teal gradient with a violet glow. One per screen.",
+			"html": "<button class=\"ds-btn-cta\">Armar Board <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 17 5-5-5-5\"/><path d=\"m13 17 5-5-5-5\"/></svg></button>",
+			"css": ".ds-btn-cta { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(to right, var(--color-df-primary, #7c3aed), var(--color-df-accent, #14b8a6)); color: #fff; font: 700 0.875rem/1.25 Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 32px; border: none; border-radius: 9999px; box-shadow: 0 25px 50px -12px rgb(124 58 237 / 0.3); cursor: pointer; transition: opacity 150ms ease-out, transform 150ms ease-out; } .ds-btn-cta:hover { opacity: 0.9; } .ds-btn-cta:active { transform: scale(0.95); } .ds-btn-cta:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; }"
+		},
+		{
+			"name": "Outline Button",
+			"kind": "button",
+			"refersTo": "button-outline",
+			"description": "Secondary pill with a hairline border; fades on hover.",
+			"html": "<button class=\"ds-btn-outline\">Duplicar</button>",
+			"css": ".ds-btn-outline { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--color-df-ink, #111827); font: 600 0.875rem/1.25 Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 20px; border: 1px solid #e5e7eb; border-radius: 9999px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); cursor: pointer; transition: opacity 150ms ease-out; } .ds-btn-outline:hover { opacity: 0.7; } .ds-btn-outline:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; }"
+		},
+		{
+			"name": "Wizard Stepper",
+			"kind": "nav",
+			"refersTo": "nav-step-current",
+			"description": "Four step pills: completed (violet check badge), current (solid violet), upcoming (muted), joined by hairline connectors.",
+			"html": "<nav class=\"ds-stepper\" aria-label=\"Progreso del flujo\"><ol><li><a href=\"#\" class=\"ds-step ds-step-done\"><span class=\"ds-step-badge\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span>Explora</a><span class=\"ds-step-line\" aria-hidden=\"true\"></span></li><li><a href=\"#\" class=\"ds-step ds-step-done\"><span class=\"ds-step-badge\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span>Lienzo</a><span class=\"ds-step-line\" aria-hidden=\"true\"></span></li><li><a href=\"#\" class=\"ds-step ds-step-current\" aria-current=\"step\"><span class=\"ds-step-badge\">3</span>Diseña</a><span class=\"ds-step-line\" aria-hidden=\"true\"></span></li><li><a href=\"#\" class=\"ds-step\"><span class=\"ds-step-badge\">4</span>Exporta</a></li></ol></nav>",
+			"css": ".ds-stepper ol { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; } .ds-stepper li { display: flex; align-items: center; gap: 8px; } .ds-step { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 9999px; font: 500 0.875rem/1.25 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-muted, #6b7280); text-decoration: none; transition: background-color 150ms ease-out; } .ds-step:hover { background: #f3f4f6; } .ds-step:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; } .ds-step-badge { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 9999px; font: 700 11px/1 Inter, ui-sans-serif, system-ui, sans-serif; background: #f3f4f6; color: var(--color-df-muted, #6b7280); } .ds-step-done { color: var(--color-df-ink, #111827); } .ds-step-done .ds-step-badge { background: var(--color-df-primary, #7c3aed); color: #fff; } .ds-step-current { background: var(--color-df-primary, #7c3aed); color: #fff; } .ds-step-current:hover { background: var(--color-df-primary, #7c3aed); } .ds-step-current .ds-step-badge { background: rgb(255 255 255 / 0.2); color: #fff; } .ds-step-line { width: 24px; height: 1px; background: #d1d5db; }"
+		},
+		{
+			"name": "Search Field",
+			"kind": "input",
+			"refersTo": "input-search",
+			"description": "Whole-row Paper White search container with a leading icon and provider checkboxes.",
+			"html": "<form class=\"ds-search\" role=\"search\"><span class=\"ds-search-icon\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg></span><label for=\"ds-q\" class=\"ds-sr\">Busca tu inspiración</label><input id=\"ds-q\" type=\"search\" placeholder=\"Busca tu inspiración (ej. 'Neon Tokyo')\"><span class=\"ds-search-div\" aria-hidden=\"true\"></span><label class=\"ds-search-opt\"><input type=\"checkbox\" checked> Unsplash</label><label class=\"ds-search-opt\"><input type=\"checkbox\" checked> Pexels</label></form>",
+			"css": ".ds-search { display: flex; align-items: center; gap: 12px; background: var(--color-df-surface, #ffffff); border: 1px solid var(--color-df-muted, #6b7280); border-radius: 16px; padding: 12px 16px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); max-width: 640px; } .ds-search:focus-within { box-shadow: 0 0 0 2px var(--color-df-primary, #7c3aed); } .ds-search-icon { display: flex; color: var(--color-df-muted, #6b7280); } .ds-search input[type=search] { flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: var(--color-df-ink, #111827); font: 400 0.875rem/1.5 Inter, ui-sans-serif, system-ui, sans-serif; } .ds-search input[type=search]::placeholder { color: var(--color-df-muted, #6b7280); } .ds-search-div { width: 1px; height: 20px; background: #e5e7eb; } .ds-search-opt { display: flex; align-items: center; gap: 6px; font: 500 0.75rem/1 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-ink, #111827); cursor: pointer; } .ds-search-opt input { accent-color: var(--color-df-primary, #7c3aed); width: 16px; height: 16px; } .ds-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }"
+		},
+		{
+			"name": "Image Tile",
+			"kind": "card",
+			"refersTo": "image-tile",
+			"description": "Selectable photo tile: quiet at rest, lifts and zooms on hover, violet ring and check badge when selected.",
+			"html": "<div class=\"ds-tiles\"><button class=\"ds-tile\" aria-pressed=\"false\"><span class=\"ds-tile-img\" style=\"background:linear-gradient(160deg,#c4b5fd,#5eead4)\"></span><span class=\"ds-tile-veil\"><span class=\"ds-tile-hint\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span></span></button><button class=\"ds-tile ds-tile-on\" aria-pressed=\"true\"><span class=\"ds-tile-img\" style=\"background:linear-gradient(160deg,#fcd34d,#f472b6)\"></span><span class=\"ds-tile-badge\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span></button></div>",
+			"css": ".ds-tiles { display: flex; gap: 16px; } .ds-tile { position: relative; width: 160px; height: 200px; padding: 0; border: none; border-radius: 16px; overflow: hidden; background: var(--color-df-surface, #ffffff); box-shadow: 0 0 0 1px var(--color-df-muted, #6b7280); cursor: pointer; transition: transform 200ms ease-out, box-shadow 200ms ease-out; } .ds-tile:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px rgb(124 58 237 / 0.4), 0 10px 15px -3px rgb(0 0 0 / 0.1); } .ds-tile:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; } .ds-tile-img { position: absolute; inset: 0; transition: transform 500ms ease-out; } .ds-tile:hover .ds-tile-img { transform: scale(1.04); } .ds-tile-veil { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgb(0 0 0 / 0); transition: background-color 200ms ease-out; } .ds-tile:hover .ds-tile-veil { background: rgb(0 0 0 / 0.15); } .ds-tile-hint { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 9999px; background: rgb(255 255 255 / 0.8); color: var(--color-df-primary, #7c3aed); opacity: 0; transition: opacity 200ms ease-out; } .ds-tile:hover .ds-tile-hint { opacity: 1; } .ds-tile-on, .ds-tile-on:hover { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--color-df-primary, #7c3aed), 0 10px 15px -3px rgb(124 58 237 / 0.1); } .ds-tile-badge { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9999px; background: var(--color-df-primary, #7c3aed); color: #fff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }"
+		},
+		{
+			"name": "Preset Card",
+			"kind": "custom",
+			"refersTo": "card",
+			"description": "Paper-size choice that draws the sheet's real proportions; violet border, wash and lift when selected.",
+			"html": "<div class=\"ds-presets\"><button class=\"ds-preset ds-preset-on\" aria-pressed=\"true\"><span class=\"ds-preset-tag\">Defecto</span><span class=\"ds-preset-well\"><span class=\"ds-preset-sheet\" style=\"width:25px;height:36px\"></span></span><span class=\"ds-preset-name\">A4 Portrait</span><span class=\"ds-preset-dim\">210 × 297 mm</span></button><button class=\"ds-preset\" aria-pressed=\"false\"><span class=\"ds-preset-well\"><span class=\"ds-preset-sheet\" style=\"width:36px;height:25px\"></span></span><span class=\"ds-preset-name\">A3 Landscape</span><span class=\"ds-preset-dim\">420 × 297 mm</span></button></div>",
+			"css": ".ds-presets { display: flex; gap: 16px; padding-top: 12px; } .ds-preset { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 140px; padding: 16px; border-radius: 16px; border: 2px solid #e5e7eb; background: var(--color-df-surface, #ffffff); cursor: pointer; font-family: Inter, ui-sans-serif, system-ui, sans-serif; transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out; } .ds-preset:hover { border-color: rgb(124 58 237 / 0.4); transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); } .ds-preset:focus-visible { outline: 2px solid var(--color-df-primary, #7c3aed); outline-offset: 2px; } .ds-preset-well { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: #f3f4f6; } .ds-preset-sheet { border: 2px solid #9ca3af; background: #e5e7eb; border-radius: 2px; } .ds-preset-name { font: 600 0.75rem/1.25 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-ink, #111827); } .ds-preset-dim { font: 400 10px/1.25 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-muted, #6b7280); } .ds-preset-on { border-color: var(--color-df-primary, #7c3aed); background: rgb(124 58 237 / 0.05); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(124 58 237 / 0.1); } .ds-preset-on .ds-preset-sheet { border-color: var(--color-df-primary, #7c3aed); background: rgb(124 58 237 / 0.1); } .ds-preset-on .ds-preset-name { color: var(--color-df-primary, #7c3aed); } .ds-preset-tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 2px 8px; border-radius: 9999px; background: var(--color-df-primary, #7c3aed); color: #fff; font: 700 10px/1.25 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }"
+		},
+		{
+			"name": "Step Page Heading",
+			"kind": "custom",
+			"refersTo": "headline",
+			"description": "Eyebrow naming the step, then a two-line heavy heading whose second line is violet and ends in a period.",
+			"html": "<header class=\"ds-heading\"><p class=\"ds-eyebrow\">Paso 03 / Diseña</p><h1>Diseña tu<br><span>Visión.</span></h1><p class=\"ds-lede\">Arrastra y suelta imágenes para crear tu collage. Puedes moverlas, rotarlas y escalarlas a tu gusto.</p></header>",
+			"css": ".ds-heading { font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: var(--color-df-bg, #f9fafb); padding: 24px; } .ds-eyebrow { margin: 0 0 12px; font: 700 10px/1.25 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-df-muted, #6b7280); } .ds-heading h1 { margin: 0; font: 800 3rem/1.1 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-ink, #111827); } .ds-heading h1 span { color: var(--color-df-primary, #7c3aed); } .ds-lede { margin: 12px 0 0; max-width: 24rem; font: 400 0.875rem/1.625 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-df-muted, #6b7280); }"
+		}
+	],
+	"narrative": {
+		"northStar": "The Bright Studio",
+		"overview": "Vision Craft is a clean, well-lit workspace. Like a photographer's studio with white walls and good light, the interface stays calm so the photos can be loud. The chrome is near-white in light mode (deep midnight navy in dark mode), the text is graphite, and one violet tells you where to act. Everything colorful on screen should be the user's own images.\n\nThe personality is soft and confident: generous pill-shaped controls, semibold labels, rounded cards with hairline borders, and big heavy headings that settle each page in two lines. Density is relaxed. This is a four-step wizard for someone who isn't a designer, so each screen carries one main idea, one primary action, and plenty of air. Surfaces rest flat; lift and shadow appear only as feedback.\n\nTwo themes are first-class. Every color token has a night twin, and the theme is a class on `<html>` (`.dark`, persisted as `df-theme`). The night theme is midnight navy with slate surfaces, not inverted gray.",
+		"keyCharacteristics": [
+			"Neutral, bright chrome; the photos supply the color.",
+			"One violet (#7c3aed / #a78bfa at night) for action, selection, and current state.",
+			"A violet-to-teal gradient used only on the single main forward button on a screen.",
+			"Inter throughout, in heavy display weights over quiet small labels.",
+			"Pills for controls, soft 16–24px rectangles for containers.",
+			"Flat at rest; lift and violet-tinted shadow only on hover, selection, or floating layers."
+		],
+		"rules": [
+			{
+				"name": "The Photos Carry the Color Rule",
+				"body": "The chrome stays neutral. Violet is the only interface hue a user should notice; if a screen looks colorful before any images load, something is over-decorated.",
+				"section": "colors"
+			},
+			{
+				"name": "The One Gradient Rule",
+				"body": "The violet-to-teal gradient (`linear-gradient(to right, violet, lagoon)`) is reserved for the single main forward action on a screen: \"Crear mi primer board\", \"Armar Board\", the advance-to-export button, the print confirm. One per screen. Every other primary button is solid violet.",
+				"section": "colors"
+			},
+			{
+				"name": "The Night Twin Rule",
+				"body": "Every `df-*` color is written with its `-dark` twin (`bg-df-surface dark:bg-df-surface-dark`). A light token used alone is a bug in night mode.",
+				"section": "colors"
+			},
+			{
+				"name": "The Ink-on-Violet Rule",
+				"body": "At night, text and icons on a filled Studio Violet (night) or on the night gradient are Midnight Navy (`text-white dark:text-df-on-primary-dark`), never white: white on #a78bfa is 2.7:1 and on #2dd4bf 1.8:1, while Midnight gives 7:1 and 9.7:1. A large violet panel that holds white copy at several opacities (the print-options panel, the landing feature card) keeps the day violet (#7c3aed) at night instead, where white reads at 5.7:1."
+			},
+			{
+				"name": "The Violet Second Line Rule",
+				"body": "A wizard step's page heading is two lines: a plain Graphite line, then a violet line that ends with a period (\"Diseña tu / **Visión.**\"). The eyebrow above it names the step. Don't add a third line or move the violet to the first line.",
+				"section": "typography"
+			},
+			{
+				"name": "The Whisper Label Rule",
+				"body": "Section labels are tiny, bold, uppercase, widely tracked, and muted. They organize, they don't compete. Headings shout; labels whisper; nothing sits loudly in between.",
+				"section": "typography"
+			},
+			{
+				"name": "The Flat-By-Default Rule",
+				"body": "At rest, a surface gets a hairline border and nothing heavier than Rest. Lift appears as a response to hover or selection; Float only for things that genuinely sit above the page. A card with `shadow-lg` at rest is wrong.",
+				"section": "elevation"
+			},
+			{
+				"name": "The Violet Shadow Rule",
+				"body": "Shadows that signal selection or action are tinted violet (10–30%). Neutral black shadows are only for floating layers.",
+				"section": "elevation"
+			},
+			{
+				"name": "The Pill Means Press Rule",
+				"body": "If it's fully rounded, it's interactive or it's a status mark. Containers never become pills, and primary buttons never drop to square-ish corners.",
+				"section": "shapes"
+			}
+		],
+		"dos": [
+			"**Do** keep the chrome neutral (Studio Mist / Paper White / Graphite / Pewter) and let violet mark only action, selection, and current state.",
+			"**Do** write every `df-*` color with its `-dark` twin, and check both themes.",
+			"**Do** use pills for anything pressable and 16px / 24px rounded rectangles for anything that contains.",
+			"**Do** keep surfaces flat at rest (hairline + Rest shadow at most); add Lift (−2px, violet-tinted shadow) only on hover or selection.",
+			"**Do** set step headings as two lines with the violet, period-ended second line, under a 10px tracked uppercase eyebrow.",
+			"**Do** use a 2px violet ring or border for selected states, plus a violet check badge when the item is a photo.",
+			"**Do** give every interactive element a visible focus state: 2px violet outline, 2px offset.",
+			"**Do** use `df-*` tokens for new UI; when a needed token doesn't exist (border, alt surface), add it to `@theme` in `src/assets/app.css` rather than reaching for raw Tailwind grays or hex."
+		],
+		"donts": [
+			"**Don't** use the violet-to-teal gradient on more than one button per screen, or on anything that isn't the main forward action.",
+			"**Don't** use Marigold until it has a defined role.",
+			"**Don't** use DaisyUI stock component classes (`btn-outline`, `select-bordered`, `alert-success`, `bg-base-*`) for new UI; they're off-system drift.",
+			"**Don't** reference undefined tokens (`df-border`, `df-surface-alt`, `animate-fade-in`, `animate-fade-in-up`); they silently render nothing.",
+			"**Don't** put heavy shadows (`shadow-lg` and up) on resting cards; those belong to Lift, Glow, and Float.",
+			"**Don't** make containers pill-shaped or give primary buttons small square-ish corners.",
+			"**Don't** add decorative color to the chrome (tinted section backgrounds, colored icons, multicolor badges); the photos are the color.",
+			"**Don't** go below 10px for any text."
+		]
+	}
+}

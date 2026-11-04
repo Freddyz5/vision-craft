@@ -4,8 +4,8 @@ import type Konva from "konva";
 import { Image as ImageIcon, Layers, Gauge } from "lucide-react";
 import type { CanvasConfig, CanvasItem } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
-import type { ExportMode, PrintConfig } from "../types";
-import { StaticImage, StaticText } from "./StaticCanvasItems";
+import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
+import { sheetCount, type ExportMode, type PrintConfig } from "../types";
 import { TileGridOverlay } from "./TileGridOverlay";
 import { WallSizePreview } from "./WallSizePreview";
 
@@ -40,7 +40,8 @@ export function ExportCanvasPreview({
 	stageRef,
 	containerRef,
 }: ExportCanvasPreviewProps) {
-	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
+	// Hidden items are left out of every export and print.
+	const sortedItems = items.filter((i) => !i.hidden).sort((a, b) => a.zIndex - b.zIndex);
 	const showPosterMeta = exportMode === "poster" && !!transposePrintConfig;
 
 	return (
@@ -59,7 +60,7 @@ export function ExportCanvasPreview({
 				{showPosterMeta && (
 					<div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-gray-900/80 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm dark:bg-black/80">
 						<Layers className="h-3.5 w-3.5" aria-hidden="true" />
-						{transposePrintConfig!.tiles.length} hojas · {selectedPaper.label}{" "}
+						{sheetCount(transposePrintConfig!.tiles.length)} · {selectedPaper.label}{" "}
 						{paperOrientation === "landscape" ? "Horizontal" : "Vertical"}
 					</div>
 				)}
@@ -75,39 +76,9 @@ export function ExportCanvasPreview({
 								height={logicalHeight * scaleFactor}
 								fill="white"
 							/>
-							{sortedItems.map((item) => {
-								if (item.type === "text" || (!!item.text && !item.imageSrc)) {
-									return (
-										<StaticText
-											key={item.id}
-											text={item.text}
-											x={item.x}
-											y={item.y}
-											width={item.width}
-											height={item.height}
-											rotation={item.rotation}
-											scaleFactor={scaleFactor}
-											fontSize={item.fontSize}
-											fillColor={item.fillColor}
-											fontFamily={item.fontFamily}
-											fontStyle={item.fontStyle}
-										/>
-									);
-								}
-								if (!item.imageSrc) return null;
-								return (
-									<StaticImage
-										key={item.id}
-										src={item.imageSrc}
-										x={item.x}
-										y={item.y}
-										width={item.width}
-										height={item.height}
-										rotation={item.rotation}
-										scaleFactor={scaleFactor}
-									/>
-								);
-							})}
+							{sortedItems.map((item) => (
+								<CanvasItemShape key={item.id} item={item} scaleFactor={scaleFactor} />
+							))}
 							{showPosterMeta && (
 								<TileGridOverlay
 									printConfig={transposePrintConfig!}

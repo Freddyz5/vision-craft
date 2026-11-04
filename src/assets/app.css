@@ -15,6 +15,9 @@
 	--color-df-ink: #111827; /* texto principal */
 	--color-df-muted: #6b7280; /* texto secundario */
 	--color-df-accent: #14b8a6; /* turquesa */
+	--color-df-hairline: #e5e7eb; /* bordes finos */
+	--color-df-well: #f3f4f6; /* hover y huecos */
+	--color-df-warning: #b45309; /* texto de avisos de impresión (Marigold oscuro, 5:1 sobre blanco) */
 
 	/* ════════════════════════════════════════
      Dream & Focus — Dark tokens
@@ -26,6 +29,12 @@
 	--color-df-ink-dark: #f9fafb; /* texto claro */
 	--color-df-muted-dark: #94a3b8; /* texto secundario */
 	--color-df-accent-dark: #2dd4bf; /* turquesa claro */
+	--color-df-hairline-dark: #374151;
+	--color-df-well-dark: #1f2937;
+	--color-df-warning-dark: #fbbf24;
+	/* Texto sobre relleno violeta o degradado nocturno: el blanco sobre #a78bfa
+	   no llega a AA (2,7:1); esta tinta da 7:1 sobre el violeta y 9,7:1 sobre el turquesa. */
+	--color-df-on-primary-dark: #0f172a;
 
 	/* ── Typography ── */
 	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;

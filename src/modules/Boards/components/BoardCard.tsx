@@ -2,6 +2,7 @@ import { Copy, FileDown, ImageOff, Pencil, Trash2 } from "lucide-react";
 import {
 	deleteCanvas,
 	duplicateCanvas,
+	MAX_SAVED_CANVASES,
 	exportJson,
 	loadCanvas,
 } from "../../../shared/store/canvasStore";
@@ -31,8 +32,11 @@ const BoardCard = ({ board, onNotify }: Props) => {
 	};
 
 	const handleDuplicate = () => {
-		duplicateCanvas(board.id);
-		onNotify?.("Tablero duplicado.");
+		onNotify?.(
+			duplicateCanvas(board.id)
+				? "Tablero duplicado."
+				: `Ya tienes ${MAX_SAVED_CANVASES} tableros guardados. Elimina uno para duplicar este.`,
+		);
 	};
 
 	const handleDelete = () => {

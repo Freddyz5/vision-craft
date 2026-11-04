@@ -3,6 +3,9 @@ import { errorLogger } from "../../../shared/utils/errorLogger";
 
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
+/** Thrown when the PUBLIC_CLOUDINARY_* variables are missing. */
+export const UPLOAD_NOT_CONFIGURED = "Subida de imágenes no configurada.";
+
 export function validateImageFile(file: File): string | null {
 	if (!file.type.startsWith("image/")) {
 		errorLogger.warn("Invalid file rejected before Cloudinary upload", {
@@ -30,7 +33,7 @@ export async function uploadToCloudinary(file: File): Promise<NormalizedImage> {
 	const uploadPreset = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 	if (!cloudName || !uploadPreset) {
-		throw new Error("Subida de imágenes no configurada.");
+		throw new Error(UPLOAD_NOT_CONFIGURED);
 	}
 
 	try {
