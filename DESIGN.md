@@ -192,7 +192,7 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 **The Ink-on-Violet Rule.** At night, text and icons on a filled Studio Violet (night) or on the night gradient are Midnight Navy (`text-white dark:text-df-on-primary-dark`), never white: white on #a78bfa is 2.7:1 and on #2dd4bf 1.8:1, while Midnight gives 7:1 and 9.7:1. A large violet panel that holds white copy at several opacities (the print-options panel, the landing feature card) keeps the day violet (#7c3aed) at night instead, where white reads at 5.7:1.
 
-**Known drift (UI pass):** `df-border`, `df-border-dark`, `df-surface-alt` and `df-surface-alt-dark` are referenced (search bar divider, upload dropzone, selected-images modal, print-preview modal) but never defined in `src/assets/app.css`, so those borders and fills render as nothing. Hairline and Well now exist as `df-hairline` / `df-well` (with `-dark` twins) and the Design editor uses them; move the other screens off raw Tailwind grays and the undefined names onto these. One panel hardcodes `#161f30` at night, and one element hardcodes `#20d4a4`.
+**Known drift (UI pass):** `df-border`, `df-border-dark`, `df-surface-alt` and `df-surface-alt-dark` are referenced (search bar divider, upload dropzone, selected-images modal) but never defined in `src/assets/app.css`, so those borders and fills render as nothing. Hairline and Well now exist as `df-hairline` / `df-well` (with `-dark` twins) and the Design editor uses them; move the other screens off raw Tailwind grays and the undefined names onto these. One panel hardcodes `#161f30` at night, and one element hardcodes `#20d4a4`.
 
 ## Typography
 
