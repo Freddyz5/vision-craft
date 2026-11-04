@@ -35,7 +35,7 @@ export default function ErrorState({
 			{onRetry && (
 				<button
 					onClick={onRetry}
-					className="bg-df-primary dark:bg-df-primary-dark flex cursor-pointer items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-opacity duration-200 hover:opacity-90 dark:hover:opacity-80"
+					className="bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark flex cursor-pointer items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-opacity duration-200 hover:opacity-90 dark:hover:opacity-80"
 					aria-label="Reintentar cargar imágenes"
 				>
 					<RefreshCw className="h-4 w-4" aria-hidden="true" />

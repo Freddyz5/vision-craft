@@ -3,6 +3,7 @@ import type Konva from "konva";
 import type { CanvasItem } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import type { PrintConfig } from "../types";
+import { captureStage } from "../../../shared/utils/stageCapture";
 
 interface UseWallPreviewCaptureOptions {
 	stageRef: React.RefObject<Konva.Stage | null>;
@@ -43,24 +44,16 @@ export function useWallPreviewCapture({
 			const stage = stageRef.current;
 			if (!stage) return;
 
-			const overlayNodes = stage.find(".poster-grid-overlay");
-			const posterX = printConfig.startXMm * MM_TO_PX * scaleFactor;
-			const posterY = printConfig.startYMm * MM_TO_PX * scaleFactor;
-			const posterWidth =
-				printConfig.pageViewportWidthMm * printConfig.cols * MM_TO_PX * scaleFactor;
-			const posterHeight =
-				printConfig.pageViewportHeightMm * printConfig.rows * MM_TO_PX * scaleFactor;
-
 			try {
-				overlayNodes.forEach((node: any) => node.visible(false));
-				stage.batchDraw();
-
-				const dataURL = stage.toDataURL({
-					x: posterX,
-					y: posterY,
-					width: posterWidth,
-					height: posterHeight,
-					pixelRatio: Math.max(1, 1 / Math.max(scaleFactor, 0.01)),
+				const dataURL = captureStage(stage, {
+					scaleFactor,
+					pixelRatio: 1,
+					region: {
+						x: printConfig.startXMm * MM_TO_PX,
+						y: printConfig.startYMm * MM_TO_PX,
+						width: printConfig.pageViewportWidthMm * printConfig.cols * MM_TO_PX,
+						height: printConfig.pageViewportHeightMm * printConfig.rows * MM_TO_PX,
+					},
 				});
 				if (!cancelled) {
 					setWallPreviewSrc(dataURL);
@@ -69,9 +62,6 @@ export function useWallPreviewCapture({
 				if (!cancelled) {
 					setWallPreviewSrc(null);
 				}
-			} finally {
-				overlayNodes.forEach((node: any) => node.visible(true));
-				stage.batchDraw();
 			}
 		};
 

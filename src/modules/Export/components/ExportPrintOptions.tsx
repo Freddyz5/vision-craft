@@ -1,6 +1,6 @@
 import { Printer } from "lucide-react";
 import type { ExportMode, PrintConfig } from "../types";
-import { PRINT_PAPERS } from "../types";
+import { PRINT_PAPERS, sheetCount } from "../types";
 import type { PaperId, PaperOrientation } from "../hooks/usePosterPrintConfig";
 import ExportModeSelector from "./ExportModeSelector";
 
@@ -49,7 +49,7 @@ export function ExportPrintOptions({
 			<ExportModeSelector value={exportMode} onChange={onExportModeChange} />
 
 			{showPaperControls && (
-				<div className="bg-df-primary dark:bg-df-primary-dark shadow-df-primary/25 dark:shadow-df-primary-dark/20 space-y-3 rounded-xl border-transparent p-4 text-white shadow-md">
+				<div className="bg-df-primary shadow-df-primary/25 dark:shadow-df-primary-dark/20 space-y-3 rounded-xl border-transparent p-4 text-white shadow-md">
 					<div>
 						<label
 							htmlFor="export-paper-size"
@@ -86,7 +86,7 @@ export function ExportPrintOptions({
 									onClick={() => onOrientationChange(opt.value)}
 									className={`rounded-lg py-1.5 text-xs font-bold transition-all duration-150 ${
 										paperOrientation === opt.value
-											? "text-df-primary dark:text-df-primary-dark bg-white shadow-sm"
+											? "text-df-primary bg-white shadow-sm"
 											: "bg-white/15 text-white hover:bg-white/25"
 									}`}
 								>
@@ -170,11 +170,11 @@ export function ExportPrintOptions({
 			{showPaperControls && (
 				<button
 					onClick={onPrintPreview}
-					className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+					className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 				>
 					{exportMode === "poster"
 						? transposePrintConfig
-							? `Imprimir (${transposePrintConfig.tiles.length} hojas)`
+							? `Imprimir (${sheetCount(transposePrintConfig.tiles.length)})`
 							: "Imprimir (múltiples hojas)"
 						: `Imprimir en ${selectedPaper.label}`}
 					<Printer className="h-5 w-5" aria-hidden="true" />

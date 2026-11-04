@@ -144,7 +144,7 @@ export default function CanvasLivePreview({
 				id="go-to-editor-btn"
 				type="button"
 				onClick={handleGoToEditor}
-				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 			>
 				Ir al Editor
 				<ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden="true" />

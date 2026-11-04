@@ -1,19 +1,9 @@
 ---
 import StudioLayout from "../../shared/components/StudioLayout.astro";
-import PageHeader from "../../shared/components/PageHeader.astro";
-import PageFooter from "../../shared/components/PageFooter.astro";
 import DesignEditor from "./components/DesignEditor";
 ---
 
+<!-- The editor brings its own one-line header and fills the screen: no page heading or footer here. -->
 <StudioLayout activeItem="design">
-	<PageHeader
-		activeItem="design"
-		title="Diseña tu"
-		highlight="Visión."
-		description="Arrastra y suelta imágenes para crear tu collage. Puedes moverlas, rotarlas y escalarlas a tu gusto."
-	/>
-
 	<DesignEditor client:only="react" />
-
-	<PageFooter />
 </StudioLayout>

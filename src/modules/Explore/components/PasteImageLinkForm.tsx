@@ -60,7 +60,7 @@ export default function PasteImageLinkForm({ onResolved, onError, className = ""
 				<button
 					type="submit"
 					disabled={loading || !value.trim()}
-					className="bg-df-primary dark:bg-df-primary-dark flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+					className="bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-busy={loading}
 				>
 					{loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Agregar"}

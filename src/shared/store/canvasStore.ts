@@ -45,6 +45,71 @@ export interface CanvasItem {
 	rotation: number;
 	/** Higher = on top */
 	zIndex: number;
+	/**
+	 * Images only: the visible part of the source photo, as fractions (0–1)
+	 * of its natural size, so it survives the photo URL changing resolution.
+	 * Absent = the whole photo. The item's width/height is the cropped box.
+	 */
+	crop?: ImageCrop;
+	/** Images only: the mask the photo is cut to. Absent = rectangle. */
+	shape?: ImageShape;
+	/** Images only: look adjustments, applied when drawing; the photo itself is never changed. */
+	adjust?: ImageAdjust;
+	/** Images only: border, polaroid card and shadow. */
+	frame?: ImageFrame;
+	/** Hidden from the sheet and from every export or print; still listed. */
+	hidden?: boolean;
+	/** Can't be moved, resized or deleted until unlocked. */
+	locked?: boolean;
+}
+
+export interface ImageFrame {
+	/** Border thickness in mm (0 or absent = none), drawn inside the photo's outline. */
+	borderMm?: number;
+	borderColor?: string;
+	/** A white card around the photo, wider at the bottom; the photo fills its window. */
+	polaroid?: boolean;
+	/** Soft drop shadow under the photo. */
+	shadow?: boolean;
+}
+
+export interface ImageAdjust {
+	/** 0–1 (default 1). */
+	opacity?: number;
+	flipX?: boolean;
+	flipY?: boolean;
+	filter?: "bw" | "sepia";
+	/** -0.5…0.5, Konva Brighten. */
+	brightness?: number;
+	/** -50…50, Konva Contrast. */
+	contrast?: number;
+	/** Blur radius as a fraction of the photo's width (0–0.02). */
+	blur?: number;
+}
+
+/** `radius`: corner radius as a fraction (0–0.5) of the box's shorter side. */
+export type ImageShape =
+	{ kind: "circle" } | { kind: "rounded"; radius: number } | { kind: "heart" };
+
+export interface ImageCrop {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
+/** Text styling used when an item doesn't set its own (editor, export and print share it). */
+export const TEXT_DEFAULTS = {
+	fontSize: 24,
+	fontFamily: "Inter",
+	fillColor: "#7C3AED",
+	fontStyle: "normal",
+	lineHeight: 1,
+} as const;
+
+/** Older saves have no `type`; an item with text and no image is a text item. */
+export function isTextItem(item: CanvasItem): boolean {
+	return item.type === "text" || (!!item.text && !item.imageSrc);
 }
 
 export interface SavedCanvas {
@@ -90,11 +155,51 @@ export const activeCanvasItemsStore = persistentAtom<CanvasItem[]>("vc-canvas-it
 	decode,
 });
 
-/** List of saved canvases (max 20) */
+/** List of saved canvases (max {@link MAX_SAVED_CANVASES}) */
 export const savedCanvasesStore = persistentAtom<SavedCanvas[]>("vc-saved-canvases", [], {
 	encode,
 	decode,
 });
+
+/**
+ * Which saved board the active canvas is: its id once saved or loaded, null
+ * for a board that was never saved. Saving matches on this, not on the name,
+ * so renaming a board updates it and two boards may share a name. undefined
+ * (key absent) only for sessions from before this was tracked.
+ */
+export const activeCanvasIdStore = persistentAtom<string | null | undefined>(
+	"vc-canvas-id",
+	undefined,
+	{ encode, decode },
+);
+
+/**
+ * Whether the active canvas, as it is now, was downloaded or printed from
+ * Export (drives the "Exporta" step's check mark). Any edit makes it stale.
+ */
+export const activeCanvasExportedStore = persistentAtom<boolean>("vc-canvas-exported", false, {
+	encode,
+	decode,
+});
+
+activeCanvasItemsStore.listen(() => activeCanvasExportedStore.set(false));
+activeCanvasConfigStore.listen(() => activeCanvasExportedStore.set(false));
+
+/** Call when the active canvas was downloaded or sent to print. */
+export function markActiveCanvasExported(): void {
+	activeCanvasExportedStore.set(true);
+}
+
+/** Saved boards live in localStorage; past this many, saving asks to delete one first. */
+export const MAX_SAVED_CANVASES = 20;
+
+/** "full": the library already holds MAX_SAVED_CANVASES boards, nothing was stored. */
+export type SaveResult =
+	{ status: "created" | "updated"; canvas: SavedCanvas } | { status: "full" };
+
+function defaultCanvasName(): string {
+	return `Lienzo ${new Date().toLocaleDateString("es-MX")}`;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Actions
@@ -107,61 +212,65 @@ export const savedCanvasesStore = persistentAtom<SavedCanvas[]>("vc-saved-canvas
 export function startNewCanvas(): void {
 	activeCanvasConfigStore.set({ ...DEFAULT_CONFIG });
 	activeCanvasItemsStore.set([]);
+	activeCanvasIdStore.set(null);
 }
 
-/** Save the current active canvas to the saved list */
-export function saveCurrentCanvas(thumbnail?: string): SavedCanvas {
-	const config = activeCanvasConfigStore.get();
+/**
+ * Save the active canvas to the library: updates the board it was loaded
+ * from or last saved as, otherwise adds a new one (an unnamed board gets a
+ * dated name first). Never drops an existing board to make room.
+ */
+export function saveCurrentCanvas(thumbnail?: string): SaveResult {
+	let config = activeCanvasConfigStore.get();
+	if (!config.name.trim()) {
+		config = { ...config, name: defaultCanvasName() };
+		activeCanvasConfigStore.set(config);
+	}
 	const items = activeCanvasItemsStore.get();
 	const saved = savedCanvasesStore.get();
-
-	// Check whether we are updating an existing save
-	const existing = saved.find((c) => c.name === config.name);
+	const activeId = activeCanvasIdStore.get();
+	const existing =
+		activeId === undefined
+			? // Pre-tracking session: fall back to the old match by name, once.
+				saved.find((c) => c.name === config.name)
+			: saved.find((c) => c.id === activeId);
 
 	if (existing) {
 		const updated: SavedCanvas = {
 			...existing,
+			name: config.name,
 			config,
 			items,
-			thumbnail,
+			// Saving from outside the stage (e.g. the stepper) has no fresh thumbnail.
+			thumbnail: thumbnail ?? existing.thumbnail,
 		};
 		savedCanvasesStore.set(saved.map((c) => (c.id === existing.id ? updated : c)));
-		return updated;
+		activeCanvasIdStore.set(existing.id);
+		return { status: "updated", canvas: updated };
 	}
 
-	const newCanvas: SavedCanvas = {
+	if (saved.length >= MAX_SAVED_CANVASES) return { status: "full" };
+
+	const created: SavedCanvas = {
 		id: crypto.randomUUID(),
-		name: config.name || `Lienzo ${new Date().toLocaleDateString("es-MX")}`,
+		name: config.name,
 		createdAt: new Date().toISOString(),
 		thumbnail,
 		config,
 		items,
 	};
-
-	const capped = [newCanvas, ...saved].slice(0, 20);
-	savedCanvasesStore.set(capped);
-	return newCanvas;
+	savedCanvasesStore.set([created, ...saved]);
+	activeCanvasIdStore.set(created.id);
+	return { status: "created", canvas: created };
 }
 
 /**
  * Persist the active canvas automatically (used when advancing to the Export
- * step without pressing "Guardar"). Skips empty boards, and gives an unnamed
- * board a stable name up-front so repeated auto-saves update the same entry
- * instead of creating duplicates. Returns the saved board, or null if there
- * was nothing to save.
+ * step without pressing "Guardar"). Skips empty boards; returns null when
+ * there was nothing to save.
  */
-export function autoSaveActiveCanvas(thumbnail?: string): SavedCanvas | null {
-	const items = activeCanvasItemsStore.get();
-	if (items.length === 0) return null;
-
-	const config = activeCanvasConfigStore.get();
-	if (!config.name.trim()) {
-		activeCanvasConfigStore.set({
-			...config,
-			name: `Lienzo ${new Date().toLocaleDateString("es-MX")}`,
-		});
-	}
-
+export function autoSaveActiveCanvas(thumbnail?: string): SaveResult | null {
+	if (activeCanvasItemsStore.get().length === 0) return null;
 	return saveCurrentCanvas(thumbnail);
 }
 
@@ -171,25 +280,29 @@ export function loadCanvas(id: string): void {
 	if (!canvas) return;
 	activeCanvasConfigStore.set(canvas.config);
 	activeCanvasItemsStore.set(canvas.items);
+	activeCanvasIdStore.set(canvas.id);
 }
 
-/** Duplicate a saved canvas */
-export function duplicateCanvas(id: string): void {
-	const canvas = savedCanvasesStore.get().find((c) => c.id === id);
-	if (!canvas) return;
+/** Duplicate a saved canvas. Returns false when the library is full. */
+export function duplicateCanvas(id: string): boolean {
+	const saved = savedCanvasesStore.get();
+	const canvas = saved.find((c) => c.id === id);
+	if (!canvas || saved.length >= MAX_SAVED_CANVASES) return false;
 	const copy: SavedCanvas = {
 		...canvas,
 		id: crypto.randomUUID(),
 		name: `${canvas.name} (copia)`,
 		createdAt: new Date().toISOString(),
 	};
-	const saved = savedCanvasesStore.get();
-	savedCanvasesStore.set([copy, ...saved].slice(0, 20));
+	savedCanvasesStore.set([copy, ...saved]);
+	return true;
 }
 
 /** Delete a canvas from the saved list */
 export function deleteCanvas(id: string): void {
 	savedCanvasesStore.set(savedCanvasesStore.get().filter((c) => c.id !== id));
+	// The active canvas keeps its content but is no longer a saved board.
+	if (activeCanvasIdStore.get() === id) activeCanvasIdStore.set(null);
 }
 
 // ── Canvas Items ─────────────────────────────────────────────────────────────
@@ -199,30 +312,136 @@ export function addItem(item: CanvasItem): void {
 	activeCanvasItemsStore.set([...activeCanvasItemsStore.get(), item]);
 }
 
+// The batch mutations below write the store exactly once: canvasHistory
+// records one undo step per burst of writes, and every write is also a
+// localStorage write, so acting on a whole selection stays a single step.
+
 /** Remove an image item from the active canvas */
 export function removeItem(id: string): void {
-	activeCanvasItemsStore.set(activeCanvasItemsStore.get().filter((i) => i.id !== id));
+	removeItems([id]);
+}
+
+/** Remove several items in one write. */
+export function removeItems(ids: string[]): void {
+	const doomed = new Set(ids);
+	activeCanvasItemsStore.set(activeCanvasItemsStore.get().filter((i) => !doomed.has(i.id)));
 }
 
 /** Update properties of an existing canvas item */
 export function updateItem(id: string, patch: Partial<CanvasItem>): void {
+	updateItems({ [id]: patch });
+}
+
+/** Patch several items in one write, keyed by item id. */
+export function updateItems(patches: Record<string, Partial<CanvasItem>>): void {
 	activeCanvasItemsStore.set(
-		activeCanvasItemsStore.get().map((i) => (i.id === id ? { ...i, ...patch } : i)),
+		activeCanvasItemsStore.get().map((i) => (patches[i.id] ? { ...i, ...patches[i.id] } : i)),
 	);
+}
+
+/** How far (logical px) a duplicate lands from its original. */
+export const DUPLICATE_OFFSET = 20;
+
+/**
+ * Copy `ids` in one write: each copy gets a new id, is shifted by `offset`
+ * and goes on top of everything, keeping the originals' stacking order.
+ * Returns the new ids in that same order.
+ */
+export function duplicateItems(ids: string[], offset = DUPLICATE_OFFSET): string[] {
+	const wanted = new Set(ids);
+	return insertItemCopies(
+		activeCanvasItemsStore.get().filter((i) => wanted.has(i.id)),
+		offset,
+	);
+}
+
+/**
+ * Add copies of `originals` (from this board or another one, e.g. the
+ * editor's clipboard) in one write, shifted by `offset` and stacked on top
+ * in their original order. Returns the new ids.
+ */
+export function insertItemCopies(originals: CanvasItem[], offset: number): string[] {
+	const items = activeCanvasItemsStore.get();
+	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
+	const copies = [...originals]
+		.sort((a, b) => a.zIndex - b.zIndex)
+		.map((item, rank) => ({
+			...item,
+			// A copy is meant to be moved, so it starts unlocked.
+			locked: undefined,
+			id: crypto.randomUUID(),
+			x: item.x + offset,
+			y: item.y + offset,
+			zIndex: maxZ + 1 + rank,
+		}));
+	activeCanvasItemsStore.set([...items, ...copies]);
+	return copies.map((c) => c.id);
 }
 
 /** Bring an item to the front (max zIndex + 1) */
 export function bringToFront(id: string): void {
-	const items = activeCanvasItemsStore.get();
-	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
-	updateItem(id, { zIndex: maxZ + 1 });
+	bringItemsToFront([id]);
 }
 
 /** Send an item to the back (min zIndex - 1) */
 export function sendToBack(id: string): void {
+	sendItemsToBack([id]);
+}
+
+/**
+ * Restack the board to match `frontToBack` (every item id, front-most first),
+ * renumbering zIndex in one write. Ids not listed keep their place behind.
+ */
+export function reorderItems(frontToBack: string[]): void {
+	const n = frontToBack.length;
+	updateItems(Object.fromEntries(frontToBack.map((id, i) => [id, { zIndex: n - i }])));
+}
+
+/**
+ * Move `ids` one layer up (or down): each passes the nearest item that isn't
+ * selected, so a group keeps its own order. One write.
+ */
+export function moveItemsOneLayer(ids: string[], direction: "up" | "down"): void {
+	const wanted = new Set(ids);
+	const backToFront = [...activeCanvasItemsStore.get()]
+		.sort((a, b) => a.zIndex - b.zIndex)
+		.map((i) => i.id);
+	const swap = (i: number, j: number) =>
+		([backToFront[i], backToFront[j]] = [backToFront[j], backToFront[i]]);
+	if (direction === "up") {
+		for (let i = backToFront.length - 2; i >= 0; i--) {
+			if (wanted.has(backToFront[i]) && !wanted.has(backToFront[i + 1])) swap(i, i + 1);
+		}
+	} else {
+		for (let i = 1; i < backToFront.length; i++) {
+			if (wanted.has(backToFront[i]) && !wanted.has(backToFront[i - 1])) swap(i, i - 1);
+		}
+	}
+	reorderItems(backToFront.reverse());
+}
+
+/** Put `ids` above everything else, keeping their order among themselves. One write. */
+export function bringItemsToFront(ids: string[]): void {
 	const items = activeCanvasItemsStore.get();
+	const wanted = new Set(ids);
+	const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
+	const moving = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	updateItems(
+		Object.fromEntries(moving.map((item, rank) => [item.id, { zIndex: maxZ + 1 + rank }])),
+	);
+}
+
+/** Put `ids` below everything else, keeping their order among themselves. One write. */
+export function sendItemsToBack(ids: string[]): void {
+	const items = activeCanvasItemsStore.get();
+	const wanted = new Set(ids);
 	const minZ = Math.min(0, ...items.map((i) => i.zIndex));
-	updateItem(id, { zIndex: minZ - 1 });
+	const moving = items.filter((i) => wanted.has(i.id)).sort((a, b) => a.zIndex - b.zIndex);
+	updateItems(
+		Object.fromEntries(
+			moving.map((item, rank) => [item.id, { zIndex: minZ - moving.length + rank }]),
+		),
+	);
 }
 
 /** Clear all items from the active canvas */
@@ -256,6 +475,7 @@ export async function importJson(file: File): Promise<void> {
 
 	activeCanvasConfigStore.set(canvas.config);
 	activeCanvasItemsStore.set(canvas.items);
+	activeCanvasIdStore.set(null);
 }
 
 /**
@@ -273,6 +493,11 @@ export async function importCanvasToLibrary(file: File): Promise<SavedCanvas> {
 	}
 
 	const saved = savedCanvasesStore.get();
+	if (saved.length >= MAX_SAVED_CANVASES) {
+		throw new Error(
+			`Ya tienes ${MAX_SAVED_CANVASES} tableros guardados. Elimina uno para importar otro.`,
+		);
+	}
 	const imported: SavedCanvas = {
 		id: crypto.randomUUID(),
 		name: parsed.name?.trim() || `Tablero importado ${new Date().toLocaleDateString("es-MX")}`,
@@ -282,6 +507,6 @@ export async function importCanvasToLibrary(file: File): Promise<SavedCanvas> {
 		items: parsed.items,
 	};
 
-	savedCanvasesStore.set([imported, ...saved].slice(0, 20));
+	savedCanvasesStore.set([imported, ...saved]);
 	return imported;
 }
