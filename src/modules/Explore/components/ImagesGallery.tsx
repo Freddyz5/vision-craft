@@ -9,6 +9,7 @@ import { providers } from "../constants/providers";
 import SearchBar from "./SearchBar";
 import { useStore } from "@nanostores/react";
 import { selectedImagesStore, toggleImageSelection } from "../../../shared/store/boardStore";
+import { useHydrated } from "../../../shared/hooks/useHydrated";
 import SelectedImagesModal from "./SelectedImagesModal";
 import { errorLogger } from "../../../shared/utils/errorLogger";
 import { imageCache } from "../../../shared/utils/imageCache";
@@ -25,6 +26,7 @@ export default function ImagesGallery() {
 	const [error, setError] = useState<string | null>(null);
 
 	const selectedImages = useStore(selectedImagesStore);
+	const hydrated = useHydrated();
 
 	// Cierra el modal si la selección queda vacía, y dispara un pulso en la barra flotante
 	// cuando se agrega una imagen. Se ajusta durante el render (patrón recomendado por React:
@@ -274,7 +276,7 @@ export default function ImagesGallery() {
 			)}
 
 			{/* Floating Bottom Bar for Selected Images */}
-			{selectedImages.length > 0 && (
+			{hydrated && selectedImages.length > 0 && (
 				<div className="animate-fade-in-up fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
 					<nav
 						className={[
