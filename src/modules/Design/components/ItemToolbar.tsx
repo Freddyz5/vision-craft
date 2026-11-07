@@ -8,6 +8,7 @@ import { ShapeMenu } from "./ShapeMenu";
 import { AdjustMenu } from "./AdjustMenu";
 import { FrameMenu } from "./FrameMenu";
 import { MoreMenu } from "./MoreMenu";
+import { NumberInput } from "./NumberInput";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
@@ -22,6 +23,8 @@ const FONTS = [
 
 /** Konva font sizes are logical px at 96 dpi; people pick sizes in points. */
 const PX_PER_PT = 96 / 72;
+const MIN_PT = 6;
+const MAX_PT = 400;
 
 interface ItemToolbarProps {
 	/** The selection: one item gets its own controls, several get group actions. */
@@ -98,9 +101,9 @@ export function ItemToolbar({
 		);
 	}
 
+	// NumberInput keeps it within MIN_PT–MAX_PT.
 	const setPointSize = (pt: number) => {
-		if (!Number.isFinite(pt) || pt < 6) return;
-		const next = Math.min(pt, 400) * PX_PER_PT;
+		const next = pt * PX_PER_PT;
 		// The box takes the lines the new size wraps into.
 		onUpdate({ fontSize: next, height: measureTextHeight({ ...item, fontSize: next }) });
 	};
@@ -151,12 +154,11 @@ export function ItemToolbar({
 						))}
 					</select>
 					<label className="text-df-muted dark:text-df-muted-dark flex shrink-0 items-center gap-1 text-xs font-semibold">
-						<input
-							type="number"
-							min={6}
-							max={400}
+						<NumberInput
+							min={MIN_PT}
+							max={MAX_PT}
 							value={Math.round(fontSize / PX_PER_PT)}
-							onChange={(e) => setPointSize(Number(e.target.value))}
+							onCommit={setPointSize}
 							aria-label="Tamaño en puntos"
 							className="text-df-ink dark:text-df-ink-dark bg-df-well dark:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-8 w-14 rounded-full px-2 text-center text-sm font-semibold tabular-nums focus-visible:outline-2"
 						/>

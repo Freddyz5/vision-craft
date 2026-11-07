@@ -52,6 +52,11 @@ export default tseslint.config(
 			"react/react-in-jsx-scope": "off",
 			// Usamos TypeScript para tipar props, no prop-types
 			"react/prop-types": "off",
+			// Componentes propios que renderizan un <input>: un <label> que los envuelve sí tiene control
+			"jsx-a11y/label-has-associated-control": [
+				"error",
+				{ controlComponents: ["NumberInput"], depth: 3 },
+			],
 		},
 	},
 

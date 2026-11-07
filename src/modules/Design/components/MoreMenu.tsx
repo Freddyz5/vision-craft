@@ -2,6 +2,7 @@ import { BringToFront, Ellipsis, SendToBack } from "lucide-react";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
+import { NumberInput } from "./NumberInput";
 import { ToolPopover } from "./ToolPopover";
 
 const PX_PER_CM = MM_TO_PX * 10;
@@ -105,15 +106,12 @@ function NumberField({
 	return (
 		<label className="text-df-muted dark:text-df-muted-dark flex flex-col gap-1 text-xs font-semibold">
 			{label}
-			<input
-				type="number"
+			<NumberInput
 				step={step}
 				min={min}
-				value={Math.round(value / step) * step === 0 ? 0 : Number(value.toFixed(step < 1 ? 1 : 0))}
-				onChange={(e) => {
-					const v = Number(e.target.value);
-					if (Number.isFinite(v) && (min === undefined || v >= min)) onChange(v);
-				}}
+				decimals={step < 1 ? 1 : 0}
+				value={value}
+				onCommit={onChange}
 				className="text-df-ink dark:text-df-ink-dark bg-df-well dark:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark rounded-lg px-2 py-1.5 text-sm tabular-nums focus-visible:outline-2"
 			/>
 		</label>
