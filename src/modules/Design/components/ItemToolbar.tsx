@@ -3,6 +3,7 @@ import {
 	AlignCenter,
 	AlignLeft,
 	AlignRight,
+	ChevronRight,
 	CopyPlus,
 	Crop,
 	LockOpen,
@@ -32,6 +33,7 @@ import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
 import { useToolbarRoving } from "../hooks/useToolbarRoving";
+import { useKeepInView } from "../hooks/useKeepInView";
 
 /** The alignment button steps through these, like Canva's. */
 const ALIGNS: { value: TextAlign; label: string; Icon: typeof AlignLeft }[] = [
@@ -67,6 +69,8 @@ interface ItemToolbarProps {
 	style?: React.CSSProperties;
 	/** Floating: which way its panels open, away from the selection. */
 	panelSide?: "above" | "below";
+	/** Floating on a narrower screen: icons with tooltips, no captions, so it fits. */
+	compact?: boolean;
 }
 
 /**
@@ -89,6 +93,7 @@ export function ItemToolbar({
 	onDistribute,
 	style,
 	panelSide = "below",
+	compact = false,
 }: ItemToolbarProps) {
 	const [item] = items;
 	const group = items.length > 1;
@@ -96,6 +101,9 @@ export function ItemToolbar({
 	const docked = variant === "docked";
 	const fontSize = item.fontSize || TEXT_DEFAULTS.fontSize;
 	const toolbarRef = useToolbarRoving<HTMLDivElement>();
+	useKeepInView(toolbarRef, !docked);
+	// Captions beside the icons where there's room for them.
+	const labelled = !docked && !compact;
 
 	// Anything locked in the selection: the only action is to unlock it.
 	if (items.some((i) => i.locked)) {
@@ -248,20 +256,28 @@ export function ItemToolbar({
 
 				{onCrop && (
 					<>
-						<ToolButton docked={docked} showLabel={!docked} label="Recortar" onClick={onCrop}>
+						<ToolButton docked={docked} showLabel={labelled} label="Recortar" onClick={onCrop}>
 							<Crop className="h-4 w-4" aria-hidden="true" />
 						</ToolButton>
 						<ShapeMenu
 							shape={item.shape}
 							onChange={(shape) => onUpdate({ shape })}
 							docked={docked}
-							showLabel={!docked}
+							showLabel={labelled}
 						/>
 						{/* Desktop only, per the editor brief. */}
 						{!docked && (
 							<>
-								<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} showLabel />
-								<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} showLabel />
+								<AdjustMenu
+									item={item}
+									onChange={(adjust) => onUpdate({ adjust })}
+									showLabel={labelled}
+								/>
+								<FrameMenu
+									item={item}
+									onChange={(frame) => onUpdate({ frame })}
+									showLabel={labelled}
+								/>
 							</>
 						)}
 						<Divider docked={docked} />
@@ -274,6 +290,7 @@ export function ItemToolbar({
 				{/* Layers, alignment to the sheet, exact position and lock: one menu. */}
 				<ArrangeMenu
 					docked={docked}
+					showLabel={labelled}
 					onMoveLayer={onMoveLayer}
 					onBringToFront={onBringToFront}
 					onSendToBack={onSendToBack}
@@ -284,9 +301,19 @@ export function ItemToolbar({
 							<div className="border-df-hairline dark:border-df-hairline-dark space-y-2 border-t pt-3">
 								<AlignControls count={1} onAlign={onAlign} onDistribute={onDistribute} />
 							</div>
-							<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-3">
-								<PositionFields item={item} onUpdate={onUpdate} />
-							</div>
+							{/* Exact cm values are for the few who need them: folded by default. */}
+							<details className="group border-df-hairline dark:border-df-hairline-dark border-t pt-2">
+								<summary className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex cursor-pointer list-none items-center gap-1.5 rounded-xl px-1 py-1.5 text-xs font-semibold focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
+									<ChevronRight
+										className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+										aria-hidden="true"
+									/>
+									Posición y tamaño (cm)
+								</summary>
+								<div className="pt-2">
+									<PositionFields item={item} onUpdate={onUpdate} />
+								</div>
+							</details>
 						</>
 					)}
 				</ArrangeMenu>
@@ -383,6 +410,7 @@ export function CropToolbar({
 }: CropToolbarProps) {
 	const docked = variant === "docked";
 	const toolbarRef = useToolbarRoving<HTMLDivElement>();
+	useKeepInView(toolbarRef, !docked);
 	return (
 		<div
 			ref={toolbarRef}
@@ -414,7 +442,7 @@ export function CropToolbar({
 							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full text-xs font-semibold transition-colors focus-visible:outline-2",
 							docked ? "h-11 px-2.5" : "h-8 px-3",
 							aspect === a.id
-								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
+								? "bg-df-primary/10 dark:bg-df-primary-dark/10 text-df-primary dark:text-df-primary-dark"
 								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",
 						].join(" ")}
 					>

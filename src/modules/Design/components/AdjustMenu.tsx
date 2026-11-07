@@ -43,7 +43,7 @@ export function AdjustMenu({ item, onChange, showLabel }: AdjustMenuProps) {
 						className={[
 							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-col items-center gap-1 rounded-xl p-1 text-xs font-semibold focus-visible:outline-2",
 							adjust.filter === look.id
-								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
+								? "bg-df-primary/10 dark:bg-df-primary-dark/10 text-df-primary dark:text-df-primary-dark"
 								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",
 						].join(" ")}
 					>
@@ -104,7 +104,7 @@ export function AdjustMenu({ item, onChange, showLabel }: AdjustMenuProps) {
 						className={[
 							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-2 text-xs font-semibold focus-visible:outline-2",
 							adjust[key]
-								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
+								? "bg-df-primary/10 dark:bg-df-primary-dark/10 text-df-primary dark:text-df-primary-dark"
 								: "bg-df-well dark:bg-df-well-dark text-df-ink dark:text-df-ink-dark",
 						].join(" ")}
 					>

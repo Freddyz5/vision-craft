@@ -128,6 +128,8 @@ export default function DesignEditor() {
 
 	const isTabletUp = useMediaQuery("(min-width: 768px)");
 	const isDesktop = useMediaQuery("(min-width: 1024px)");
+	// The floating toolbar's captions need the room a wide screen leaves the sheet.
+	const isWide = useMediaQuery("(min-width: 1280px)");
 
 	const logicalWidth = config.widthMm * MM_TO_PX;
 	const logicalHeight = config.heightMm * MM_TO_PX;
@@ -377,6 +379,8 @@ export default function DesignEditor() {
 		const item = newPhotoItem(photo, sheet, items, at);
 		addItem(item);
 		select([item.id]);
+		// On a phone the half-height panel would cover the photo just placed.
+		if (!isTabletUp) setMobilePanel(null);
 	};
 	const handlePickPhoto = (photo: Parameters<typeof newPhotoItem>[0]) => placePhoto(photo);
 
@@ -862,6 +866,7 @@ export default function DesignEditor() {
 											variant="floating"
 											style={toolbarStyle}
 											panelSide={toolbarAbove ? "above" : "below"}
+											compact={!isWide}
 										/>
 									)}
 								</div>

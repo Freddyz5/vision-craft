@@ -9,6 +9,8 @@ interface ArrangeMenuProps {
 	onSendToBack: () => void;
 	onToggleLock: () => void;
 	docked?: boolean;
+	/** Desktop with room: the name beside the icon. */
+	showLabel?: boolean;
 	/** Desktop sections between the layers and the lock (alignment, exact position). */
 	children?: React.ReactNode;
 }
@@ -24,6 +26,7 @@ export function ArrangeMenu({
 	onSendToBack,
 	onToggleLock,
 	docked = false,
+	showLabel = false,
 	children,
 }: ArrangeMenuProps) {
 	const hint = (key: string, shift = false) => (docked ? undefined : shortcut(key, { shift }));
@@ -32,6 +35,7 @@ export function ArrangeMenu({
 			label="Organizar"
 			panelLabel="Organizar"
 			docked={docked}
+			showLabel={showLabel}
 			widthClass="w-72"
 			icon={<Layers className="h-4 w-4" aria-hidden="true" />}
 		>
@@ -57,10 +61,11 @@ export function ArrangeMenu({
 				/>
 				<Row icon={SendToBack} label="Al fondo" hint={hint("[", true)} onClick={onSendToBack} />
 			</div>
-			{children}
+			{/* Lock right after the layers, never scrolled out of view. */}
 			<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-2">
 				<Row icon={Lock} label="Bloquear" hint={hint("L", true)} onClick={onToggleLock} />
 			</div>
+			{children}
 		</ToolPopover>
 	);
 }

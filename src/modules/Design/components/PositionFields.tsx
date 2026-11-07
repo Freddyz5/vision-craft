@@ -20,9 +20,7 @@ export function PositionFields({ item, onUpdate }: PositionFieldsProps) {
 	const text = isTextItem(item);
 	return (
 		<fieldset className="grid grid-cols-2 gap-2">
-			<legend className="text-df-muted dark:text-df-muted-dark mb-1.5 text-xs font-semibold">
-				Posición y tamaño
-			</legend>
+			<legend className="sr-only">Posición y tamaño</legend>
 			<NumberField
 				label="X (cm)"
 				value={item.x / PX_PER_CM}

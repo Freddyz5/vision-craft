@@ -45,7 +45,7 @@ export function DesktopOnlyChip() {
 				aria-controls={panelId}
 				// Shaped like the bar's other buttons, so the whole bar fits a phone.
 				aria-label="Más en computadora"
-				className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/15 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-full min-w-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-2"
+				className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/10 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-full min-w-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-2"
 			>
 				<Monitor className="h-4 w-4" aria-hidden="true" />
 				Más
