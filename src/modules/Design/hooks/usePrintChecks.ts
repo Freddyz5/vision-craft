@@ -3,8 +3,10 @@ import { useStore } from "@nanostores/react";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { canvasImagesStore } from "../../../shared/store/canvasImages";
 import {
+	COVERED_WARNING,
 	checkItem,
 	imagePpi,
+	isTextCovered,
 	warningKey,
 	type PrintWarning,
 	type Sheet,
@@ -27,14 +29,15 @@ export function usePrintChecks(items: CanvasItem[], sheet: Sheet, dismissed: Set
 			.sort((a, b) => b.zIndex - a.zIndex)
 			.map((item) => {
 				const image = item.imageSrc ? images[item.imageSrc] : undefined;
+				const warnings = checkItem(item, sheet, image);
+				// The one check that needs the rest of the board.
+				if (isTextItem(item) && isTextCovered(item, items)) warnings.push(COVERED_WARNING);
 				return {
 					item,
 					// A hidden item won't print, so it can't go wrong on paper.
 					warnings: item.hidden
 						? []
-						: checkItem(item, sheet, image).filter(
-								(w) => !dismissed.has(warningKey(item.id, w.kind)),
-							),
+						: warnings.filter((w) => !dismissed.has(warningKey(item.id, w.kind))),
 					ppi: isTextItem(item) ? null : imagePpi(item, image),
 				};
 			});

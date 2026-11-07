@@ -421,15 +421,30 @@ export default function DesignEditor() {
 
 	const applyCollage = (layout: CollageLayout) => {
 		if (collageTargets.length < 2) return;
-		updateItems(
-			collagePatches(collageTargets, layout, sheet, (item) => {
+		const texts = items.filter((i) => isTextItem(i) && !i.hidden);
+		const patches = collagePatches(
+			collageTargets,
+			layout,
+			sheet,
+			(item) => {
 				// The photo's own proportions when loaded, its box's otherwise.
 				const img = item.imageSrc ? images[item.imageSrc] : undefined;
 				return img?.naturalWidth && img.naturalHeight
 					? img.naturalWidth / img.naturalHeight
 					: item.width / item.height;
-			}),
+			},
+			{
+				texts,
+				// The photo picked first goes big in "Destacada".
+				featuredId: selectedIds.find((id) => collageTargets.some((p) => p.id === id)),
+			},
 		);
+		// Texts end up above the photos, in their own order: one write, one undo step.
+		const maxZ = Math.max(0, ...items.map((i) => i.zIndex));
+		[...texts]
+			.sort((a, b) => a.zIndex - b.zIndex)
+			.forEach((text, rank) => (patches[text.id] = { zIndex: maxZ + 1 + rank }));
+		updateItems(patches);
 		const name = { grid: "en cuadrícula", mosaic: "en mosaico", featured: "con una destacada" }[
 			layout
 		];

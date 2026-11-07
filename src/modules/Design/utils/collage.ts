@@ -1,6 +1,6 @@
 import type { CanvasItem, ImageCrop } from "../../../shared/store/canvasStore";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
-import { SAFE_MARGIN_MM, type Sheet } from "./printChecks";
+import { SAFE_MARGIN_MM, itemBounds, type Sheet } from "./printChecks";
 
 export type CollageLayout = "grid" | "mosaic" | "featured";
 
@@ -116,10 +116,36 @@ function featuredCells(n: number, area: Cell, gap: number): Cell[] {
 	return [big, ...gridCells(n - 1, rest, gap)];
 }
 
+/** Below this share of the printable height, a band between texts is too thin for a collage. */
+const MIN_FREE_SHARE = 0.4;
+
+/**
+ * The tallest full-width band of `area` that no text crosses (texts keep
+ * a gap around them), so a collage never covers a title or a caption.
+ * When the texts leave no band worth using, the whole area.
+ */
+function freeBand(area: Cell, texts: CanvasItem[], gap: number): Cell {
+	const blocked = texts
+		.map(itemBounds)
+		.map((b) => [Math.max(area.y, b.minY - gap), Math.min(area.y + area.height, b.maxY + gap)])
+		.filter(([top, bottom]) => bottom > top)
+		.sort((a, b) => a[0] - b[0]);
+	let best: Cell | null = null;
+	let cursor = area.y;
+	for (const [top, bottom] of [...blocked, [area.y + area.height, area.y + area.height]]) {
+		if (top - cursor > (best?.height ?? 0)) {
+			best = { ...area, y: cursor, height: top - cursor };
+		}
+		cursor = Math.max(cursor, bottom);
+	}
+	return best && best.height >= area.height * MIN_FREE_SHARE ? best : area;
+}
+
 /**
  * Patches that lay `photos` out on the sheet's printable area (inside the
- * safe margin). Photos keep their reading order (top-to-bottom, then
- * left-to-right); for "featured" the currently largest one is featured.
+ * safe margin), in the band the board's `texts` leave free. Photos keep
+ * their reading order (top-to-bottom, then left-to-right); for "featured"
+ * the photo `featuredId` names goes big, else the currently largest one.
  * Each photo is straightened and cropped from the centre to fill its cell.
  */
 export function collagePatches(
@@ -127,11 +153,18 @@ export function collagePatches(
 	layout: CollageLayout,
 	sheet: Sheet,
 	aspectOf: AspectOf,
+	{ texts = [], featuredId }: { texts?: CanvasItem[]; featuredId?: string } = {},
 ): Record<string, Partial<CanvasItem>> {
 	if (photos.length === 0) return {};
 	const m = SAFE_MARGIN_MM * MM_TO_PX;
 	const gap = GAP_MM * MM_TO_PX;
-	const area: Cell = { x: m, y: m, width: sheet.width - 2 * m, height: sheet.height - 2 * m };
+	const printable: Cell = {
+		x: m,
+		y: m,
+		width: sheet.width - 2 * m,
+		height: sheet.height - 2 * m,
+	};
+	const area = freeBand(printable, texts, gap);
 
 	const ordered = [...photos].sort((a, b) => {
 		const ay = a.y + a.height / 2;
@@ -139,11 +172,11 @@ export function collagePatches(
 		return Math.abs(ay - by) > 20 ? ay - by : a.x - b.x;
 	});
 	if (layout === "featured") {
-		const largest = ordered.reduce((best, p) =>
-			p.width * p.height > best.width * best.height ? p : best,
-		);
-		ordered.splice(ordered.indexOf(largest), 1);
-		ordered.unshift(largest);
+		const featured =
+			ordered.find((p) => p.id === featuredId) ??
+			ordered.reduce((best, p) => (p.width * p.height > best.width * best.height ? p : best));
+		ordered.splice(ordered.indexOf(featured), 1);
+		ordered.unshift(featured);
 	}
 
 	const cells =

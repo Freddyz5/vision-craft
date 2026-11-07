@@ -12,7 +12,33 @@ export const PPI_MIN = 150;
 // Overlaps smaller than this are rounding, not a problem worth flagging.
 const TOLERANCE_PX = 0.5 * MM_TO_PX;
 
-export type PrintWarningKind = "load-error" | "outside" | "margin" | "low-quality";
+export type PrintWarningKind = "load-error" | "outside" | "margin" | "covered" | "low-quality";
+
+/** A text this much covered (share of its box) by a photo above it is flagged. */
+const COVERED_SHARE = 0.15;
+
+/**
+ * Whether a visible photo stacked above `text` hides a real part of it
+ * (e.g. after a collage or a drag). Measured on the drawn, rotated bounds.
+ */
+export function isTextCovered(text: CanvasItem, items: CanvasItem[]): boolean {
+	const t = itemBounds(text);
+	const area = (t.maxX - t.minX) * (t.maxY - t.minY);
+	if (area <= 0) return false;
+	return items.some((other) => {
+		if (isTextItem(other) || other.hidden || other.zIndex <= text.zIndex) return false;
+		const o = itemBounds(other);
+		const w = Math.min(t.maxX, o.maxX) - Math.max(t.minX, o.minX);
+		const h = Math.min(t.maxY, o.maxY) - Math.max(t.minY, o.minY);
+		return w > 0 && h > 0 && (w * h) / area > COVERED_SHARE;
+	});
+}
+
+export const COVERED_WARNING: PrintWarning = {
+	kind: "covered",
+	message: "Tapado por una foto",
+	hint: "Una foto queda encima de este texto. Tráelo al frente o mueve la foto.",
+};
 
 export interface PrintWarning {
 	kind: PrintWarningKind;

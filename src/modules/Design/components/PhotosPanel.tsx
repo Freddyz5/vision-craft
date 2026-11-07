@@ -201,7 +201,7 @@ const TEMPLATES: { layout: CollageLayout; label: string; hint: string; cells: nu
 	{
 		layout: "featured",
 		label: "Destacada",
-		hint: "Una grande y las demás abajo",
+		hint: "Una grande (la que selecciones) y las demás abajo",
 		cells: [
 			[2, 2, 36, 22],
 			[2, 26, 11, 12],
@@ -226,8 +226,8 @@ function TemplatesTab({
 				{count < 2
 					? "Pon al menos dos fotos en la hoja para acomodarlas."
 					: usesSelection
-						? `Acomoda las ${count} fotos seleccionadas dentro del margen. Puedes deshacerlo.`
-						: `Acomoda las ${count} fotos de la hoja dentro del margen. Puedes deshacerlo.`}
+						? `Acomoda las ${count} fotos seleccionadas dentro del margen, sin tapar los textos. Puedes deshacerlo.`
+						: `Acomoda las ${count} fotos de la hoja dentro del margen, sin tapar los textos. Puedes deshacerlo.`}
 			</p>
 			{TEMPLATES.map((t) => (
 				<button
