@@ -7,6 +7,7 @@ import {
 	Crop,
 	LockOpen,
 	PenLine,
+	RotateCw,
 	Trash2,
 	Type,
 } from "lucide-react";
@@ -360,6 +361,10 @@ interface CropToolbarProps {
 	variant: "floating" | "docked";
 	aspect: CropAspectId;
 	onAspect: (aspect: CropAspectId) => void;
+	/** The chosen proportion turned (5:4 rather than 4:5). */
+	flipped: boolean;
+	/** Set when the chosen proportion can be turned (not Libre or 1:1). */
+	onFlip?: () => void;
 	onCancel: () => void;
 	onDone: () => void;
 	style?: React.CSSProperties;
@@ -370,6 +375,8 @@ export function CropToolbar({
 	variant,
 	aspect,
 	onAspect,
+	flipped,
+	onFlip,
 	onCancel,
 	onDone,
 	style,
@@ -388,6 +395,14 @@ export function CropToolbar({
 					: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center gap-1 rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
 			}
 		>
+			{!docked && (
+				<>
+					<span className="text-df-muted dark:text-df-muted-dark shrink-0 px-2 text-xs font-semibold">
+						Arrastra el recuadro o sus esquinas
+					</span>
+					<Divider docked={docked} />
+				</>
+			)}
 			<div role="group" aria-label="Proporción" className="flex shrink-0 items-center gap-0.5">
 				{CROP_ASPECTS.map((a) => (
 					<button
@@ -396,16 +411,28 @@ export function CropToolbar({
 						aria-pressed={aspect === a.id}
 						onClick={() => onAspect(a.id)}
 						className={[
-							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-2",
-							docked ? "h-11" : "h-8",
+							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark shrink-0 rounded-full text-xs font-semibold transition-colors focus-visible:outline-2",
+							docked ? "h-11 px-2.5" : "h-8 px-3",
 							aspect === a.id
 								? "bg-df-primary/10 dark:bg-df-primary-dark/15 text-df-primary dark:text-df-primary-dark"
 								: "text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark",
 						].join(" ")}
 					>
-						{a.label}
+						{/* Turned, "4:5" reads "5:4". */}
+						{flipped && aspect === a.id ? a.label.split(":").reverse().join(":") : a.label}
 					</button>
 				))}
+				{onFlip && (
+					<button
+						type="button"
+						onClick={onFlip}
+						aria-label="Girar la proporción"
+						className={`group text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark relative flex shrink-0 items-center justify-center rounded-full focus-visible:outline-2 ${docked ? "h-11 w-11" : "h-8 w-8"}`}
+					>
+						<RotateCw className="h-4 w-4" aria-hidden="true" />
+						{!docked && <Tip text="Girar la proporción" />}
+					</button>
+				)}
 			</div>
 			<Divider docked={docked} />
 			<button

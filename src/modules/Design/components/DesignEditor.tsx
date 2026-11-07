@@ -142,6 +142,8 @@ export default function DesignEditor() {
 	const [croppingId, setCroppingId] = useState<string | null>(null);
 	const [cropRect, setCropRect] = useState<LocalRect | null>(null);
 	const [cropAspect, setCropAspect] = useState<CropAspectId>("free");
+	// 4:5 and 3:2 can be turned to 5:4 and 2:3.
+	const [cropFlipped, setCropFlipped] = useState(false);
 	const [interacting, setInteracting] = useState(false);
 	const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
 	const [listDrawerOpen, setListDrawerOpen] = useState(false);
@@ -189,15 +191,30 @@ export default function DesignEditor() {
 		setCroppingId(id);
 		setCropRect({ x: 0, y: 0, width: item.width, height: item.height });
 		setCropAspect("free");
+		setCropFlipped(false);
 	};
 	const commitCrop = () => {
 		if (croppingItem && cropRect) updateItem(croppingItem.id, applyCrop(croppingItem, cropRect));
 		setCroppingId(null);
 	};
 	const cancelCrop = () => setCroppingId(null);
+	/** The locked width/height ratio, turned when flipped; null = free. */
+	const cropRatio = (id: CropAspectId, flipped: boolean) => {
+		const ratio = CROP_ASPECTS.find((a) => a.id === id)?.ratio ?? null;
+		return ratio && flipped ? 1 / ratio : ratio;
+	};
 	const changeCropAspect = (id: CropAspectId) => {
 		setCropAspect(id);
-		const ratio = CROP_ASPECTS.find((a) => a.id === id)?.ratio;
+		setCropFlipped(false);
+		const ratio = cropRatio(id, false);
+		if (croppingItem && cropRect && ratio) {
+			setCropRect(fitAspect(cropRect, ratio, fullImageRect(croppingItem)));
+		}
+	};
+	const cropCanFlip = (cropRatio(cropAspect, false) ?? 1) !== 1;
+	const flipCropAspect = () => {
+		const ratio = cropRatio(cropAspect, !cropFlipped);
+		setCropFlipped(!cropFlipped);
 		if (croppingItem && cropRect && ratio) {
 			setCropRect(fitAspect(cropRect, ratio, fullImageRect(croppingItem)));
 		}
@@ -347,14 +364,20 @@ export default function DesignEditor() {
 
 	// ── Adding ────────────────────────────────────────────────────────────
 
-	const handlePickPhoto = (photo: Parameters<typeof newPhotoItem>[0]) => {
+	// Clicking a photo in the panel and dragging it in do the same: a photo
+	// already on the sheet is selected rather than added twice (Duplicar
+	// makes a copy), and a new one ends up selected.
+	const placePhoto = (photo: Parameters<typeof newPhotoItem>[0], at?: { x: number; y: number }) => {
 		const existing = items.find((i) => i.imageSrc === photo.imageSrc);
 		if (existing) {
 			selectOne(existing.id);
 			return;
 		}
-		addItem(newPhotoItem(photo, sheet, items));
+		const item = newPhotoItem(photo, sheet, items, at);
+		addItem(item);
+		select([item.id]);
 	};
+	const handlePickPhoto = (photo: Parameters<typeof newPhotoItem>[0]) => placePhoto(photo);
 
 	const handleAddText = () => {
 		const item = newTextItem(sheet, items);
@@ -372,7 +395,7 @@ export default function DesignEditor() {
 		stage.setPointersPositions(e);
 		const pos = stage.getPointerPosition();
 		if (!pos) return;
-		addItem(newPhotoItem(JSON.parse(raw), sheet, items, { x: pos.x / scale, y: pos.y / scale }));
+		placePhoto(JSON.parse(raw), { x: pos.x / scale, y: pos.y / scale });
 	};
 
 	// ── Selected item actions ─────────────────────────────────────────────
@@ -591,7 +614,20 @@ export default function DesignEditor() {
 	};
 
 	const handleExport = () => {
-		autoSaveActiveCanvas(captureThumbnail());
+		if (items.length === 0) return;
+		const saved = autoSaveActiveCanvas(captureThumbnail());
+		// A full library can't take this board: say so before leaving.
+		if (saved?.status === "full") {
+			showToast(
+				`No se guardó en Tableros: ya tienes ${MAX_SAVED_CANVASES}. Elimina uno para guardarlo, o exporta igual.`,
+				{
+					tone: "error",
+					durationMs: 10_000,
+					action: { label: "Exportar igual", onClick: () => (window.location.href = "/export") },
+				},
+			);
+			return;
+		}
 		window.location.href = "/export";
 	};
 
@@ -711,6 +747,7 @@ export default function DesignEditor() {
 				warningCount={warningCount}
 				onOpenList={openListDrawer}
 				onExport={handleExport}
+				canExport={items.length > 0}
 			/>
 
 			<div className="grid min-h-0 md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_20rem]">
@@ -777,7 +814,7 @@ export default function DesignEditor() {
 												? {
 														item: croppingItem,
 														rect: cropRect,
-														aspect: CROP_ASPECTS.find((a) => a.id === cropAspect)?.ratio ?? null,
+														aspect: cropRatio(cropAspect, cropFlipped),
 														onChange: setCropRect,
 														onCommit: commitCrop,
 													}
@@ -788,9 +825,14 @@ export default function DesignEditor() {
 										onContextMenu={openContextMenu}
 									/>
 									{items.length === 0 && (
-										<p className="text-df-muted pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold">
-											Agrega una foto desde el panel Fotos para empezar
-										</p>
+										<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+											<p className="text-df-muted text-sm font-semibold">
+												Haz clic en una foto del panel Fotos, o arrástrala aquí, para empezar
+											</p>
+											<p className="text-df-muted max-w-64 text-xs">
+												La línea punteada es el margen de 5 mm que la impresora puede no imprimir.
+											</p>
+										</div>
 									)}
 									{editingItem && (
 										<TextEditOverlay
@@ -807,6 +849,8 @@ export default function DesignEditor() {
 											style={toolbarStyle}
 											aspect={cropAspect}
 											onAspect={changeCropAspect}
+											flipped={cropFlipped}
+											onFlip={cropCanFlip ? flipCropAspect : undefined}
 											onCancel={cancelCrop}
 											onDone={commitCrop}
 										/>
@@ -865,6 +909,8 @@ export default function DesignEditor() {
 							variant="docked"
 							aspect={cropAspect}
 							onAspect={changeCropAspect}
+							flipped={cropFlipped}
+							onFlip={cropCanFlip ? flipCropAspect : undefined}
 							onCancel={cancelCrop}
 							onDone={commitCrop}
 						/>
@@ -892,6 +938,16 @@ export default function DesignEditor() {
 			)}
 
 			{/* Tablet: the print list as a drawer opened from the header. */}
+			{isTabletUp && !isDesktop && listDrawerOpen && (
+				// A dimmed sheet behind the drawer; a click there closes it.
+				<button
+					type="button"
+					tabIndex={-1}
+					aria-label="Cerrar la lista"
+					onClick={closeListDrawer}
+					className="bg-df-ink/20 fixed inset-0 top-14 z-30 cursor-default dark:bg-black/40"
+				/>
+			)}
 			{isTabletUp && !isDesktop && listDrawerOpen && (
 				<div
 					role="dialog"

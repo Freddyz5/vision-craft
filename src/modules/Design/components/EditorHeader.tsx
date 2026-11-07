@@ -9,6 +9,8 @@ interface EditorHeaderProps {
 	onOpenList: () => void;
 	/** Below lg, where the print list (and its Exportar) isn't on screen. */
 	onExport: () => void;
+	/** False on an empty sheet: there's nothing to export yet. */
+	canExport: boolean;
 }
 
 /**
@@ -16,7 +18,7 @@ interface EditorHeaderProps {
  * DESIGN.md): the step, the board's editable name, its paper and where it's
  * kept, leaving the rest of the screen to the sheet.
  */
-export function EditorHeader({ warningCount, onOpenList, onExport }: EditorHeaderProps) {
+export function EditorHeader({ warningCount, onOpenList, onExport, canExport }: EditorHeaderProps) {
 	const config = useStore(activeCanvasConfigStore);
 
 	return (
@@ -41,7 +43,7 @@ export function EditorHeader({ warningCount, onOpenList, onExport }: EditorHeade
 			</span>
 			<span className="text-df-muted dark:text-df-muted-dark ml-auto hidden shrink-0 items-center gap-1.5 text-xs xl:flex">
 				<CircleCheck className="h-3.5 w-3.5" aria-hidden="true" />
-				Guardado en este navegador
+				Borrador guardado en este navegador
 			</span>
 			<button
 				type="button"
@@ -60,7 +62,8 @@ export function EditorHeader({ warningCount, onOpenList, onExport }: EditorHeade
 			<button
 				type="button"
 				onClick={onExport}
-				className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r px-4 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 md:ml-0 lg:hidden pointer-coarse:h-11"
+				disabled={!canExport}
+				className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r px-4 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:ml-0 lg:hidden pointer-coarse:h-11"
 			>
 				Exportar
 				<ArrowRight className="h-4 w-4" aria-hidden="true" />

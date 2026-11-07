@@ -212,7 +212,7 @@ export function PanelSlider({
 	suffix?: string;
 }) {
 	return (
-		<label className="text-df-muted dark:text-df-muted-dark grid grid-cols-[5.5rem_1fr_3.25rem] items-center gap-2 text-xs font-semibold">
+		<label className="text-df-muted dark:text-df-muted-dark grid grid-cols-[5.5rem_minmax(0,1fr)_3.25rem] items-center gap-2 text-xs font-semibold">
 			{label}
 			<input
 				type="range"
@@ -220,7 +220,8 @@ export function PanelSlider({
 				max={max}
 				value={value}
 				onChange={(e) => onChange(Number(e.target.value))}
-				className="accent-df-primary dark:accent-df-primary-dark"
+				// min-w-0: a range input's own minimum width pushed the value out of the panel.
+				className="accent-df-primary dark:accent-df-primary-dark w-full min-w-0"
 			/>
 			<span className="text-df-ink dark:text-df-ink-dark text-right tabular-nums">
 				{value}

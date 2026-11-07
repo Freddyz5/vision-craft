@@ -64,3 +64,11 @@
 		box-shadow: 0 0 0 28px var(--ring-pulse-color-end);
 	}
 }
+
+/* Selected text in the brand's violet instead of the browser's default blue or pink. */
+::selection {
+	background-color: color-mix(in oklab, var(--color-df-primary) 25%, transparent);
+}
+.dark ::selection {
+	background-color: color-mix(in oklab, var(--color-df-primary-dark) 35%, transparent);
+}

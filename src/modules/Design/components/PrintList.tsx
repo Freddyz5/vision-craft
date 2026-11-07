@@ -2,6 +2,7 @@ import type React from "react";
 import { useState } from "react";
 import {
 	ArrowRight,
+	BellOff,
 	CircleCheck,
 	Eye,
 	EyeOff,
@@ -12,7 +13,6 @@ import {
 	Trash2,
 	TriangleAlert,
 	Type,
-	X,
 } from "lucide-react";
 import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import type { PrintListRow } from "../hooks/usePrintChecks";
@@ -92,7 +92,9 @@ export function PrintList({
 		setDropAt(null);
 	};
 
-	const ready = rows.length > 0 && warningCount === 0;
+	// Ready only when something will actually print (not with everything hidden).
+	const printsSomething = rows.some((r) => !r.item.hidden);
+	const ready = printsSomething && warningCount === 0;
 
 	return (
 		<section aria-labelledby="print-list-title" className="flex h-full min-h-0 flex-col">
@@ -122,6 +124,8 @@ export function PrintList({
 							/>
 							Lista para imprimir
 						</>
+					) : rows.length > 0 ? (
+						"Todo está oculto: no se imprimirá nada"
 					) : (
 						"Tu tablero está vacío"
 					)}
@@ -271,7 +275,8 @@ export function PrintList({
 										label={`Descartar el aviso «${warning.message}»`}
 										onClick={() => onDismiss(item.id, warning.kind)}
 									>
-										<X className="h-3.5 w-3.5" aria-hidden="true" />
+										{/* Not an ×: next to a photo that reads as "remove it". */}
+										<BellOff className="h-3.5 w-3.5" aria-hidden="true" />
 									</RowAction>
 								)
 							)}
@@ -299,7 +304,8 @@ export function PrintList({
 						<button
 							type="button"
 							onClick={onExport}
-							className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95"
+							disabled={rows.length === 0}
+							className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
 						>
 							Exportar
 							<ArrowRight className="h-4 w-4" aria-hidden="true" />

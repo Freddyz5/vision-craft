@@ -72,7 +72,7 @@ export function PhotosPanel({
 						className={[
 							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark rounded-full py-1.5 text-sm font-semibold transition-colors focus-visible:outline-2",
 							tab === t.id
-								? "bg-df-surface dark:bg-df-surface-dark text-df-ink dark:text-df-ink-dark shadow-sm"
+								? "bg-df-surface dark:bg-df-hairline-dark text-df-ink dark:text-df-ink-dark shadow-sm"
 								: "text-df-ink/70 dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark",
 						].join(" ")}
 					>
