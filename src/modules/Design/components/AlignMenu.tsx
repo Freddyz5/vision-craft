@@ -33,12 +33,8 @@ interface AlignMenuProps {
 	onDistribute: (axis: DistributeAxis) => void;
 }
 
-/** "Alinear" in the item toolbar: a small panel to line items up or space them evenly. */
-export function AlignMenu({ count, onAlign, onDistribute }: AlignMenuProps) {
-	const [reference, setReference] = useState<AlignReference>("selection");
-	// One item can only line up with the sheet.
-	const effectiveReference: AlignReference = count < 2 ? "sheet" : reference;
-
+/** "Alinear" in a group's toolbar: a small panel to line items up or space them evenly. */
+export function AlignMenu(props: AlignMenuProps) {
 	return (
 		<ToolPopover
 			label="Alinear"
@@ -46,6 +42,19 @@ export function AlignMenu({ count, onAlign, onDistribute }: AlignMenuProps) {
 			widthClass="w-60"
 			icon={<AlignCenterVertical className="h-4 w-4" aria-hidden="true" />}
 		>
+			<AlignControls {...props} />
+		</ToolPopover>
+	);
+}
+
+/** The alignment buttons themselves, also shown inside "Organizar" for a single item. */
+export function AlignControls({ count, onAlign, onDistribute }: AlignMenuProps) {
+	const [reference, setReference] = useState<AlignReference>("selection");
+	// One item can only line up with the sheet.
+	const effectiveReference: AlignReference = count < 2 ? "sheet" : reference;
+
+	return (
+		<>
 			{count >= 2 ? (
 				<fieldset>
 					<legend className="text-df-muted dark:text-df-muted-dark mb-1.5 text-xs font-semibold">
@@ -77,7 +86,7 @@ export function AlignMenu({ count, onAlign, onDistribute }: AlignMenuProps) {
 				</fieldset>
 			) : (
 				<p className="text-df-muted dark:text-df-muted-dark text-xs font-semibold">
-					Respecto a la hoja
+					Alinear con la hoja
 				</p>
 			)}
 
@@ -101,7 +110,7 @@ export function AlignMenu({ count, onAlign, onDistribute }: AlignMenuProps) {
 					</PanelButton>
 				</div>
 			)}
-		</ToolPopover>
+		</>
 	);
 }
 

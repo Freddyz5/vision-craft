@@ -9,7 +9,7 @@ interface ArrangeMenuProps {
 	onSendToBack: () => void;
 	onToggleLock: () => void;
 	docked?: boolean;
-	/** Extra rows below the layer and lock actions (e.g. alignment on desktop). */
+	/** Desktop sections between the layers and the lock (alignment, exact position). */
 	children?: React.ReactNode;
 }
 
@@ -32,10 +32,11 @@ export function ArrangeMenu({
 			label="Organizar"
 			panelLabel="Organizar"
 			docked={docked}
-			widthClass="w-64"
+			widthClass="w-72"
 			icon={<Layers className="h-4 w-4" aria-hidden="true" />}
 		>
 			<div className="grid gap-0.5">
+				<SectionTitle>Capas</SectionTitle>
 				<Row
 					icon={ArrowUp}
 					label="Subir una capa"
@@ -56,10 +57,10 @@ export function ArrangeMenu({
 				/>
 				<Row icon={SendToBack} label="Al fondo" hint={hint("[", true)} onClick={onSendToBack} />
 			</div>
+			{children}
 			<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-2">
 				<Row icon={Lock} label="Bloquear" hint={hint("L", true)} onClick={onToggleLock} />
 			</div>
-			{children}
 		</ToolPopover>
 	);
 }
@@ -87,5 +88,14 @@ function Row({
 				<span className="text-df-muted dark:text-df-muted-dark text-xs font-normal">{hint}</span>
 			)}
 		</button>
+	);
+}
+
+/** A section's small heading inside the menu. */
+export function SectionTitle({ children }: { children: React.ReactNode }) {
+	return (
+		<p className="text-df-muted dark:text-df-muted-dark px-1 pb-1 text-xs font-semibold">
+			{children}
+		</p>
 	);
 }

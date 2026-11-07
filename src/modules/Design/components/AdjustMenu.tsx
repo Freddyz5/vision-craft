@@ -12,6 +12,8 @@ const LOOKS = [
 interface AdjustMenuProps {
 	item: CanvasItem;
 	onChange: (adjust: ImageAdjust | undefined) => void;
+	/** Desktop: the name beside the icon. */
+	showLabel?: boolean;
 }
 
 /**
@@ -19,13 +21,14 @@ interface AdjustMenuProps {
  * a colour look and brightness/contrast/blur. Stored on the item and applied
  * when drawing, so the photo itself never changes.
  */
-export function AdjustMenu({ item, onChange }: AdjustMenuProps) {
+export function AdjustMenu({ item, onChange, showLabel }: AdjustMenuProps) {
 	const adjust = item.adjust ?? {};
 	const set = (patch: Partial<ImageAdjust>) => onChange({ ...adjust, ...patch });
 
 	return (
 		<ToolPopover
 			label="Ajustes"
+			showLabel={showLabel}
 			panelLabel="Ajustes de la foto"
 			widthClass="w-80"
 			icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}

@@ -16,10 +16,12 @@ interface ShapeMenuProps {
 	onChange: (shape: ImageShape | undefined) => void;
 	/** Docked (mobile): the panel opens fixed above the bottom bar. */
 	docked: boolean;
+	/** Desktop: the name beside the icon. */
+	showLabel?: boolean;
 }
 
 /** "Forma" in a photo's toolbar: the mask the photo is cut to, plus the corner radius. */
-export function ShapeMenu({ shape, onChange, docked }: ShapeMenuProps) {
+export function ShapeMenu({ shape, onChange, docked, showLabel }: ShapeMenuProps) {
 	const current = shape?.kind ?? "rect";
 
 	const pick = (id: (typeof OPTIONS)[number]["id"]) => {
@@ -37,6 +39,7 @@ export function ShapeMenu({ shape, onChange, docked }: ShapeMenuProps) {
 			label="Forma"
 			panelLabel="Forma de la foto"
 			docked={docked}
+			showLabel={showLabel}
 			widthClass="w-80"
 			icon={<Shapes className="h-4 w-4" aria-hidden="true" />}
 		>

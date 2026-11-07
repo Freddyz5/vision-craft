@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Frame } from "lucide-react";
+import { Square } from "lucide-react";
 import type { CanvasItem, ImageFrame } from "../../../shared/store/canvasStore";
 import { PanelSlider, ToolPopover } from "./ToolPopover";
 
@@ -13,13 +13,15 @@ const BORDER_COLORS = [
 interface FrameMenuProps {
 	item: CanvasItem;
 	onChange: (frame: ImageFrame | undefined) => void;
+	/** Desktop: the name beside the icon. */
+	showLabel?: boolean;
 }
 
 /**
  * "Marco" for a photo (desktop only, per the editor brief): a border with
  * its thickness in mm and colour, a polaroid card, and a soft shadow.
  */
-export function FrameMenu({ item, onChange }: FrameMenuProps) {
+export function FrameMenu({ item, onChange, showLabel }: FrameMenuProps) {
 	const frame = item.frame ?? {};
 	const set = (patch: Partial<ImageFrame>) => onChange({ ...frame, ...patch });
 	const borderColor = frame.borderColor ?? "#FFFFFF";
@@ -28,9 +30,11 @@ export function FrameMenu({ item, onChange }: FrameMenuProps) {
 	return (
 		<ToolPopover
 			label="Marco"
+			showLabel={showLabel}
 			panelLabel="Marco de la foto"
 			widthClass="w-72"
-			icon={<Frame className="h-4 w-4" aria-hidden="true" />}
+			// A plain outline: lucide's "Frame" reads as "#".
+			icon={<Square className="h-4 w-4" aria-hidden="true" />}
 		>
 			<PanelSlider
 				label="Borde"

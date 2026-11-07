@@ -11,7 +11,25 @@ interface ToolPopoverProps {
 	docked?: boolean;
 	/** Tailwind width class for the floating panel. */
 	widthClass?: string;
+	/** Desktop: show the name next to the icon instead of only in a tooltip. */
+	showLabel?: boolean;
 	children: React.ReactNode;
+}
+
+/**
+ * The toolbar's tooltip: shown on hover (after a short wait) or keyboard
+ * focus, instead of the browser's slow native one. The button carries the
+ * same text as its accessible name, so this copy is hidden from readers.
+ */
+export function Tip({ text }: { text: string }) {
+	return (
+		<span
+			aria-hidden="true"
+			className="bg-df-ink dark:bg-df-surface-dark dark:border-df-hairline-dark pointer-events-none absolute top-full left-1/2 z-50 mt-2 -translate-x-1/2 rounded-lg px-2 py-1 text-xs font-semibold whitespace-nowrap text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 group-hover:delay-500 group-focus-visible:opacity-100 dark:border"
+		>
+			{text}
+		</span>
+	);
 }
 
 /**
@@ -25,6 +43,7 @@ export function ToolPopover({
 	panelLabel,
 	docked = false,
 	widthClass = "w-64",
+	showLabel = false,
 	children,
 }: ToolPopoverProps) {
 	const [open, setOpen] = useState(false);
@@ -59,11 +78,16 @@ export function ToolPopover({
 		const panel = panelRef.current;
 		if (!open || docked || !panel) return;
 		panel.style.marginLeft = "";
+		panel.style.maxHeight = "";
 		let clipper = panel.parentElement;
 		while (clipper && getComputedStyle(clipper).overflowX === "visible") {
 			clipper = clipper.parentElement;
 		}
-		const clip = clipper?.getBoundingClientRect() ?? { left: 0, right: window.innerWidth };
+		const clip = clipper?.getBoundingClientRect() ?? {
+			left: 0,
+			right: window.innerWidth,
+			bottom: window.innerHeight,
+		};
 		const rect = panel.getBoundingClientRect();
 		const gap = 8;
 		const shift =
@@ -73,6 +97,10 @@ export function ToolPopover({
 					? clip.right - gap - rect.right
 					: 0;
 		if (shift) panel.style.marginLeft = `${shift}px`;
+		// A long panel (Organizar) scrolls inside itself rather than past the
+		// sheet's bottom edge, where its last options would be out of reach.
+		const room = Math.min(clip.bottom, window.innerHeight) - rect.top - gap;
+		if (rect.height > room) panel.style.maxHeight = `${Math.max(room, 200)}px`;
 	}, [open, docked]);
 
 	return (
@@ -83,18 +111,21 @@ export function ToolPopover({
 				onClick={() => setOpen((o) => !o)}
 				aria-expanded={open}
 				aria-controls={panelId}
-				aria-label={docked ? undefined : label}
-				title={docked ? undefined : label}
+				// A visible caption already names it; an icon alone gets the label.
+				aria-label={docked || showLabel ? undefined : label}
 				className={[
-					"text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
+					"group text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark relative flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
 					docked
 						? "min-w-14 flex-col gap-1 rounded-xl px-2 text-xs font-semibold"
-						: "h-9 w-9 rounded-full",
+						: showLabel
+							? "h-9 gap-1.5 rounded-full px-3 text-sm font-semibold pointer-coarse:h-11"
+							: "h-9 w-9 rounded-full pointer-coarse:h-11 pointer-coarse:w-11",
 					open ? "bg-df-well dark:bg-df-well-dark" : "",
 				].join(" ")}
 			>
 				{icon}
-				{docked && <span>{label}</span>}
+				{(docked || showLabel) && <span>{label}</span>}
+				{!docked && !showLabel && !open && <Tip text={label} />}
 			</button>
 
 			{open && (
@@ -110,7 +141,7 @@ export function ToolPopover({
 						// Fixed on mobile so the bar's horizontal scroll can't clip it.
 						docked
 							? "fixed inset-x-3 bottom-20"
-							: `absolute top-full left-1/2 mt-2 -translate-x-1/2 ${widthClass}`,
+							: `absolute top-full left-1/2 mt-2 -translate-x-1/2 overflow-y-auto overscroll-contain ${widthClass}`,
 					].join(" ")}
 				>
 					{children}

@@ -3,11 +3,8 @@ import {
 	AlignCenter,
 	AlignLeft,
 	AlignRight,
-	ArrowDown,
-	ArrowUp,
 	CopyPlus,
 	Crop,
-	Lock,
 	LockOpen,
 	PenLine,
 	Trash2,
@@ -21,15 +18,15 @@ import {
 } from "../../../shared/store/canvasStore";
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { TEXT_FONTS, fontStack } from "../../../shared/utils/fonts";
-import { AlignMenu } from "./AlignMenu";
+import { AlignControls, AlignMenu } from "./AlignMenu";
 import { ArrangeMenu } from "./ArrangeMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
 import { AdjustMenu } from "./AdjustMenu";
 import { FrameMenu } from "./FrameMenu";
-import { MoreMenu } from "./MoreMenu";
+import { PositionFields } from "./PositionFields";
 import { NumberInput } from "./NumberInput";
-import { ToolPopover } from "./ToolPopover";
+import { Tip, ToolPopover } from "./ToolPopover";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
@@ -246,71 +243,59 @@ export function ItemToolbar({
 
 			{onCrop && (
 				<>
-					<ToolButton docked={docked} label="Recortar" onClick={onCrop}>
+					<ToolButton docked={docked} showLabel={!docked} label="Recortar" onClick={onCrop}>
 						<Crop className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
-					<ShapeMenu shape={item.shape} onChange={(shape) => onUpdate({ shape })} docked={docked} />
+					<ShapeMenu
+						shape={item.shape}
+						onChange={(shape) => onUpdate({ shape })}
+						docked={docked}
+						showLabel={!docked}
+					/>
 					{/* Desktop only, per the editor brief. */}
 					{!docked && (
 						<>
-							<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} />
-							<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} />
+							<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} showLabel />
+							<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} showLabel />
 						</>
 					)}
 					<Divider docked={docked} />
 				</>
 			)}
-			{docked ? (
-				// The phone's bar has room for few buttons: layers and lock share a menu.
-				<ArrangeMenu
-					docked
-					onMoveLayer={onMoveLayer}
-					onBringToFront={onBringToFront}
-					onSendToBack={onSendToBack}
-					onToggleLock={onToggleLock}
-				/>
-			) : (
-				<>
-					<ToolButton
-						docked={docked}
-						label={`Subir una capa (${shortcut("]")})`}
-						onClick={() => onMoveLayer("up")}
-					>
-						<ArrowUp className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-					<ToolButton
-						docked={docked}
-						label={`Bajar una capa (${shortcut("[")})`}
-						onClick={() => onMoveLayer("down")}
-					>
-						<ArrowDown className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-					<Divider docked={docked} />
-					{/* Desktop only, per the editor brief; on mobile they wait for "Más en computadora". */}
-					<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
-					<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
-						<CopyPlus className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-					<ToolButton
-						docked={docked}
-						label={`Bloquear (${shortcut("L", { shift: true })})`}
-						onClick={onToggleLock}
-					>
-						<Lock className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-				</>
+			{/* Lining items up is what a group is selected for, so it stays in view. */}
+			{group && !docked && (
+				<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
 			)}
-			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
+			{/* Layers, alignment to the sheet, exact position and lock: one menu. */}
+			<ArrangeMenu
+				docked={docked}
+				onMoveLayer={onMoveLayer}
+				onBringToFront={onBringToFront}
+				onSendToBack={onSendToBack}
+				onToggleLock={onToggleLock}
+			>
+				{!docked && !group && (
+					<>
+						<div className="border-df-hairline dark:border-df-hairline-dark space-y-2 border-t pt-3">
+							<AlignControls count={1} onAlign={onAlign} onDistribute={onDistribute} />
+						</div>
+						<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-3">
+							<PositionFields item={item} onUpdate={onUpdate} />
+						</div>
+					</>
+				)}
+			</ArrangeMenu>
+			{/* Desktop only, per the editor brief; on mobile it waits for "Más en computadora". */}
+			{!docked && (
+				<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
+					<CopyPlus className="h-4 w-4" aria-hidden="true" />
+				</ToolButton>
+			)}
+			{/* Quitar last and set apart, so it isn't hit on the way to another tool. */}
+			{!docked && <Divider docked={docked} />}
+			<ToolButton docked={docked} label={docked ? "Quitar" : "Quitar (Supr)"} onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
-			{!docked && (
-				<MoreMenu
-					item={group ? undefined : item}
-					onBringToFront={onBringToFront}
-					onSendToBack={onSendToBack}
-					onUpdate={onUpdate}
-				/>
-			)}
 			{docked && (
 				<>
 					<Divider docked={docked} />
@@ -325,28 +310,34 @@ function ToolButton({
 	label,
 	onClick,
 	docked,
+	showLabel = false,
 	children,
 }: {
 	label: string;
 	onClick: () => void;
 	docked: boolean;
+	/** Desktop: the name beside the icon instead of a tooltip. */
+	showLabel?: boolean;
 	children: React.ReactNode;
 }) {
+	const captioned = docked || showLabel;
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			title={docked ? undefined : label}
-			aria-label={docked ? undefined : label}
+			aria-label={captioned ? undefined : label}
 			className={[
-				"text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
+				"group text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark relative flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
 				docked
 					? "min-w-14 flex-col gap-1 rounded-xl px-2 text-xs font-semibold"
-					: "h-9 w-9 rounded-full pointer-coarse:h-11 pointer-coarse:w-11",
+					: showLabel
+						? "h-9 gap-1.5 rounded-full px-3 text-sm font-semibold pointer-coarse:h-11"
+						: "h-9 w-9 rounded-full pointer-coarse:h-11 pointer-coarse:w-11",
 			].join(" ")}
 		>
 			{children}
-			{docked && <span>{label}</span>}
+			{captioned && <span>{label}</span>}
+			{!captioned && <Tip text={label} />}
 		</button>
 	);
 }
