@@ -203,6 +203,8 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 **Display Font:** Inter (with ui-sans-serif, system-ui, sans-serif)
 **Body Font:** Inter (same stack)
 
+**Board text** (what people type on their sheet, and print) is content, not chrome: it offers three web fonts named for how they feel, Moderna (Inter), Clásica (Fraunces) and A mano (Caveat), and a new text starts in Graphite Ink, centred. The interface itself stays Inter only.
+
 **Character:** One family, two volumes. Headings are set very heavy (800–900) and tight so each page lands with a single confident statement; everything else is small, regular-weight, and quiet. The contrast in weight, not a second typeface, creates the hierarchy.
 
 ### Hierarchy
@@ -218,7 +220,7 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 **The Violet Second Line Rule.** A wizard step's page heading is two lines: a plain Graphite line, then a violet line that ends with a period ("Diseña tu / **Visión.**"). The eyebrow above it names the step. Don't add a third line or move the violet to the first line.
 
-**The Editor Exception.** The Design step is a full-screen tool, so it trades the two-line heading for a one-line 48px header: "Paso 03 · Diseña", the board's editable name, the paper ("A4 vertical · 21 × 29,7 cm") and "Guardado en este navegador". No footer on that step either; the sheet gets the whole screen.
+**The Editor Exception.** The Design step is a full-screen tool, so it trades the two-line heading for a one-line 48px header: "Paso 03 · Diseña", the board's editable name, the paper ("A4 vertical · 21 × 29,7 cm") and "Borrador guardado en este navegador"; below 1024px it also carries the gradient Exportar, since the print list isn't on screen there. No footer on that step either; the sheet gets the whole screen.
 
 **The Whisper Label Rule.** Section labels are tiny, bold, uppercase, widely tracked, and muted. They organize, they don't compete. Headings shout; labels whisper; nothing sits loudly in between.
 

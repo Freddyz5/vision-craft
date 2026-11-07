@@ -17,7 +17,7 @@ bun run format       # prettier --write .
 bun run format:check # prettier --check .
 ```
 
-There is no test suite yet — the `Run tests` step in `.github/workflows/release-prod.yml` is commented out. `bunx tsc --noEmit` isn't wired into CI either and still reports a few old errors outside the editor.
+There is no test suite yet — the `Run tests` step in `.github/workflows/release-prod.yml` is commented out. `bunx tsc --noEmit` isn't wired into CI either; its only remaining error is `eslint.config.js` importing `eslint-plugin-jsx-a11y`, which ships no types.
 
 Requires Node >= 22.12.0. Two env vars back the image-search API and must be set locally (`.env`) and in Vercel: `PEXELS_API_KEY`, `UNSPLASH_CLIENT_ID`. Two more back Cloudinary image uploads, `PUBLIC_CLOUDINARY_CLOUD_NAME` and `PUBLIC_CLOUDINARY_UPLOAD_PRESET` — unlike the two above these are client-exposed (`PUBLIC_` prefix, required by Astro/Vite to reach the browser bundle) and unsigned, no API secret involved.
 
@@ -61,12 +61,15 @@ Besides position and size, a `CanvasItem` has these optional fields, all defined
 
 ### Design editor
 
-Layout ("Prueba de impresión"): `EditorHeader` over `PhotosPanel` (Fotos / Plantillas) | the sheet (`SheetToolbar`, `SheetRuler`, `KonvaCanvas`) | `PrintList`, with `ItemToolbar` floating over the selection. Below `lg` the list is a drawer; below `md` the panels open over the sheet and the toolbar docks at the bottom. `DesignEditor` only orchestrates.
+Layout ("Prueba de impresión"): `EditorHeader` over `PhotosPanel` (Fotos / Plantillas) | the sheet (`SheetToolbar`, `SheetRuler`, `KonvaCanvas`) | `PrintList`, with `ItemToolbar` floating over the selection. Below `lg` the list is a drawer and the header carries Exportar; below `md` the panels open over the sheet and the toolbar docks at the bottom. `DesignEditor` only orchestrates. Zoom is `"fit"` (follows the screen) or an absolute scale (1 = real size).
 
 - **Selection** is an array of ids and one Konva `Transformer` handles it. Konva fires drag events on every node of the transformer, so only the "lead" node acts (`leadDragIdRef` in `KonvaCanvas`), and groups don't snap.
-- **`ItemToolbar` is the only home of an item's actions.** Menus are `ToolPopover`s; `useToolbarRoving` gives the toolbar its arrow-key focus and skips anything inside an open panel.
-- **`PrintList`** doubles as the layer panel (drag to reorder, hide, lock) and shows the warnings from `utils/printChecks.ts` (`load-error`, `outside`, `margin`, `low-quality`), each with a `hint` saying how to fix it.
+- **`ItemToolbar` is the only home of an item's actions.** Desktop: labelled photo tools (Recortar, Forma, Ajustes, Marco), then `ArrangeMenu` ("Organizar": layers, align to the sheet, `PositionFields` in cm, lock), Duplicar, and Quitar last; a group keeps `AlignMenu` in view. Docked (phone): Organizar holds layers and lock, a text's font/size/colour/alignment open from "Estilo". Menus are `ToolPopover`s that open away from the selection (`PopoverSideContext`) and scroll inside when short of room; icon buttons get a `Tip` tooltip. `useToolbarRoving` gives the toolbar its arrow-key focus and skips anything inside an open panel. Number fields use `NumberInput`, which applies an entry once it's finished.
+- **Resizing:** a photo's side handles crop it (`resizePhotoBox` in `utils/crop.ts`), never stretch it; corners keep its proportions. A lone text's side handles re-wrap it at the same size; corners scale the type. Several items scale by the corners only.
+- **Text height follows its lines.** The shared render draws text with no fixed height, and the stored `height` is measured (`measureTextHeight`, `shared/utils/textMetrics.ts`) whenever the text, font, size or width changes. Text is drawn with a fallback stack (`fontStack`, `shared/utils/fonts.ts`) and re-created when web fonts finish loading; Export waits for the board's fonts before capturing. Board fonts are `TEXT_FONTS` (Moderna/Inter, Clásica/Fraunces, A mano/Caveat); `TEXT_DEFAULTS` describes older boards, new text gets its look in `newTextItem`.
+- **`PrintList`** doubles as the layer panel (drag to reorder, hide, lock) and shows the warnings from `utils/printChecks.ts` (`load-error`, `outside`, `margin`, `covered`, `low-quality`), each with a `hint` saying how to fix it.
 - **Keyboard:** `useEditorShortcuts` is the single key listener, `useEditorClipboard` handles copy/paste (a per-tab copy in `sessionStorage`, and images pasted from the system), `useViewportNavigation` handles zoom toward the pointer and panning. Write a shortcut in the UI with `shortcut()` (`utils/shortcuts.ts`), which spells it for the person's keyboard.
+- **Collage templates** (`utils/collage.ts`) fill the tallest band the board's texts leave free, put texts back on top, and feature the first selected photo.
 - **Mobile scope is deliberate:** crop, shape, layers and lock work on touch; the rest is listed in `DESKTOP_ONLY_FEATURES` (`DesktopOnlyChip`), which must stay in sync with what `ItemToolbar` hides when docked.
 
 ### Rendering and export
