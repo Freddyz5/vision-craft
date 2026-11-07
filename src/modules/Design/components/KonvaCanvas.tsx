@@ -193,6 +193,10 @@ export function KonvaCanvas({
 		if (next.length !== current.length || next.some((node, i) => node !== current[i])) {
 			tr.nodes(next);
 			tr.getLayer()?.batchDraw();
+		} else if (!tr.isTransforming()) {
+			// Same nodes, maybe a new size Konva doesn't announce (a text's lines
+			// after a font or size change): fit the handles to it.
+			tr.forceUpdate();
 		}
 	});
 	const loneText =
@@ -278,6 +282,17 @@ export function KonvaCanvas({
 		updateItems(Object.fromEntries(moved.map(({ id, x, y }) => [id, { x, y }])));
 	};
 
+	// A lone text dragged by a side handle changes width only: the scale
+	// Konva applies is turned into width on every move, so the lines re-wrap
+	// live at the same type size instead of squashing. Corners still scale it.
+	const handleTransform = () => {
+		const tr = trRef.current;
+		const anchor = tr?.getActiveAnchor();
+		if (!tr || !loneText || (anchor !== "middle-left" && anchor !== "middle-right")) return;
+		const [node] = tr.nodes();
+		node?.setAttrs({ width: node.width() * node.scaleX(), scaleX: 1 });
+	};
+
 	// Resizing/rotating one or many items: read every attached node back
 	// into the store in a single write.
 	const handleTransformEnd = () => {
@@ -293,12 +308,14 @@ export function KonvaCanvas({
 			// Konva scales the node; the store keeps the real size instead.
 			node.scaleX(1);
 			node.scaleY(1);
+			// The node's own size, not the stored one: a side-dragged text
+			// already turned its scale into width (handleTransform).
 			const patch: Partial<CanvasItem> = {
 				x: node.x() / scaleFactor,
 				y: node.y() / scaleFactor,
 				rotation: node.rotation(),
-				width: item.width * scaleX,
-				height: item.height * scaleY,
+				width: (node.width() * scaleX) / scaleFactor,
+				height: (node.height() * scaleY) / scaleFactor,
 			};
 			// A text box's type grows and shrinks with it instead of re-wrapping.
 			if (isTextItem(item)) {
@@ -474,6 +491,7 @@ export function KonvaCanvas({
 					<Transformer
 						ref={trRef}
 						onTransformStart={() => onInteractionChange(true)}
+						onTransform={handleTransform}
 						onTransformEnd={handleTransformEnd}
 						borderStroke={GUIDE_COLOR}
 						anchorStroke={GUIDE_COLOR}
