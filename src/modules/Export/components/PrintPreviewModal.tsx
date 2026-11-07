@@ -74,7 +74,7 @@ export function PrintPreviewModal({
 								type="button"
 								onClick={onPrint}
 								disabled={!loaded}
-								className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark rounded-full bg-gradient-to-r px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
+								className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark rounded-full bg-gradient-to-r px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
 							>
 								<span className="sm:hidden">Imprimir</span>
 								<span className="hidden sm:inline">Imprimir / Guardar PDF</span>

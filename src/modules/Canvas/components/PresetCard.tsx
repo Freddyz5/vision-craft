@@ -119,7 +119,9 @@ export const PresetCard = ({
 					{preset.label}
 				</p>
 				{preset.id !== "custom" && (
-					<p className="text-df-muted dark:text-df-muted-dark mt-0.5 text-[10px]">
+					<p
+						className={`mt-0.5 text-[10px] ${isSelected ? "text-df-ink/70" : "text-df-muted"} dark:text-df-muted-dark`}
+					>
 						{preset.description}
 					</p>
 				)}

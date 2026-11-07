@@ -73,7 +73,7 @@ export function PhotosPanel({
 							"focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark rounded-full py-1.5 text-sm font-semibold transition-colors focus-visible:outline-2",
 							tab === t.id
 								? "bg-df-surface dark:bg-df-surface-dark text-df-ink dark:text-df-ink-dark shadow-sm"
-								: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark",
+								: "text-df-ink/70 dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark",
 						].join(" ")}
 					>
 						{t.label}
@@ -125,7 +125,7 @@ function PhotosTab({
 				<button
 					type="button"
 					onClick={onAddText}
-					className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/15 hover:bg-df-primary/15 dark:hover:bg-df-primary-dark/25 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2"
+					className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/10 hover:bg-df-primary/15 dark:hover:bg-df-primary-dark/15 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2"
 				>
 					<Type className="h-3.5 w-3.5" aria-hidden="true" />
 					Agregar texto

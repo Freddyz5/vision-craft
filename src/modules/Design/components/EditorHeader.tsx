@@ -60,7 +60,7 @@ export function EditorHeader({ warningCount, onOpenList, onExport }: EditorHeade
 			<button
 				type="button"
 				onClick={onExport}
-				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r px-4 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 md:ml-0 lg:hidden pointer-coarse:h-11"
+				className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r px-4 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 md:ml-0 lg:hidden pointer-coarse:h-11"
 			>
 				Exportar
 				<ArrowRight className="h-4 w-4" aria-hidden="true" />

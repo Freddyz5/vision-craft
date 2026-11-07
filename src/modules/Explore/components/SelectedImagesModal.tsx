@@ -137,7 +137,7 @@ export default function SelectedImagesModal({ isOpen, onClose }: Props) {
 				<div className="border-df-border dark:border-df-border-dark bg-df-surface dark:bg-df-surface-dark flex shrink-0 justify-end gap-4 border-t p-4">
 					<a
 						href="/canvas"
-						className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark flex items-center gap-2 rounded-full bg-gradient-to-r px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+						className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark flex items-center gap-2 rounded-full bg-gradient-to-r px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 					>
 						Crear Board con {selectedImages.length}{" "}
 						{selectedImages.length === 1 ? "imagen" : "imágenes"}

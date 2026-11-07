@@ -159,7 +159,7 @@ export function PrintList({
 							className={[
 								"group relative flex items-center gap-1 rounded-xl pr-1 transition-colors duration-150",
 								selected
-									? "bg-df-primary/10 dark:bg-df-primary-dark/15"
+									? "bg-df-primary/10 dark:bg-df-primary-dark/10"
 									: "hover:bg-df-well dark:hover:bg-df-well-dark",
 								dragId === item.id ? "opacity-50" : "",
 								item.hidden ? "[&_img]:opacity-40" : "",
@@ -206,7 +206,10 @@ export function PrintList({
 											"flex items-center gap-1 truncate text-xs",
 											warning
 												? "text-df-warning dark:text-df-warning-dark font-semibold"
-												: "text-df-muted dark:text-df-muted-dark",
+												: // Grey on the violet tint of a selected row falls under 4.5:1.
+													selected
+													? "text-df-ink/70 dark:text-df-muted-dark"
+													: "text-df-muted dark:text-df-muted-dark",
 										].join(" ")}
 									>
 										{warning && <TriangleAlert className="h-3 w-3 shrink-0" aria-hidden="true" />}
@@ -218,7 +221,7 @@ export function PrintList({
 										row.warnings.map((w) => (
 											<span
 												key={w.kind}
-												className="text-df-muted dark:text-df-muted-dark mt-1 block text-xs leading-snug"
+												className="text-df-ink/70 dark:text-df-muted-dark mt-1 block text-xs leading-snug"
 											>
 												{w.hint}
 											</span>
@@ -296,7 +299,7 @@ export function PrintList({
 						<button
 							type="button"
 							onClick={onExport}
-							className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95"
+							className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95"
 						>
 							Exportar
 							<ArrowRight className="h-4 w-4" aria-hidden="true" />

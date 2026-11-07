@@ -47,7 +47,7 @@ export function ExportCanvasPreview({
 	return (
 		<div className="min-w-0 flex-1 space-y-8">
 			<header>
-				<p className="text-primary mb-2 text-xs font-bold tracking-[0.2em] uppercase">
+				<p className="text-df-primary dark:text-df-primary-dark mb-2 text-xs font-bold tracking-[0.2em] uppercase">
 					Vista Previa
 				</p>
 				<h2 className="text-4xl font-extrabold">{config.name || "Untitled Vision"}</h2>

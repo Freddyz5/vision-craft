@@ -119,12 +119,12 @@ export default function StepperNav({ activeItem }: Props) {
 							className={[
 								"flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
 								!isWizardStep
-									? "text-df-muted dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800"
+									? "text-df-ink/70 dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800"
 									: isCurrent
 										? "dark:bg-df-on-primary-dark/10 dark:text-df-on-primary-dark bg-white/20 text-white"
 										: isCompleted
 											? "bg-df-primary dark:bg-df-primary-dark dark:text-df-on-primary-dark text-white"
-											: "text-df-muted dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800",
+											: "text-df-ink/70 dark:text-df-muted-dark bg-gray-100 dark:bg-gray-800",
 							].join(" ")}
 							aria-hidden="true"
 						>

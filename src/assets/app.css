@@ -15,6 +15,9 @@
 	--color-df-ink: #111827; /* texto principal */
 	--color-df-muted: #6b7280; /* texto secundario */
 	--color-df-accent: #14b8a6; /* turquesa */
+	/* Fin del degradado de los botones por el día: con blanco encima da ≥5,5:1 en todo el
+	   botón (sobre el turquesa #14b8a6 el blanco bajaba a 2,5:1). */
+	--color-df-accent-strong: #0f766e;
 	--color-df-hairline: #e5e7eb; /* bordes finos */
 	--color-df-well: #f3f4f6; /* hover y huecos */
 	--color-df-warning: #b45309; /* texto de avisos de impresión (Marigold oscuro, 5:1 sobre blanco) */

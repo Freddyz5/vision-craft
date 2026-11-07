@@ -5,6 +5,7 @@ colors:
   violet: "#7c3aed"
   violet-night: "#a78bfa"
   lagoon: "#14b8a6"
+  lagoon-deep: "#0f766e"
   lagoon-night: "#2dd4bf"
   marigold: "#f59e0b"
   marigold-night: "#fbbf24"
@@ -161,7 +162,8 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 ### Secondary
 
-- **Lagoon Teal** (#14b8a6; night: #2dd4bf): the far end of the main-CTA gradient, the landing hero's kicker chip, and a faint ambient glow behind the hero. It never appears as a solid button or a body-text color.
+- **Lagoon Teal** (#14b8a6; night: #2dd4bf): the night end of the main-CTA gradient, the landing hero's kicker chip, and a faint ambient glow behind the hero. It never appears as a solid button or a body-text color.
+- **Lagoon Deep** (#0f766e): the day end of the main-CTA gradient, deep enough for its white label (see the White-on-Gradient Rule).
 
 ### Tertiary
 
@@ -186,9 +188,11 @@ A neutral studio palette (gray in daylight, slate and navy at night) with one sa
 
 **The Photos Carry the Color Rule.** The chrome stays neutral. Violet is the only interface hue a user should notice; if a screen looks colorful before any images load, something is over-decorated.
 
-**The One Gradient Rule.** The violet-to-teal gradient (`linear-gradient(to right, violet, lagoon)`) is reserved for the single main forward action on a screen: "Crear mi primer board", "Armar Board", the advance-to-export button, the print confirm. One per screen. Every other primary button is solid violet.
+**The One Gradient Rule.** The violet-to-teal gradient (`linear-gradient(to right, violet, lagoon-deep)` by day, `violet-night` to `lagoon-night` at night) is reserved for the single main forward action on a screen: "Crear mi primer board", "Armar Board", the advance-to-export button, the print confirm. One per screen. Every other primary button is solid violet.
 
 **The Night Twin Rule.** Every `df-*` color is written with its `-dark` twin (`bg-df-surface dark:bg-df-surface-dark`). A light token used alone is a bug in night mode.
+
+**The White-on-Gradient Rule.** By day the main CTA's gradient ends in Lagoon Deep (#0f766e, `to-df-accent-strong`), not Lagoon: white reads at 5.5:1 or more across the whole button, where it fell to 2.5:1 over #14b8a6. Plain Lagoon stays for the hero glow and decorative panels.
 
 **The Ink-on-Violet Rule.** At night, text and icons on a filled Studio Violet (night) or on the night gradient are Midnight Navy (`text-white dark:text-df-on-primary-dark`), never white: white on #a78bfa is 2.7:1 and on #2dd4bf 1.8:1, while Midnight gives 7:1 and 9.7:1. A large violet panel that holds white copy at several opacities (the print-options panel, the landing feature card) keeps the day violet (#7c3aed) at night instead, where white reads at 5.7:1.
 

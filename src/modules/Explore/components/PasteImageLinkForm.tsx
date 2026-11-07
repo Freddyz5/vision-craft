@@ -53,7 +53,7 @@ export default function PasteImageLinkForm({ onResolved, onError, className = ""
 						onChange={(e) => setValue(e.target.value)}
 						disabled={loading}
 						placeholder="https://unsplash.com/photos/..."
-						className="bg-df-surface dark:bg-df-surface-dark ring-df-border dark:ring-df-border-dark text-df-ink dark:text-df-ink-dark placeholder:text-df-muted/70 dark:placeholder:text-df-muted-dark/70 focus:ring-df-primary dark:focus:ring-df-primary-dark w-full rounded-lg py-2 pr-2 pl-8 text-xs ring-1 transition-shadow outline-none focus:ring-2"
+						className="bg-df-surface dark:bg-df-surface-dark ring-df-border dark:ring-df-border-dark text-df-ink dark:text-df-ink-dark placeholder:text-df-muted dark:placeholder:text-df-muted-dark focus:ring-df-primary dark:focus:ring-df-primary-dark w-full rounded-lg py-2 pr-2 pl-8 text-xs ring-1 transition-shadow outline-none focus:ring-2"
 						aria-label="Enlace de la imagen"
 					/>
 				</div>

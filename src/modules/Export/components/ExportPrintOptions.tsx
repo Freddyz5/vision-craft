@@ -87,7 +87,7 @@ export function ExportPrintOptions({
 									className={`rounded-lg py-1.5 text-xs font-bold transition-all duration-150 ${
 										paperOrientation === opt.value
 											? "text-df-primary bg-white shadow-sm"
-											: "bg-white/15 text-white hover:bg-white/25"
+											: "bg-white/10 text-white hover:bg-white/20"
 									}`}
 								>
 									{opt.label}
@@ -153,7 +153,7 @@ export function ExportPrintOptions({
 					)}
 
 					{exportMode === "fit-page" && (
-						<p className="text-[11px] opacity-80">
+						<p className="text-[11px] opacity-90">
 							Escala automática: {Math.round(fitPageScale * 100)}%
 						</p>
 					)}
@@ -170,7 +170,7 @@ export function ExportPrintOptions({
 			{showPaperControls && (
 				<button
 					onClick={onPrintPreview}
-					className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+					className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 				>
 					{exportMode === "poster"
 						? transposePrintConfig

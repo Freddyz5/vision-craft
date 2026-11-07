@@ -334,7 +334,7 @@ export default function ImagesGallery() {
 
 						<a
 							href="/canvas"
-							className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark flex items-center gap-2 rounded-full bg-linear-to-r px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+							className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark flex items-center gap-2 rounded-full bg-linear-to-r px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 							aria-label="Ir a canvas para armar el board con las imágenes seleccionadas"
 						>
 							Armar Board

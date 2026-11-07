@@ -77,7 +77,7 @@ export default function CanvasLivePreview({
 			aria-label="Vista previa del lienzo"
 		>
 			{/* Label */}
-			<p className="text-df-muted dark:text-df-muted-dark text-center text-[9px] font-bold tracking-[0.22em] uppercase">
+			<p className="text-df-ink/70 dark:text-df-muted-dark text-center text-[10px] font-bold tracking-[0.22em] uppercase">
 				Vista previa
 			</p>
 
@@ -102,7 +102,7 @@ export default function CanvasLivePreview({
 						strokeWidth={1.5}
 						aria-hidden="true"
 					/>
-					<p className="text-df-primary/50 dark:text-df-primary-dark/50 px-2 text-center text-[9px] font-semibold tracking-widest uppercase">
+					<p className="text-df-primary dark:text-df-primary-dark px-2 text-center text-[10px] font-semibold tracking-widest uppercase">
 						Tu lienzo
 					</p>
 				</article>
@@ -125,7 +125,7 @@ export default function CanvasLivePreview({
 			<section aria-labelledby="name-heading">
 				<h2
 					id="name-heading"
-					className="text-df-muted dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+					className="text-df-ink/70 dark:text-df-muted-dark mb-3 text-[10px] font-bold tracking-[0.2em] uppercase"
 				>
 					Nombre del lienzo
 				</h2>
@@ -144,7 +144,7 @@ export default function CanvasLivePreview({
 				id="go-to-editor-btn"
 				type="button"
 				onClick={handleGoToEditor}
-				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
+				className="from-df-primary to-df-accent-strong dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r px-8 py-2.5 text-base font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 active:scale-95"
 			>
 				Ir al Editor
 				<ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
