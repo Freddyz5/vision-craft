@@ -1,4 +1,5 @@
 import { TEXT_DEFAULTS, type CanvasItem } from "../../../shared/store/canvasStore";
+import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import type { Sheet } from "./printChecks";
 
@@ -62,21 +63,23 @@ export function newPhotoItem(
 
 export function newTextItem(sheet: Sheet, items: CanvasItem[]): CanvasItem {
 	const width = sheet.width * TEXT_WIDTH_SHARE;
-	const height = TEXT_FONT_SIZE * 1.2;
 	const offset = cascade(items);
+	const text = {
+		text: "Sueña en grande",
+		width,
+		fontSize: TEXT_FONT_SIZE,
+		fontFamily: TEXT_DEFAULTS.fontFamily,
+	};
 	return {
 		id: crypto.randomUUID(),
 		type: "text",
-		text: "Sueña en grande",
+		...text,
 		x: (sheet.width - width) / 2 + offset,
 		// Near the top, like a title, so it doesn't land on a photo added to the centre.
 		y: sheet.height * 0.12 + offset,
-		width,
-		height,
+		height: measureTextHeight(text),
 		rotation: 0,
-		fontSize: TEXT_FONT_SIZE,
 		fillColor: TEXT_DEFAULTS.fillColor,
-		fontFamily: TEXT_DEFAULTS.fontFamily,
 		zIndex: topZ(items),
 	};
 }

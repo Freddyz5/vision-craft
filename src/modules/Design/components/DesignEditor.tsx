@@ -46,7 +46,9 @@ import {
 	redo,
 	resetHistory,
 	undo,
+	withoutHistory,
 } from "../../../shared/store/canvasHistory";
+import { measureTextHeight, textHeightPatches } from "../../../shared/utils/textMetrics";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
@@ -102,7 +104,20 @@ export default function DesignEditor() {
 	const canRedo = useStore(historyFutureStore).length > 0;
 	const { toast, showToast, dismissToast } = useToast();
 
-	useEffect(() => resetHistory(), []);
+	useEffect(() => {
+		resetHistory();
+		// Boards saved before text grew with its lines can store a height that
+		// cuts them; fix it once the fonts that set the wrapping are in.
+		let active = true;
+		void document.fonts.ready.then(() => {
+			if (!active) return;
+			const patches = textHeightPatches(activeCanvasItemsStore.get());
+			if (Object.keys(patches).length > 0) withoutHistory(() => updateItems(patches));
+		});
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	const isTabletUp = useMediaQuery("(min-width: 768px)");
 	const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -373,7 +388,12 @@ export default function DesignEditor() {
 
 	const commitText = (text: string) => {
 		if (editingItem && text !== editingItem.text) {
-			updateItem(editingItem.id, { text: text.trim() ? text : "Texto" });
+			const next = text.trim() ? text : "Texto";
+			// The box takes every line the new text needs.
+			updateItem(editingItem.id, {
+				text: next,
+				height: measureTextHeight({ ...editingItem, text: next }),
+			});
 		}
 		setEditingId(null);
 	};

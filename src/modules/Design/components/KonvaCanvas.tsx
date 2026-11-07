@@ -12,6 +12,7 @@ import {
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
+import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import type {
 	CanvasItemDragHandler,
 	CanvasItemSelectHandler,
@@ -302,6 +303,7 @@ export function KonvaCanvas({
 			// A text box's type grows and shrinks with it instead of re-wrapping.
 			if (isTextItem(item)) {
 				patch.fontSize = Math.max(8, Math.round((item.fontSize || 24) * ((scaleX + scaleY) / 2)));
+				patch.height = measureTextHeight({ ...item, ...patch });
 			}
 			patches[item.id] = patch;
 		}

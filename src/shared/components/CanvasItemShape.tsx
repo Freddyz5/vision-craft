@@ -217,11 +217,14 @@ function CanvasImageShape(props: CanvasItemShapeProps) {
 }
 
 function CanvasTextShape({ item, scaleFactor, interaction, ref }: CanvasItemShapeProps) {
+	// No fixed height: Konva drops lines that don't fit one, so the box grows
+	// with its lines instead (the stored height follows, see textMetrics).
+	const { height: _height, ...geometry } = itemGeometry(item, scaleFactor);
 	return (
 		<KonvaText
 			ref={ref as React.Ref<Konva.Text>}
 			text={item.text || ""}
-			{...itemGeometry(item, scaleFactor)}
+			{...geometry}
 			fontSize={(item.fontSize || TEXT_DEFAULTS.fontSize) * scaleFactor}
 			fontFamily={item.fontFamily || TEXT_DEFAULTS.fontFamily}
 			fill={item.fillColor || TEXT_DEFAULTS.fillColor}

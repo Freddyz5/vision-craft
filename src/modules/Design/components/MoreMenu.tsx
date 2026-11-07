@@ -1,5 +1,6 @@
 import { BringToFront, Ellipsis, SendToBack } from "lucide-react";
-import type { CanvasItem } from "../../../shared/store/canvasStore";
+import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import { ToolPopover } from "./ToolPopover";
 
@@ -18,6 +19,7 @@ interface MoreMenuProps {
  * item its exact position and size in cm and rotation in degrees.
  */
 export function MoreMenu({ item, onBringToFront, onSendToBack, onUpdate }: MoreMenuProps) {
+	const text = !!item && isTextItem(item);
 	return (
 		<ToolPopover
 			label="Más opciones"
@@ -61,14 +63,20 @@ export function MoreMenu({ item, onBringToFront, onSendToBack, onUpdate }: MoreM
 						label="Ancho (cm)"
 						value={item.width / PX_PER_CM}
 						min={0.5}
-						onChange={(v) => onUpdate({ width: v * PX_PER_CM })}
+						onChange={(v) => {
+							const width = v * PX_PER_CM;
+							// A text's height follows the lines its new width wraps into.
+							onUpdate(text ? { width, height: measureTextHeight({ ...item, width }) } : { width });
+						}}
 					/>
-					<NumberField
-						label="Alto (cm)"
-						value={item.height / PX_PER_CM}
-						min={0.5}
-						onChange={(v) => onUpdate({ height: v * PX_PER_CM })}
-					/>
+					{!text && (
+						<NumberField
+							label="Alto (cm)"
+							value={item.height / PX_PER_CM}
+							min={0.5}
+							onChange={(v) => onUpdate({ height: v * PX_PER_CM })}
+						/>
+					)}
 					<NumberField
 						label="Giro (°)"
 						value={item.rotation}

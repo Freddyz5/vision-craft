@@ -9,6 +9,11 @@ interface TextEditOverlayProps {
 	onCancel: () => void;
 }
 
+function fitToContent(textarea: HTMLTextAreaElement) {
+	textarea.style.height = "auto";
+	textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
 /**
  * Edits a text item in place: a textarea laid exactly over the text on the
  * sheet (same box, font and rotation) while the Konva node is hidden.
@@ -19,8 +24,10 @@ export function TextEditOverlay({ item, scale, onCommit, onCancel }: TextEditOve
 	const cancelled = useRef(false);
 
 	useEffect(() => {
-		ref.current?.focus();
-		ref.current?.select();
+		if (!ref.current) return;
+		ref.current.focus();
+		ref.current.select();
+		fitToContent(ref.current);
 	}, []);
 
 	return (
@@ -28,6 +35,8 @@ export function TextEditOverlay({ item, scale, onCommit, onCancel }: TextEditOve
 			ref={ref}
 			defaultValue={item.text || ""}
 			aria-label="Texto"
+			// Grows with the text, so every line stays in view while typing.
+			onInput={(e) => fitToContent(e.currentTarget)}
 			onKeyDown={(e) => {
 				if (e.key === "Enter" && !e.shiftKey) {
 					e.preventDefault();
@@ -45,7 +54,7 @@ export function TextEditOverlay({ item, scale, onCommit, onCancel }: TextEditOve
 				left: item.x * scale,
 				top: item.y * scale,
 				width: item.width * scale,
-				height: item.height * scale,
+				minHeight: item.height * scale,
 				transform: `rotate(${item.rotation}deg)`,
 				transformOrigin: "0 0",
 				fontSize: (item.fontSize || TEXT_DEFAULTS.fontSize) * scale,

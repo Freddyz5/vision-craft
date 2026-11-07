@@ -1,6 +1,7 @@
 import type React from "react";
 import { ArrowDown, ArrowUp, CopyPlus, Crop, Lock, LockOpen, PenLine, Trash2 } from "lucide-react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
@@ -100,9 +101,11 @@ export function ItemToolbar({
 	const setPointSize = (pt: number) => {
 		if (!Number.isFinite(pt) || pt < 6) return;
 		const next = Math.min(pt, 400) * PX_PER_PT;
-		// Grow the box with the type so the same lines stay visible.
-		onUpdate({ fontSize: next, height: item.height * (next / fontSize) });
+		// The box takes the lines the new size wraps into.
+		onUpdate({ fontSize: next, height: measureTextHeight({ ...item, fontSize: next }) });
 	};
+	const setFontFamily = (fontFamily: string) =>
+		onUpdate({ fontFamily, height: measureTextHeight({ ...item, fontFamily }) });
 
 	return (
 		<div
@@ -137,7 +140,7 @@ export function ItemToolbar({
 					</ToolButton>
 					<select
 						value={item.fontFamily || TEXT_DEFAULTS.fontFamily}
-						onChange={(e) => onUpdate({ fontFamily: e.target.value })}
+						onChange={(e) => setFontFamily(e.target.value)}
 						aria-label="Fuente"
 						className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-9 shrink-0 cursor-pointer rounded-full bg-transparent px-2 text-sm font-semibold focus-visible:outline-2 dark:[color-scheme:dark]"
 					>

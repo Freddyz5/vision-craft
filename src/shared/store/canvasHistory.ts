@@ -65,6 +65,19 @@ export function redo(): void {
 	isApplyingHistory = false;
 }
 
+/**
+ * Run a store write that isn't the person's edit (e.g. re-measuring text
+ * once fonts load), so it never becomes an undo step of its own.
+ */
+export function withoutHistory(write: () => void): void {
+	isApplyingHistory = true;
+	try {
+		write();
+	} finally {
+		isApplyingHistory = false;
+	}
+}
+
 /** Clear all undo/redo history — call when switching to a different loaded canvas. */
 export function resetHistory(): void {
 	if (coalesceTimer) {
