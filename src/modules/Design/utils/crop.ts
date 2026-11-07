@@ -54,6 +54,37 @@ export function fitAspect(around: LocalRect, ratio: number, bounds: LocalRect): 
 }
 
 /**
+ * A photo's size and crop when its box becomes `box` (a rect in the item's
+ * current frame, e.g. one side dragged), without stretching the photo: it
+ * keeps its scale and place, and grows only as much as it must to still
+ * cover the new box. So a side handle or a typed width crops, like Canva.
+ */
+export function resizePhotoBox(
+	item: CanvasItem,
+	box: LocalRect,
+): Pick<CanvasItem, "width" | "height" | "crop"> {
+	const full = fullImageRect(item);
+	const grow = Math.max(1, box.width / full.width, box.height / full.height);
+	const width = full.width * grow;
+	const height = full.height * grow;
+	// Grow around the box's centre, then slide just enough to cover the box.
+	const cx = box.x + box.width / 2;
+	const cy = box.y + box.height / 2;
+	let x = cx - ((cx - full.x) / full.width) * width;
+	let y = cy - ((cy - full.y) / full.height) * height;
+	x = Math.min(box.x, Math.max(box.x + box.width - width, x));
+	y = Math.min(box.y, Math.max(box.y + box.height - height, y));
+	const crop: ImageCrop = {
+		x: (box.x - x) / width,
+		y: (box.y - y) / height,
+		width: box.width / width,
+		height: box.height / height,
+	};
+	const whole = crop.x < 1e-4 && crop.y < 1e-4 && crop.width > 0.9999 && crop.height > 0.9999;
+	return { width: box.width, height: box.height, crop: whole ? undefined : crop };
+}
+
+/**
  * The item after cropping to `rect`: its box becomes the rect (moved into
  * place through the item's rotation) and `crop` the matching fraction of the
  * photo; a crop that covers the whole photo is dropped.

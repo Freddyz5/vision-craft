@@ -3,6 +3,7 @@ import { isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 import { NumberInput } from "./NumberInput";
+import { resizePhotoBox } from "../utils/crop";
 import { ToolPopover } from "./ToolPopover";
 
 const PX_PER_CM = MM_TO_PX * 10;
@@ -66,8 +67,13 @@ export function MoreMenu({ item, onBringToFront, onSendToBack, onUpdate }: MoreM
 						min={0.5}
 						onChange={(v) => {
 							const width = v * PX_PER_CM;
-							// A text's height follows the lines its new width wraps into.
-							onUpdate(text ? { width, height: measureTextHeight({ ...item, width }) } : { width });
+							// A text's height follows the lines its new width wraps into; a
+							// photo is cropped to the new width, never stretched.
+							onUpdate(
+								text
+									? { width, height: measureTextHeight({ ...item, width }) }
+									: resizePhotoBox(item, { x: 0, y: 0, width, height: item.height }),
+							);
 						}}
 					/>
 					{!text && (
@@ -75,7 +81,11 @@ export function MoreMenu({ item, onBringToFront, onSendToBack, onUpdate }: MoreM
 							label="Alto (cm)"
 							value={item.height / PX_PER_CM}
 							min={0.5}
-							onChange={(v) => onUpdate({ height: v * PX_PER_CM })}
+							onChange={(v) =>
+								onUpdate(
+									resizePhotoBox(item, { x: 0, y: 0, width: item.width, height: v * PX_PER_CM }),
+								)
+							}
 						/>
 					)}
 					<NumberField

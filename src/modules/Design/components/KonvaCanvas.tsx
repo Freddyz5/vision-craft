@@ -9,6 +9,7 @@ import {
 	isTextItem,
 	updateItems,
 	type CanvasItem,
+	type ImageCrop,
 } from "../../../shared/store/canvasStore";
 import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
@@ -20,21 +21,18 @@ import type {
 	CanvasItemSelectHandler,
 } from "../hooks/useCanvasItemInteractions";
 import { SAFE_MARGIN_MM, itemBounds } from "../utils/printChecks";
+import { resizePhotoBox } from "../utils/crop";
 import { MM_TO_PX } from "../../Canvas/constants/presets";
 
 /** Editor accents on the sheet: violet for guides and handles, amber (Marigold) for print warnings. */
 const GUIDE_COLOR = "#7C3AED";
 const WARNING_COLOR = "#D97706";
 
-// A lone text box resizes by the corners or sideways; the font size follows the box.
-const TEXT_ANCHORS = [
-	"top-left",
-	"top-right",
-	"bottom-left",
-	"bottom-right",
-	"middle-left",
-	"middle-right",
-];
+const CORNER_ANCHORS = ["top-left", "top-right", "bottom-left", "bottom-right"];
+// A lone text: corners scale the type, sides change the width it wraps in.
+const TEXT_ANCHORS = [...CORNER_ANCHORS, "middle-left", "middle-right"];
+// A lone photo: corners scale it, sides crop it (resizePhotoBox).
+const PHOTO_SIDE_ANCHORS = ["middle-left", "middle-right", "top-center", "bottom-center"];
 
 interface KonvaCanvasProps {
 	stageRef: React.RefObject<Konva.Stage | null>;
@@ -207,6 +205,17 @@ export function KonvaCanvas({
 	});
 	const loneText =
 		selectedIds.length === 1 && items.some((i) => i.id === selectedIds[0] && isTextItem(i));
+	const lonePhoto =
+		selectedIds.length === 1 && items.some((i) => i.id === selectedIds[0] && !isTextItem(i));
+
+	// A lone photo resized by a side, while the handle is held: the crop its
+	// new box needs, drawn in place of the stored one. Konva keeps scaling the
+	// node as usual, so the photo inside is cropped to the new proportions
+	// rather than stretched; the store is written once, on release.
+	const [photoResize, setPhotoResize] = useState<{
+		id: string;
+		crop: ImageCrop | undefined;
+	} | null>(null);
 
 	/** How far (logical px) the dragged node has moved from its stored position. */
 	const dragDelta = (id: string, node: Konva.Node) => {
@@ -291,12 +300,28 @@ export function KonvaCanvas({
 	// A lone text dragged by a side handle changes width only: the scale
 	// Konva applies is turned into width on every move, so the lines re-wrap
 	// live at the same type size instead of squashing. Corners still scale it.
+	// A lone photo dragged by a side is cropped, never stretched (photoResize).
 	const handleTransform = () => {
 		const tr = trRef.current;
-		const anchor = tr?.getActiveAnchor();
-		if (!tr || !loneText || (anchor !== "middle-left" && anchor !== "middle-right")) return;
-		const [node] = tr.nodes();
-		node?.setAttrs({ width: node.width() * node.scaleX(), scaleX: 1 });
+		const anchor = tr?.getActiveAnchor() ?? "";
+		const [node] = tr?.nodes() ?? [];
+		if (!node) return;
+		if (loneText && (anchor === "middle-left" || anchor === "middle-right")) {
+			node.setAttrs({ width: node.width() * node.scaleX(), scaleX: 1 });
+			return;
+		}
+		const item = items.find((i) => i.id === node.id());
+		if (!lonePhoto || !item || !PHOTO_SIDE_ANCHORS.includes(anchor)) return;
+		const width = item.width * node.scaleX();
+		const height = item.height * node.scaleY();
+		// The dragged side moves; the opposite one stays where the item has it.
+		const box = {
+			x: anchor === "middle-left" ? item.width - width : 0,
+			y: anchor === "top-center" ? item.height - height : 0,
+			width,
+			height,
+		};
+		setPhotoResize({ id: item.id, crop: resizePhotoBox(item, box).crop });
 	};
 
 	// Resizing/rotating one or many items: read every attached node back
@@ -328,9 +353,12 @@ export function KonvaCanvas({
 				patch.fontSize = Math.max(8, Math.round((item.fontSize || 24) * ((scaleX + scaleY) / 2)));
 				patch.height = measureTextHeight({ ...item, ...patch });
 			}
+			// A photo resized by a side keeps the crop worked out while dragging.
+			if (photoResize?.id === item.id) patch.crop = photoResize.crop;
 			patches[item.id] = patch;
 		}
 		updateItems(patches);
+		setPhotoResize(null);
 	};
 
 	const sortedItems = [...items].sort((a, b) => a.zIndex - b.zIndex);
@@ -371,7 +399,7 @@ export function KonvaCanvas({
 								/>
 							)}
 							<KonvaCanvasItem
-								item={item}
+								item={photoResize?.id === item.id ? { ...item, crop: photoResize.crop } : item}
 								onSelect={onSelectItem}
 								onNode={handleNode}
 								scaleFactor={scaleFactor}
@@ -506,7 +534,12 @@ export function KonvaCanvas({
 						anchorSize={coarsePointer ? 18 : 9}
 						anchorCornerRadius={2}
 						rotateAnchorOffset={24}
-						enabledAnchors={loneText ? TEXT_ANCHORS : undefined}
+						// Several items scale by the corners only, so none of them is stretched.
+						enabledAnchors={
+							loneText ? TEXT_ANCHORS : selectedIds.length > 1 ? CORNER_ANCHORS : undefined
+						}
+						// Shift never unlocks the proportions of a corner drag.
+						shiftBehavior="none"
 						boundBoxFunc={(oldBox, newBox) => {
 							if (newBox.width < (loneText ? 30 : 10) || newBox.height < 10) return oldBox;
 							return newBox;
