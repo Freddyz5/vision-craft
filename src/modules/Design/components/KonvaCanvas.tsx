@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect, Line, Group, Transformer, Circle, Path } from "react-konva";
 import type Konva from "konva";
+import { useStore } from "@nanostores/react";
 import { KonvaCanvasItem } from "./KonvaCanvasItem";
 import { CropOverlay } from "./CropOverlay";
 import {
@@ -13,6 +14,7 @@ import { CanvasItemShape } from "../../../shared/components/CanvasItemShape";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
 import { EDITOR_ONLY } from "../../../shared/utils/stageCapture";
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
+import { fontsLoadedStore } from "../../../shared/utils/fonts";
 import type {
 	CanvasItemDragHandler,
 	CanvasItemSelectHandler,
@@ -169,6 +171,10 @@ export function KonvaCanvas({
 	}, [marqueeActive, stageRef, scaleFactor, items, onMarqueeSelect]);
 
 	const coarsePointer = useMediaQuery("(pointer: coarse)");
+
+	// Text nodes are re-created when web fonts arrive (CanvasItemShape):
+	// re-render with them so the Transformer below re-attaches to the new ones.
+	useStore(fontsLoadedStore);
 
 	// One Transformer for the whole selection. Items report their Konva node
 	// here; after every render the Transformer is pointed at the selected

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TEXT_DEFAULTS, type CanvasItem } from "../../../shared/store/canvasStore";
+import { fontStack } from "../../../shared/utils/fonts";
 
 interface TextEditOverlayProps {
 	item: CanvasItem;
@@ -58,7 +59,7 @@ export function TextEditOverlay({ item, scale, onCommit, onCancel }: TextEditOve
 				transform: `rotate(${item.rotation}deg)`,
 				transformOrigin: "0 0",
 				fontSize: (item.fontSize || TEXT_DEFAULTS.fontSize) * scale,
-				fontFamily: item.fontFamily || TEXT_DEFAULTS.fontFamily,
+				fontFamily: fontStack(item.fontFamily),
 				fontStyle: item.fontStyle || TEXT_DEFAULTS.fontStyle,
 				color: item.fillColor || TEXT_DEFAULTS.fillColor,
 				lineHeight: TEXT_DEFAULTS.lineHeight,

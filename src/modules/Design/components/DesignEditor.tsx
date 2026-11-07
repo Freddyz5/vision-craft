@@ -49,6 +49,7 @@ import {
 	withoutHistory,
 } from "../../../shared/store/canvasHistory";
 import { measureTextHeight, textHeightPatches } from "../../../shared/utils/textMetrics";
+import { fontsLoadedStore, loadItemFonts } from "../../../shared/utils/fonts";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
 import { useMediaQuery } from "../../../shared/hooks/useMediaQuery";
@@ -104,12 +105,15 @@ export default function DesignEditor() {
 	const canRedo = useStore(historyFutureStore).length > 0;
 	const { toast, showToast, dismissToast } = useToast();
 
+	useEffect(() => resetHistory(), []);
+
+	// Text heights are measured with whatever fonts are present: re-measure
+	// once the board's fonts are in, and again whenever more arrive. This
+	// also fixes boards saved before text grew with its lines.
+	const fontsVersion = useStore(fontsLoadedStore);
 	useEffect(() => {
-		resetHistory();
-		// Boards saved before text grew with its lines can store a height that
-		// cuts them; fix it once the fonts that set the wrapping are in.
 		let active = true;
-		void document.fonts.ready.then(() => {
+		void loadItemFonts(activeCanvasItemsStore.get()).then(() => {
 			if (!active) return;
 			const patches = textHeightPatches(activeCanvasItemsStore.get());
 			if (Object.keys(patches).length > 0) withoutHistory(() => updateItems(patches));
@@ -117,7 +121,7 @@ export default function DesignEditor() {
 		return () => {
 			active = false;
 		};
-	}, []);
+	}, [fontsVersion]);
 
 	const isTabletUp = useMediaQuery("(min-width: 768px)");
 	const isDesktop = useMediaQuery("(min-width: 1024px)");

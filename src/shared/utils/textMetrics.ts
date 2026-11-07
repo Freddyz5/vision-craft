@@ -1,5 +1,6 @@
 import Konva from "konva";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../store/canvasStore";
+import { fontStack } from "./fonts";
 
 type TextMeasure = Pick<CanvasItem, "text" | "width" | "fontSize" | "fontFamily" | "fontStyle">;
 
@@ -18,7 +19,7 @@ export function measureTextHeight(item: TextMeasure): number {
 		text: item.text || " ",
 		width: Math.max(1, item.width),
 		fontSize: item.fontSize || TEXT_DEFAULTS.fontSize,
-		fontFamily: item.fontFamily || TEXT_DEFAULTS.fontFamily,
+		fontFamily: fontStack(item.fontFamily),
 		fontStyle: item.fontStyle || TEXT_DEFAULTS.fontStyle,
 	});
 	return probe.height();

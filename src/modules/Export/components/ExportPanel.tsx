@@ -15,6 +15,7 @@ import { usePrintModal } from "../hooks/usePrintModal";
 import { useToast } from "../../../shared/hooks/useToast";
 import { useContainerScale } from "../../../shared/hooks/useContainerScale";
 import { captureStage } from "../../../shared/utils/stageCapture";
+import { loadItemFonts } from "../../../shared/utils/fonts";
 import { Toast } from "../../../shared/components/Toast";
 import { ExportCanvasPreview } from "./ExportCanvasPreview";
 import { ExportPrintOptions } from "./ExportPrintOptions";
@@ -77,6 +78,14 @@ export default function ExportPanel() {
 		items,
 	});
 
+	// A capture draws text in whatever font is loaded at that moment: wait
+	// for the board's fonts, then a paint, so text re-created on their
+	// arrival (CanvasItemShape) is the one captured.
+	const fontsReady = async () => {
+		await loadItemFonts(items);
+		await nextPaint();
+	};
+
 	// Pages are captured from the preview stage, which draws items with the
 	// editor's own renderer, so crops, shapes and effects print as designed.
 	const printPagesRef = useRef<string[]>([]);
@@ -87,6 +96,7 @@ export default function ExportPanel() {
 	 * which one is on and gets a frame to paint before every page.
 	 */
 	const capturePrintPages = async (): Promise<string[]> => {
+		await fontsReady();
 		const stage = stageRef.current;
 		if (!stage) return [];
 		const jpeg = { mimeType: "image/jpeg" as const, quality: 0.95 };
@@ -195,7 +205,8 @@ export default function ExportPanel() {
 
 	// Captured from the preview stage at the chosen DPI, independent of how
 	// big the preview happens to be drawn on screen.
-	const downloadImage = (mimeType: "image/png" | "image/jpeg", extension: "png" | "jpg") => {
+	const downloadImage = async (mimeType: "image/png" | "image/jpeg", extension: "png" | "jpg") => {
+		await fontsReady();
 		const stage = stageRef.current;
 		if (!stage) return;
 		const dataURL = captureStage(stage, {
@@ -251,8 +262,8 @@ export default function ExportPanel() {
 						exportMode={exportMode}
 						exportDpi={exportDpi}
 						onExportDpiChange={setExportDpi}
-						onDownloadPng={() => downloadImage("image/png", "png")}
-						onDownloadJpg={() => downloadImage("image/jpeg", "jpg")}
+						onDownloadPng={() => void downloadImage("image/png", "png")}
+						onDownloadJpg={() => void downloadImage("image/jpeg", "jpg")}
 					/>
 				</div>
 			</aside>

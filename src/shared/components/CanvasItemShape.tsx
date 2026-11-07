@@ -10,11 +10,13 @@ import {
 	Text as KonvaText,
 	type KonvaNodeEvents,
 } from "react-konva";
+import { useStore } from "@nanostores/react";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem, type ImageAdjust } from "../store/canvasStore";
 import { useCanvasImage } from "../hooks/useCanvasImage";
 import { EDITOR_ONLY, FILTER_SCREEN_RATIO, FILTER_SOURCE_RATIO } from "../utils/stageCapture";
 import { traceShape } from "../utils/shapePath";
 import { coverRegion, polaroidPhotoBox, type Box } from "../utils/frame";
+import { fontStack, fontsLoadedStore } from "../utils/fonts";
 
 /** Konva props an interactive stage (the Design editor) layers on top of the plain render. */
 export type CanvasItemInteraction = KonvaNodeEvents & {
@@ -220,13 +222,17 @@ function CanvasTextShape({ item, scaleFactor, interaction, ref }: CanvasItemShap
 	// No fixed height: Konva drops lines that don't fit one, so the box grows
 	// with its lines instead (the stored height follows, see textMetrics).
 	const { height: _height, ...geometry } = itemGeometry(item, scaleFactor);
+	// Konva measures and paints text once; a fresh node after fonts load
+	// replaces lines drawn and wrapped with the fallback font.
+	const fontsVersion = useStore(fontsLoadedStore);
 	return (
 		<KonvaText
+			key={fontsVersion}
 			ref={ref as React.Ref<Konva.Text>}
 			text={item.text || ""}
 			{...geometry}
 			fontSize={(item.fontSize || TEXT_DEFAULTS.fontSize) * scaleFactor}
-			fontFamily={item.fontFamily || TEXT_DEFAULTS.fontFamily}
+			fontFamily={fontStack(item.fontFamily)}
 			fill={item.fillColor || TEXT_DEFAULTS.fillColor}
 			fontStyle={item.fontStyle || TEXT_DEFAULTS.fontStyle}
 			lineHeight={TEXT_DEFAULTS.lineHeight}
