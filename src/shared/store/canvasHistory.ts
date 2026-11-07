@@ -29,7 +29,8 @@ activeCanvasItemsStore.listen((_value, oldValue) => {
 	if (isApplyingHistory) return;
 
 	if (pendingSnapshot === null) {
-		pendingSnapshot = oldValue;
+		// The store hands back a readonly array; the snapshot keeps its own copy.
+		pendingSnapshot = [...oldValue];
 	}
 	if (coalesceTimer) clearTimeout(coalesceTimer);
 	coalesceTimer = setTimeout(commitPendingSnapshot, COALESCE_MS);

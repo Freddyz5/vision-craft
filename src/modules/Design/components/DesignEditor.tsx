@@ -148,7 +148,9 @@ export default function DesignEditor() {
 	const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
 	const [listDrawerOpen, setListDrawerOpen] = useState(false);
 	const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
-	const [zoom, setZoom] = useState(1);
+	// "fit" follows the screen; a number is an exact scale (1 = real size),
+	// kept when the window or the panels change size.
+	const [zoom, setZoom] = useState<number | "fit">("fit");
 
 	// Drop ids whose item is gone (removed, undone) without a separate cleanup step.
 	const selectedIds = useMemo(
@@ -177,9 +179,8 @@ export default function DesignEditor() {
 		logicalHeight,
 		isTabletUp ? RULER_SIZE + 24 : 12,
 	);
-	const scale = fitScale * zoom;
-	const setScale = (next: number) =>
-		setZoom(Math.min(MAX_SCALE, Math.max(MIN_SCALE, next)) / fitScale);
+	const scale = zoom === "fit" ? fitScale : zoom;
+	const setScale = (next: number) => setZoom(Math.min(MAX_SCALE, Math.max(MIN_SCALE, next)));
 
 	// ── Crop mode ─────────────────────────────────────────────────────────
 
@@ -766,7 +767,7 @@ export default function DesignEditor() {
 						realScale={scale}
 						onZoomOut={() => setScale(scale / ZOOM_STEP)}
 						onZoomIn={() => setScale(scale * ZOOM_STEP)}
-						onFit={() => setZoom(1)}
+						onFit={() => setZoom("fit")}
 						onRealSize={() => setScale(1)}
 					/>
 					<div

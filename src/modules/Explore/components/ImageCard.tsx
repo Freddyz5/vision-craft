@@ -7,7 +7,7 @@ interface Props {
 	width?: string;
 	height?: string;
 	onClick?: () => void;
-	onDragStart?: (e: React.DragEvent<HTMLImageElement>) => void;
+	onDragStart?: (e: React.DragEvent<HTMLElement>) => void;
 }
 
 export default function ImageCard({

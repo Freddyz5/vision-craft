@@ -10,7 +10,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 	callback: T,
 	delay: number = 500,
 ): (...args: Parameters<T>) => void {
-	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const debounced = useCallback(
 		(...args: Parameters<T>) => {
@@ -49,7 +49,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
 	debouncedFn: (...args: Parameters<T>) => void;
 	isPending: boolean;
 } {
-	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [isPending, setIsPending] = useState(false);
 
 	const debouncedFn = useCallback(
