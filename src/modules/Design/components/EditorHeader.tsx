@@ -1,4 +1,4 @@
-import { CircleCheck, ListChecks } from "lucide-react";
+import { ArrowRight, CircleCheck, ListChecks } from "lucide-react";
 import { useStore } from "@nanostores/react";
 import { activeCanvasConfigStore } from "../../../shared/store/canvasStore";
 import { paperLabel } from "../utils/paperLabel";
@@ -7,6 +7,8 @@ interface EditorHeaderProps {
 	warningCount: number;
 	/** Tablet only: opens the print list drawer. */
 	onOpenList: () => void;
+	/** Below lg, where the print list (and its Exportar) isn't on screen. */
+	onExport: () => void;
 }
 
 /**
@@ -14,7 +16,7 @@ interface EditorHeaderProps {
  * DESIGN.md): the step, the board's editable name, its paper and where it's
  * kept, leaving the rest of the screen to the sheet.
  */
-export function EditorHeader({ warningCount, onOpenList }: EditorHeaderProps) {
+export function EditorHeader({ warningCount, onOpenList, onExport }: EditorHeaderProps) {
 	const config = useStore(activeCanvasConfigStore);
 
 	return (
@@ -44,7 +46,7 @@ export function EditorHeader({ warningCount, onOpenList }: EditorHeaderProps) {
 			<button
 				type="button"
 				onClick={onOpenList}
-				className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto hidden shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold focus-visible:outline-2 md:flex lg:hidden"
+				className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto hidden shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold focus-visible:outline-2 md:flex lg:hidden pointer-coarse:h-11"
 			>
 				<ListChecks className="h-4 w-4" aria-hidden="true" />
 				Lista
@@ -53,6 +55,15 @@ export function EditorHeader({ warningCount, onOpenList }: EditorHeaderProps) {
 						{warningCount}
 					</span>
 				)}
+			</button>
+			{/* The step's way forward, in view below lg whatever is selected or open. */}
+			<button
+				type="button"
+				onClick={onExport}
+				className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r px-4 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95 md:ml-0 lg:hidden pointer-coarse:h-11"
+			>
+				Exportar
+				<ArrowRight className="h-4 w-4" aria-hidden="true" />
 			</button>
 		</header>
 	);

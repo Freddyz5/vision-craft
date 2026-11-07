@@ -34,6 +34,8 @@ interface PrintListProps {
 	onReorder: (frontToBack: string[]) => void;
 	onSave: () => void;
 	onExport: () => void;
+	/** False where the header already carries Exportar (the tablet drawer, the phone panel). */
+	showExport?: boolean;
 }
 
 // Older boards stored these placeholders as the photo's description.
@@ -73,6 +75,7 @@ export function PrintList({
 	onReorder,
 	onSave,
 	onExport,
+	showExport = true,
 }: PrintListProps) {
 	// Row being dragged, and where it would land: before or after another row.
 	const [dragId, setDragId] = useState<string | null>(null);
@@ -289,14 +292,16 @@ export function PrintList({
 					>
 						Guardar en Tableros
 					</button>
-					<button
-						type="button"
-						onClick={onExport}
-						className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95"
-					>
-						Exportar
-						<ArrowRight className="h-4 w-4" aria-hidden="true" />
-					</button>
+					{showExport && (
+						<button
+							type="button"
+							onClick={onExport}
+							className="from-df-primary to-df-accent dark:from-df-primary-dark dark:to-df-accent-dark shadow-df-primary/30 dark:shadow-df-primary-dark/20 dark:text-df-on-primary-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r px-3 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-95"
+						>
+							Exportar
+							<ArrowRight className="h-4 w-4" aria-hidden="true" />
+						</button>
+					)}
 				</div>
 			</footer>
 		</section>

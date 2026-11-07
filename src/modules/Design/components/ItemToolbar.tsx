@@ -11,6 +11,7 @@ import {
 	LockOpen,
 	PenLine,
 	Trash2,
+	Type,
 } from "lucide-react";
 import {
 	TEXT_DEFAULTS,
@@ -21,12 +22,14 @@ import {
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
 import { TEXT_FONTS, fontStack } from "../../../shared/utils/fonts";
 import { AlignMenu } from "./AlignMenu";
+import { ArrangeMenu } from "./ArrangeMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
 import { AdjustMenu } from "./AdjustMenu";
 import { FrameMenu } from "./FrameMenu";
 import { MoreMenu } from "./MoreMenu";
 import { NumberInput } from "./NumberInput";
+import { ToolPopover } from "./ToolPopover";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
@@ -141,6 +144,58 @@ export function ItemToolbar({
 	const align = ALIGNS[alignIndex];
 	const nextAlign = ALIGNS[(alignIndex + 1) % ALIGNS.length];
 
+	// Font, size, colour and alignment: inline on desktop, in "Estilo" on a phone.
+	const textStyle = (
+		<>
+			<select
+				value={fontFamily}
+				onChange={(e) => setFontFamily(e.target.value)}
+				aria-label="Fuente"
+				// The closed field previews the font it names.
+				style={{ fontFamily: fontStack(fontFamily) }}
+				className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-9 shrink-0 cursor-pointer rounded-full bg-transparent px-2 text-sm font-semibold focus-visible:outline-2 dark:scheme-dark pointer-coarse:h-11"
+			>
+				{fontOptions.map((f) => (
+					<option key={f.family} value={f.family}>
+						{f.label}
+					</option>
+				))}
+			</select>
+			<label className="text-df-muted dark:text-df-muted-dark flex shrink-0 items-center gap-1 text-xs font-semibold">
+				<NumberInput
+					min={MIN_PT}
+					max={MAX_PT}
+					value={Math.round(fontSize / PX_PER_PT)}
+					onCommit={setPointSize}
+					aria-label="Tamaño en puntos"
+					className="text-df-ink dark:text-df-ink-dark bg-df-well dark:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-8 w-14 rounded-full px-2 text-center text-sm font-semibold tabular-nums focus-visible:outline-2 pointer-coarse:h-11"
+				/>
+				pt
+			</label>
+			<label className="hover:bg-df-well dark:hover:bg-df-well-dark has-focus-visible:outline-df-primary dark:has-focus-visible:outline-df-primary-dark relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full has-focus-visible:outline-2 pointer-coarse:h-11 pointer-coarse:w-11">
+				<span
+					className="border-df-hairline dark:border-df-hairline-dark h-5 w-5 rounded-full border-2"
+					style={{ backgroundColor: item.fillColor || TEXT_DEFAULTS.fillColor }}
+					aria-hidden="true"
+				/>
+				<input
+					type="color"
+					value={item.fillColor || TEXT_DEFAULTS.fillColor}
+					onChange={(e) => onUpdate({ fillColor: e.target.value })}
+					aria-label="Color del texto"
+					className="absolute inset-0 cursor-pointer opacity-0"
+				/>
+			</label>
+			<ToolButton
+				docked={false}
+				label={`Alineación: ${align.label}`}
+				onClick={() => onUpdate({ align: nextAlign.value })}
+			>
+				<align.Icon className="h-4 w-4" aria-hidden="true" />
+			</ToolButton>
+		</>
+	);
+
 	return (
 		<div
 			ref={toolbarRef}
@@ -172,52 +227,19 @@ export function ItemToolbar({
 					<ToolButton docked={docked} label="Editar texto" onClick={onEditText}>
 						<PenLine className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
-					<select
-						value={fontFamily}
-						onChange={(e) => setFontFamily(e.target.value)}
-						aria-label="Fuente"
-						// The closed field previews the font it names.
-						style={{ fontFamily: fontStack(fontFamily) }}
-						className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-9 shrink-0 cursor-pointer rounded-full bg-transparent px-2 text-sm font-semibold focus-visible:outline-2 dark:scheme-dark"
-					>
-						{fontOptions.map((f) => (
-							<option key={f.family} value={f.family}>
-								{f.label}
-							</option>
-						))}
-					</select>
-					<label className="text-df-muted dark:text-df-muted-dark flex shrink-0 items-center gap-1 text-xs font-semibold">
-						<NumberInput
-							min={MIN_PT}
-							max={MAX_PT}
-							value={Math.round(fontSize / PX_PER_PT)}
-							onCommit={setPointSize}
-							aria-label="Tamaño en puntos"
-							className="text-df-ink dark:text-df-ink-dark bg-df-well dark:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-8 w-14 rounded-full px-2 text-center text-sm font-semibold tabular-nums focus-visible:outline-2"
-						/>
-						pt
-					</label>
-					<label className="hover:bg-df-well dark:hover:bg-df-well-dark has-focus-visible:outline-df-primary dark:has-focus-visible:outline-df-primary-dark relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full has-focus-visible:outline-2">
-						<span
-							className="border-df-hairline dark:border-df-hairline-dark h-5 w-5 rounded-full border-2"
-							style={{ backgroundColor: item.fillColor || TEXT_DEFAULTS.fillColor }}
-							aria-hidden="true"
-						/>
-						<input
-							type="color"
-							value={item.fillColor || TEXT_DEFAULTS.fillColor}
-							onChange={(e) => onUpdate({ fillColor: e.target.value })}
-							aria-label="Color del texto"
-							className="absolute inset-0 cursor-pointer opacity-0"
-						/>
-					</label>
-					<ToolButton
-						docked={docked}
-						label={docked ? "Alinear" : `Alineación: ${align.label}`}
-						onClick={() => onUpdate({ align: nextAlign.value })}
-					>
-						<align.Icon className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
+					{docked ? (
+						// On a phone the type controls open from one button, so the bar fits.
+						<ToolPopover
+							docked
+							label="Estilo"
+							panelLabel="Estilo del texto"
+							icon={<Type className="h-4 w-4" aria-hidden="true" />}
+						>
+							<div className="flex flex-wrap items-center gap-2">{textStyle}</div>
+						</ToolPopover>
+					) : (
+						textStyle
+					)}
 					<Divider docked={docked} />
 				</>
 			)}
@@ -238,37 +260,46 @@ export function ItemToolbar({
 					<Divider docked={docked} />
 				</>
 			)}
-			<ToolButton
-				docked={docked}
-				label={docked ? "Subir" : `Subir una capa (${shortcut("]")})`}
-				onClick={() => onMoveLayer("up")}
-			>
-				<ArrowUp className="h-4 w-4" aria-hidden="true" />
-			</ToolButton>
-			<ToolButton
-				docked={docked}
-				label={docked ? "Bajar" : `Bajar una capa (${shortcut("[")})`}
-				onClick={() => onMoveLayer("down")}
-			>
-				<ArrowDown className="h-4 w-4" aria-hidden="true" />
-			</ToolButton>
-			<Divider docked={docked} />
-			{/* Desktop only, per the editor brief; on mobile they wait for "Más en computadora". */}
-			{!docked && (
+			{docked ? (
+				// The phone's bar has room for few buttons: layers and lock share a menu.
+				<ArrangeMenu
+					docked
+					onMoveLayer={onMoveLayer}
+					onBringToFront={onBringToFront}
+					onSendToBack={onSendToBack}
+					onToggleLock={onToggleLock}
+				/>
+			) : (
 				<>
+					<ToolButton
+						docked={docked}
+						label={`Subir una capa (${shortcut("]")})`}
+						onClick={() => onMoveLayer("up")}
+					>
+						<ArrowUp className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
+					<ToolButton
+						docked={docked}
+						label={`Bajar una capa (${shortcut("[")})`}
+						onClick={() => onMoveLayer("down")}
+					>
+						<ArrowDown className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
+					<Divider docked={docked} />
+					{/* Desktop only, per the editor brief; on mobile they wait for "Más en computadora". */}
 					<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
 					<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
 						<CopyPlus className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
+					<ToolButton
+						docked={docked}
+						label={`Bloquear (${shortcut("L", { shift: true })})`}
+						onClick={onToggleLock}
+					>
+						<Lock className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
 				</>
 			)}
-			<ToolButton
-				docked={docked}
-				label={docked ? "Bloquear" : `Bloquear (${shortcut("L", { shift: true })})`}
-				onClick={onToggleLock}
-			>
-				<Lock className="h-4 w-4" aria-hidden="true" />
-			</ToolButton>
 			<ToolButton docked={docked} label="Quitar" onClick={onRemove}>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</ToolButton>
@@ -311,7 +342,7 @@ function ToolButton({
 				"text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex shrink-0 items-center justify-center transition-colors focus-visible:outline-2",
 				docked
 					? "min-w-14 flex-col gap-1 rounded-xl px-2 text-xs font-semibold"
-					: "h-9 w-9 rounded-full",
+					: "h-9 w-9 rounded-full pointer-coarse:h-11 pointer-coarse:w-11",
 			].join(" ")}
 		>
 			{children}

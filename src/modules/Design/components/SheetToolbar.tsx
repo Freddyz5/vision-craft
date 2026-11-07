@@ -28,7 +28,7 @@ export function SheetToolbar({
 	onRealSize,
 }: SheetToolbarProps) {
 	return (
-		<div className="flex h-11 shrink-0 items-center justify-between gap-2 px-3">
+		<div className="flex h-11 shrink-0 items-center justify-between gap-2 px-3 pointer-coarse:h-12">
 			<div className="flex items-center gap-0.5">
 				<BarButton label={`Deshacer (${shortcut("Z")})`} onClick={onUndo} disabled={!canUndo}>
 					<Undo2 className="h-4 w-4" aria-hidden="true" />
@@ -50,7 +50,7 @@ export function SheetToolbar({
 					type="button"
 					onClick={onFit}
 					title="Ajustar la hoja a la pantalla"
-					className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-8 rounded-full px-2.5 text-xs font-semibold tabular-nums focus-visible:outline-2"
+					className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-8 rounded-full px-2.5 text-xs font-semibold tabular-nums focus-visible:outline-2 pointer-coarse:h-11"
 				>
 					<span className="sr-only">Ajustar · </span>
 					{Math.round(realScale * 100)} %
@@ -61,7 +61,7 @@ export function SheetToolbar({
 				<button
 					type="button"
 					onClick={onRealSize}
-					className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-1 hidden h-8 rounded-full px-2.5 text-xs font-semibold focus-visible:outline-2 sm:block"
+					className="text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark ml-1 hidden h-8 rounded-full px-2.5 text-xs font-semibold focus-visible:outline-2 sm:block pointer-coarse:h-11"
 				>
 					Tamaño real
 				</button>
@@ -88,7 +88,7 @@ function BarButton({
 			disabled={disabled}
 			aria-label={label}
 			title={label}
-			className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+			className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent pointer-coarse:h-11 pointer-coarse:w-11"
 		>
 			{children}
 		</button>

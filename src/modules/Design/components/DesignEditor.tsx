@@ -638,8 +638,11 @@ export default function DesignEditor() {
 		onDistribute: (axis: DistributeAxis) => updateItems(distributePatches(selectedItems, axis)),
 	};
 
-	const printList = (
+	// The desktop column ends in Exportar; the drawer and the phone panel
+	// don't repeat it, the header carries it there.
+	const printList = (showExport: boolean) => (
 		<PrintList
+			showExport={showExport}
 			rows={rows}
 			warningCount={warningCount}
 			selectedIds={selectedIds}
@@ -675,7 +678,11 @@ export default function DesignEditor() {
 
 	return (
 		<div className="grid h-[calc(100dvh-3.5rem)] grid-cols-[minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] md:grid-rows-[auto_minmax(0,1fr)]">
-			<EditorHeader warningCount={warningCount} onOpenList={openListDrawer} />
+			<EditorHeader
+				warningCount={warningCount}
+				onOpenList={openListDrawer}
+				onExport={handleExport}
+			/>
 
 			<div className="grid min-h-0 md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_20rem]">
 				{isTabletUp && (
@@ -800,7 +807,7 @@ export default function DesignEditor() {
 								</button>
 							</div>
 							<div className="min-h-0 flex-1">
-								{mobilePanel === "fotos" ? photosPanel : printList}
+								{mobilePanel === "fotos" ? photosPanel : printList(false)}
 							</div>
 						</div>
 					)}
@@ -808,7 +815,7 @@ export default function DesignEditor() {
 
 				{isDesktop && (
 					<aside className="border-df-hairline dark:border-df-hairline-dark bg-df-surface dark:bg-df-surface-dark min-h-0 border-l">
-						{printList}
+						{printList(true)}
 					</aside>
 				)}
 			</div>
@@ -866,7 +873,7 @@ export default function DesignEditor() {
 					>
 						<X className="h-4 w-4" aria-hidden="true" />
 					</button>
-					{printList}
+					{printList(false)}
 				</div>
 			)}
 

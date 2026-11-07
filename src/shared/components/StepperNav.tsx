@@ -55,7 +55,7 @@ function isStepCompleted(id: string, progress: StepProgress): boolean {
 }
 
 const arrowButtonClass =
-	"flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-df-muted dark:text-df-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-df-ink dark:hover:text-df-ink-dark transition-colors";
+	"relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full pointer-coarse:after:absolute pointer-coarse:after:-inset-2 text-df-muted dark:text-df-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-df-ink dark:hover:text-df-ink-dark transition-colors";
 
 export default function StepperNav({ activeItem }: Props) {
 	const selectedImages = useStore(selectedImagesStore);

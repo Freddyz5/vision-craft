@@ -27,21 +27,22 @@ const isBoards = activeItem === "boards";
 		<a
 			href="/boards"
 			aria-current={isBoards ? "page" : undefined}
-			class={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+			class={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors pointer-coarse:after:absolute pointer-coarse:after:-inset-2 ${
 				isBoards
 					? "bg-df-primary dark:bg-df-primary-dark text-white dark:text-df-on-primary-dark"
 					: "text-df-muted dark:text-df-muted-dark hover:text-df-ink dark:hover:text-df-ink-dark hover:bg-gray-100 dark:hover:bg-gray-800"
 			}`}
 		>
 			<LayoutGrid class="h-4 w-4 shrink-0" aria-hidden="true" />
-			<span class="hidden sm:inline">Tableros</span>
+			<!-- Icon only on phones, but still named for screen readers. -->
+			<span class="sr-only sm:not-sr-only">Tableros</span>
 		</a>
 
 		<!-- Theme toggle -->
 		<button
 			id="theme-toggle"
-			aria-label="Toggle dark mode"
-			class="text-df-muted dark:text-df-muted-dark rounded-full p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+			aria-label="Cambiar entre tema claro y oscuro"
+			class="text-df-muted dark:text-df-muted-dark relative rounded-full p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 pointer-coarse:after:absolute pointer-coarse:after:-inset-1"
 		>
 			<!-- Sun (visible in dark mode) -->
 			<Sun class="hidden h-5 w-5 dark:block" aria-hidden="true" />

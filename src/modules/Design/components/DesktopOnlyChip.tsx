@@ -37,16 +37,18 @@ export function DesktopOnlyChip() {
 	}, [open]);
 
 	return (
-		<div ref={rootRef} className="flex shrink-0 items-center">
+		<div ref={rootRef} className="flex shrink-0 items-stretch py-1.5">
 			<button
 				type="button"
 				onClick={() => setOpen((o) => !o)}
 				aria-expanded={open}
 				aria-controls={panelId}
-				className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/15 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold whitespace-nowrap focus-visible:outline-2"
+				// Shaped like the bar's other buttons, so the whole bar fits a phone.
+				aria-label="Más en computadora"
+				className="text-df-primary dark:text-df-primary-dark bg-df-primary/10 dark:bg-df-primary-dark/15 focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark flex h-full min-w-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-xs font-semibold whitespace-nowrap focus-visible:outline-2"
 			>
 				<Monitor className="h-4 w-4" aria-hidden="true" />
-				Más en computadora
+				Más
 			</button>
 
 			{/* Fixed, so the toolbar's horizontal scroll can't clip it. */}
