@@ -26,7 +26,7 @@ import { AdjustMenu } from "./AdjustMenu";
 import { FrameMenu } from "./FrameMenu";
 import { PositionFields } from "./PositionFields";
 import { NumberInput } from "./NumberInput";
-import { Tip, ToolPopover } from "./ToolPopover";
+import { PopoverSideContext, Tip, ToolPopover } from "./ToolPopover";
 import type { AlignEdge, AlignReference, DistributeAxis } from "../utils/arrange";
 import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
@@ -64,6 +64,8 @@ interface ItemToolbarProps {
 	onAlign: (edge: AlignEdge, reference: AlignReference) => void;
 	onDistribute: (axis: DistributeAxis) => void;
 	style?: React.CSSProperties;
+	/** Floating: which way its panels open, away from the selection. */
+	panelSide?: "above" | "below";
 }
 
 /**
@@ -85,6 +87,7 @@ export function ItemToolbar({
 	onAlign,
 	onDistribute,
 	style,
+	panelSide = "below",
 }: ItemToolbarProps) {
 	const [item] = items;
 	const group = items.length > 1;
@@ -194,115 +197,117 @@ export function ItemToolbar({
 	);
 
 	return (
-		<div
-			ref={toolbarRef}
-			role="toolbar"
-			aria-label={
-				group
-					? `Acciones de ${items.length} elementos`
-					: text
-						? "Acciones del texto"
-						: "Acciones de la foto"
-			}
-			style={style}
-			className={
-				docked
-					? "bg-df-surface dark:bg-df-surface-dark flex h-full items-stretch gap-1 overflow-x-auto px-2"
-					: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center gap-1 rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
-			}
-		>
-			{group && (
-				<>
-					<span className="text-df-muted dark:text-df-muted-dark shrink-0 px-2 text-xs font-semibold">
-						{items.length} elementos
-					</span>
-					<Divider docked={docked} />
-				</>
-			)}
-			{text && (
-				<>
-					<ToolButton docked={docked} label="Editar texto" onClick={onEditText}>
-						<PenLine className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-					{docked ? (
-						// On a phone the type controls open from one button, so the bar fits.
-						<ToolPopover
-							docked
-							label="Estilo"
-							panelLabel="Estilo del texto"
-							icon={<Type className="h-4 w-4" aria-hidden="true" />}
-						>
-							<div className="flex flex-wrap items-center gap-2">{textStyle}</div>
-						</ToolPopover>
-					) : (
-						textStyle
-					)}
-					<Divider docked={docked} />
-				</>
-			)}
-
-			{onCrop && (
-				<>
-					<ToolButton docked={docked} showLabel={!docked} label="Recortar" onClick={onCrop}>
-						<Crop className="h-4 w-4" aria-hidden="true" />
-					</ToolButton>
-					<ShapeMenu
-						shape={item.shape}
-						onChange={(shape) => onUpdate({ shape })}
-						docked={docked}
-						showLabel={!docked}
-					/>
-					{/* Desktop only, per the editor brief. */}
-					{!docked && (
-						<>
-							<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} showLabel />
-							<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} showLabel />
-						</>
-					)}
-					<Divider docked={docked} />
-				</>
-			)}
-			{/* Lining items up is what a group is selected for, so it stays in view. */}
-			{group && !docked && (
-				<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
-			)}
-			{/* Layers, alignment to the sheet, exact position and lock: one menu. */}
-			<ArrangeMenu
-				docked={docked}
-				onMoveLayer={onMoveLayer}
-				onBringToFront={onBringToFront}
-				onSendToBack={onSendToBack}
-				onToggleLock={onToggleLock}
+		<PopoverSideContext.Provider value={panelSide}>
+			<div
+				ref={toolbarRef}
+				role="toolbar"
+				aria-label={
+					group
+						? `Acciones de ${items.length} elementos`
+						: text
+							? "Acciones del texto"
+							: "Acciones de la foto"
+				}
+				style={style}
+				className={
+					docked
+						? "bg-df-surface dark:bg-df-surface-dark flex h-full items-stretch gap-1 overflow-x-auto px-2"
+						: "bg-df-surface dark:bg-df-surface-dark border-df-hairline dark:border-df-hairline-dark absolute z-20 flex items-center gap-1 rounded-full border p-1 shadow-[0_10px_30px_-10px_rgb(17_24_39/0.35)] dark:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.7)]"
+				}
 			>
-				{!docked && !group && (
+				{group && (
 					<>
-						<div className="border-df-hairline dark:border-df-hairline-dark space-y-2 border-t pt-3">
-							<AlignControls count={1} onAlign={onAlign} onDistribute={onDistribute} />
-						</div>
-						<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-3">
-							<PositionFields item={item} onUpdate={onUpdate} />
-						</div>
+						<span className="text-df-muted dark:text-df-muted-dark shrink-0 px-2 text-xs font-semibold">
+							{items.length} elementos
+						</span>
+						<Divider docked={docked} />
 					</>
 				)}
-			</ArrangeMenu>
-			{/* Desktop only, per the editor brief; on mobile it waits for "Más en computadora". */}
-			{!docked && (
-				<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
-					<CopyPlus className="h-4 w-4" aria-hidden="true" />
+				{text && (
+					<>
+						<ToolButton docked={docked} label="Editar texto" onClick={onEditText}>
+							<PenLine className="h-4 w-4" aria-hidden="true" />
+						</ToolButton>
+						{docked ? (
+							// On a phone the type controls open from one button, so the bar fits.
+							<ToolPopover
+								docked
+								label="Estilo"
+								panelLabel="Estilo del texto"
+								icon={<Type className="h-4 w-4" aria-hidden="true" />}
+							>
+								<div className="flex flex-wrap items-center gap-2">{textStyle}</div>
+							</ToolPopover>
+						) : (
+							textStyle
+						)}
+						<Divider docked={docked} />
+					</>
+				)}
+
+				{onCrop && (
+					<>
+						<ToolButton docked={docked} showLabel={!docked} label="Recortar" onClick={onCrop}>
+							<Crop className="h-4 w-4" aria-hidden="true" />
+						</ToolButton>
+						<ShapeMenu
+							shape={item.shape}
+							onChange={(shape) => onUpdate({ shape })}
+							docked={docked}
+							showLabel={!docked}
+						/>
+						{/* Desktop only, per the editor brief. */}
+						{!docked && (
+							<>
+								<AdjustMenu item={item} onChange={(adjust) => onUpdate({ adjust })} showLabel />
+								<FrameMenu item={item} onChange={(frame) => onUpdate({ frame })} showLabel />
+							</>
+						)}
+						<Divider docked={docked} />
+					</>
+				)}
+				{/* Lining items up is what a group is selected for, so it stays in view. */}
+				{group && !docked && (
+					<AlignMenu count={items.length} onAlign={onAlign} onDistribute={onDistribute} />
+				)}
+				{/* Layers, alignment to the sheet, exact position and lock: one menu. */}
+				<ArrangeMenu
+					docked={docked}
+					onMoveLayer={onMoveLayer}
+					onBringToFront={onBringToFront}
+					onSendToBack={onSendToBack}
+					onToggleLock={onToggleLock}
+				>
+					{!docked && !group && (
+						<>
+							<div className="border-df-hairline dark:border-df-hairline-dark space-y-2 border-t pt-3">
+								<AlignControls count={1} onAlign={onAlign} onDistribute={onDistribute} />
+							</div>
+							<div className="border-df-hairline dark:border-df-hairline-dark border-t pt-3">
+								<PositionFields item={item} onUpdate={onUpdate} />
+							</div>
+						</>
+					)}
+				</ArrangeMenu>
+				{/* Desktop only, per the editor brief; on mobile it waits for "Más en computadora". */}
+				{!docked && (
+					<ToolButton docked={docked} label={`Duplicar (${shortcut("D")})`} onClick={onDuplicate}>
+						<CopyPlus className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
+				)}
+				{/* Quitar last and set apart, so it isn't hit on the way to another tool. */}
+				{!docked && <Divider docked={docked} />}
+				<ToolButton docked={docked} label={docked ? "Quitar" : "Quitar (Supr)"} onClick={onRemove}>
+					<Trash2 className="h-4 w-4" aria-hidden="true" />
 				</ToolButton>
-			)}
-			{/* Quitar last and set apart, so it isn't hit on the way to another tool. */}
-			{!docked && <Divider docked={docked} />}
-			<ToolButton docked={docked} label={docked ? "Quitar" : "Quitar (Supr)"} onClick={onRemove}>
-				<Trash2 className="h-4 w-4" aria-hidden="true" />
-			</ToolButton>
-			{docked && (
-				<>
-					<Divider docked={docked} />
-					<DesktopOnlyChip />
-				</>
-			)}
-		</div>
+				{docked && (
+					<>
+						<Divider docked={docked} />
+						<DesktopOnlyChip />
+					</>
+				)}
+			</div>
+		</PopoverSideContext.Provider>
 	);
 }
 

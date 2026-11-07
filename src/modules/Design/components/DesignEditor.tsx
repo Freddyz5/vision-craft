@@ -86,8 +86,11 @@ const ZOOM_STEP = 1.25;
 /** The floating toolbar clears the Transformer's rotate handle when it sits above an item. */
 const TOOLBAR_GAP_ABOVE = 44;
 const TOOLBAR_GAP_BELOW = 12;
+const TOOLBAR_HEIGHT = 48;
+/** About half the photo toolbar's width, to tell which texts it would cover. */
+const TOOLBAR_HALF_WIDTH = 270;
 /** Room it needs above the item (gap + its own height) before it flips below. */
-const TOOLBAR_CLEARANCE = TOOLBAR_GAP_ABOVE + 48;
+const TOOLBAR_CLEARANCE = TOOLBAR_GAP_ABOVE + TOOLBAR_HEIGHT;
 
 type MobilePanel = "fotos" | "lista" | null;
 
@@ -596,6 +599,7 @@ export default function DesignEditor() {
 
 	const stageWidth = logicalWidth * scale;
 	let toolbarStyle: React.CSSProperties | null = null;
+	let toolbarAbove = true;
 	if (selectedItems.length > 0 && !interacting && !editingId) {
 		// Over the whole selection's bounds.
 		const all = selectedItems.map(itemBounds);
@@ -606,11 +610,36 @@ export default function DesignEditor() {
 			maxY: Math.max(...all.map((x) => x.maxY)),
 		};
 		const centerX = Math.min(stageWidth, Math.max(0, ((b.minX + b.maxX) / 2) * scale));
-		const above = b.minY * scale > TOOLBAR_CLEARANCE;
+		// Where the bar would sit (stage px), above or below the selection.
+		const band = (above: boolean) => {
+			const top = above
+				? b.minY * scale - TOOLBAR_GAP_ABOVE - TOOLBAR_HEIGHT
+				: b.maxY * scale + TOOLBAR_GAP_BELOW;
+			return { top, bottom: top + TOOLBAR_HEIGHT };
+		};
+		// Does the bar there hide a text that isn't part of the selection?
+		const coversText = (above: boolean) => {
+			const { top, bottom } = band(above);
+			return items.some((i) => {
+				if (!isTextItem(i) || i.hidden || selectedIds.includes(i.id)) return false;
+				const t = itemBounds(i);
+				return (
+					t.maxY * scale > top &&
+					t.minY * scale < bottom &&
+					t.maxX * scale > centerX - TOOLBAR_HALF_WIDTH &&
+					t.minX * scale < centerX + TOOLBAR_HALF_WIDTH
+				);
+			});
+		};
+		const roomAbove = b.minY * scale > TOOLBAR_CLEARANCE;
+		const roomBelow = band(false).bottom < logicalHeight * scale;
+		// Above by default; below when there's no room above or the bar would
+		// hide a title there and not below.
+		toolbarAbove = roomAbove && !(coversText(true) && roomBelow && !coversText(false));
 		toolbarStyle = {
 			left: centerX,
-			top: above ? b.minY * scale - TOOLBAR_GAP_ABOVE : b.maxY * scale + TOOLBAR_GAP_BELOW,
-			transform: `translate(-50%, ${above ? "-100%" : "0"})`,
+			top: toolbarAbove ? b.minY * scale - TOOLBAR_GAP_ABOVE : b.maxY * scale + TOOLBAR_GAP_BELOW,
+			transform: `translate(-50%, ${toolbarAbove ? "-100%" : "0"})`,
 		};
 	}
 
@@ -783,7 +812,12 @@ export default function DesignEditor() {
 										/>
 									)}
 									{isTabletUp && toolbarActions && toolbarStyle && !croppingItem && (
-										<ItemToolbar {...toolbarActions} variant="floating" style={toolbarStyle} />
+										<ItemToolbar
+											{...toolbarActions}
+											variant="floating"
+											style={toolbarStyle}
+											panelSide={toolbarAbove ? "above" : "below"}
+										/>
 									)}
 								</div>
 							</div>
@@ -893,7 +927,10 @@ export default function DesignEditor() {
 				/>
 			)}
 
+			{/* Centred over the sheet (the right column ends in Exportar), above the phone's bottom bar. */}
 			<Toast
+				placement="center"
+				className="max-md:bottom-16"
 				message={toast?.message ?? null}
 				action={toast?.action}
 				tone={toast?.tone}

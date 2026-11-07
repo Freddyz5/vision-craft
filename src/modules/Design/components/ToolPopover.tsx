@@ -1,5 +1,13 @@
 import type React from "react";
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 
 interface ToolPopoverProps {
 	/** The button's name (its tooltip on desktop, its caption on mobile). */
@@ -15,6 +23,16 @@ interface ToolPopoverProps {
 	showLabel?: boolean;
 	children: React.ReactNode;
 }
+
+/**
+ * Which way a toolbar's floating panels open: away from the selection, so
+ * a panel never covers the photo it adjusts. The item toolbar provides it;
+ * a panel still flips when there's no room on that side.
+ */
+export const PopoverSideContext = createContext<"above" | "below">("below");
+
+/** Room (px) a side needs for a panel to open there, scrolling inside if taller. */
+const MIN_PANEL_ROOM = 240;
 
 /**
  * The toolbar's tooltip: shown on hover (after a short wait) or keyboard
@@ -47,6 +65,8 @@ export function ToolPopover({
 	children,
 }: ToolPopoverProps) {
 	const [open, setOpen] = useState(false);
+	const preferredSide = useContext(PopoverSideContext);
+	const [side, setSide] = useState(preferredSide);
 	const panelId = useId();
 	const rootRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
@@ -85,11 +105,35 @@ export function ToolPopover({
 		}
 		const clip = clipper?.getBoundingClientRect() ?? {
 			left: 0,
+			top: 0,
 			right: window.innerWidth,
 			bottom: window.innerHeight,
 		};
-		const rect = panel.getBoundingClientRect();
 		const gap = 8;
+		const top = Math.max(clip.top, 0);
+		const bottom = Math.min(clip.bottom, window.innerHeight);
+		const trigger = triggerRef.current?.getBoundingClientRect();
+		// Stay on the preferred side (away from the selection) whenever it has
+		// a usable amount of room, scrolling inside if the panel is taller;
+		// flip only when that side is too cramped and the other one isn't.
+		if (trigger) {
+			const roomAbove = trigger.top - top - gap;
+			const roomBelow = bottom - trigger.bottom - gap;
+			const usable = Math.min(panel.scrollHeight, MIN_PANEL_ROOM);
+			const roomThere = preferredSide === "above" ? roomAbove : roomBelow;
+			const roomOther = preferredSide === "above" ? roomBelow : roomAbove;
+			const next =
+				roomThere >= usable || roomThere >= roomOther
+					? preferredSide
+					: preferredSide === "above"
+						? "below"
+						: "above";
+			if (next !== side) {
+				setSide(next);
+				return;
+			}
+		}
+		const rect = panel.getBoundingClientRect();
 		const shift =
 			rect.left < clip.left + gap
 				? clip.left + gap - rect.left
@@ -99,9 +143,9 @@ export function ToolPopover({
 		if (shift) panel.style.marginLeft = `${shift}px`;
 		// A long panel (Organizar) scrolls inside itself rather than past the
 		// sheet's bottom edge, where its last options would be out of reach.
-		const room = Math.min(clip.bottom, window.innerHeight) - rect.top - gap;
-		if (rect.height > room) panel.style.maxHeight = `${Math.max(room, 200)}px`;
-	}, [open, docked]);
+		const room = side === "above" ? rect.bottom - top - gap : bottom - rect.top - gap;
+		if (rect.height > room) panel.style.maxHeight = `${Math.max(room, 160)}px`;
+	}, [open, docked, side, preferredSide]);
 
 	return (
 		<div ref={rootRef} className={docked ? "flex shrink-0" : "relative"}>
@@ -141,7 +185,7 @@ export function ToolPopover({
 						// Fixed on mobile so the bar's horizontal scroll can't clip it.
 						docked
 							? "fixed inset-x-3 bottom-20"
-							: `absolute top-full left-1/2 mt-2 -translate-x-1/2 overflow-y-auto overscroll-contain ${widthClass}`,
+							: `absolute left-1/2 -translate-x-1/2 overflow-y-auto overscroll-contain ${side === "above" ? "bottom-full mb-2" : "top-full mt-2"} ${widthClass}`,
 					].join(" ")}
 				>
 					{children}
