@@ -1,7 +1,25 @@
 import type React from "react";
-import { ArrowDown, ArrowUp, CopyPlus, Crop, Lock, LockOpen, PenLine, Trash2 } from "lucide-react";
-import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../../../shared/store/canvasStore";
+import {
+	AlignCenter,
+	AlignLeft,
+	AlignRight,
+	ArrowDown,
+	ArrowUp,
+	CopyPlus,
+	Crop,
+	Lock,
+	LockOpen,
+	PenLine,
+	Trash2,
+} from "lucide-react";
+import {
+	TEXT_DEFAULTS,
+	isTextItem,
+	type CanvasItem,
+	type TextAlign,
+} from "../../../shared/store/canvasStore";
 import { measureTextHeight } from "../../../shared/utils/textMetrics";
+import { TEXT_FONTS, fontStack } from "../../../shared/utils/fonts";
 import { AlignMenu } from "./AlignMenu";
 import { DesktopOnlyChip } from "./DesktopOnlyChip";
 import { ShapeMenu } from "./ShapeMenu";
@@ -14,11 +32,11 @@ import { CROP_ASPECTS, type CropAspectId } from "../utils/crop";
 import { shortcut } from "../utils/shortcuts";
 import { useToolbarRoving } from "../hooks/useToolbarRoving";
 
-const FONTS = [
-	{ value: "Inter", label: "Inter" },
-	{ value: "Georgia", label: "Georgia" },
-	{ value: "Courier New", label: "Courier" },
-	{ value: "Comic Sans MS", label: "Comic" },
+/** The alignment button steps through these, like Canva's. */
+const ALIGNS: { value: TextAlign; label: string; Icon: typeof AlignLeft }[] = [
+	{ value: "left", label: "izquierda", Icon: AlignLeft },
+	{ value: "center", label: "centro", Icon: AlignCenter },
+	{ value: "right", label: "derecha", Icon: AlignRight },
 ];
 
 /** Konva font sizes are logical px at 96 dpi; people pick sizes in points. */
@@ -109,6 +127,19 @@ export function ItemToolbar({
 	};
 	const setFontFamily = (fontFamily: string) =>
 		onUpdate({ fontFamily, height: measureTextHeight({ ...item, fontFamily }) });
+	const fontFamily = item.fontFamily || TEXT_DEFAULTS.fontFamily;
+	// A board saved with a font no longer offered keeps it, listed by name.
+	const fontOptions: { family: string; label: string }[] = TEXT_FONTS.some(
+		(f) => f.family === fontFamily,
+	)
+		? [...TEXT_FONTS]
+		: [...TEXT_FONTS, { family: fontFamily, label: fontFamily }];
+	const alignIndex = Math.max(
+		0,
+		ALIGNS.findIndex((a) => a.value === (item.align || TEXT_DEFAULTS.align)),
+	);
+	const align = ALIGNS[alignIndex];
+	const nextAlign = ALIGNS[(alignIndex + 1) % ALIGNS.length];
 
 	return (
 		<div
@@ -142,13 +173,15 @@ export function ItemToolbar({
 						<PenLine className="h-4 w-4" aria-hidden="true" />
 					</ToolButton>
 					<select
-						value={item.fontFamily || TEXT_DEFAULTS.fontFamily}
+						value={fontFamily}
 						onChange={(e) => setFontFamily(e.target.value)}
 						aria-label="Fuente"
-						className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-9 shrink-0 cursor-pointer rounded-full bg-transparent px-2 text-sm font-semibold focus-visible:outline-2 dark:[color-scheme:dark]"
+						// The closed field previews the font it names.
+						style={{ fontFamily: fontStack(fontFamily) }}
+						className="text-df-ink dark:text-df-ink-dark hover:bg-df-well dark:hover:bg-df-well-dark focus-visible:outline-df-primary dark:focus-visible:outline-df-primary-dark h-9 shrink-0 cursor-pointer rounded-full bg-transparent px-2 text-sm font-semibold focus-visible:outline-2 dark:scheme-dark"
 					>
-						{FONTS.map((f) => (
-							<option key={f.value} value={f.value}>
+						{fontOptions.map((f) => (
+							<option key={f.family} value={f.family}>
 								{f.label}
 							</option>
 						))}
@@ -178,6 +211,13 @@ export function ItemToolbar({
 							className="absolute inset-0 cursor-pointer opacity-0"
 						/>
 					</label>
+					<ToolButton
+						docked={docked}
+						label={docked ? "Alinear" : `Alineación: ${align.label}`}
+						onClick={() => onUpdate({ align: nextAlign.value })}
+					>
+						<align.Icon className="h-4 w-4" aria-hidden="true" />
+					</ToolButton>
 					<Divider docked={docked} />
 				</>
 			)}

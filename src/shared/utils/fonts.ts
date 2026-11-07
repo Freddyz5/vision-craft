@@ -1,9 +1,22 @@
 import { atom } from "nanostores";
 import { TEXT_DEFAULTS, isTextItem, type CanvasItem } from "../store/canvasStore";
 
+/**
+ * The fonts a board's text can be set in (web fonts, so they look the same
+ * on every device and on paper), named for what they feel like.
+ */
+export const TEXT_FONTS = [
+	{ family: "Inter", label: "Moderna" },
+	{ family: "Fraunces", label: "Clásica" },
+	{ family: "Caveat", label: "A mano" },
+] as const;
+
 /** What each text font falls back to while it loads, or where it isn't installed. */
 const FALLBACKS: Record<string, string> = {
 	Inter: "system-ui, sans-serif",
+	Fraunces: "Georgia, serif",
+	Caveat: "cursive",
+	// Offered before the web fonts; older boards may still use them.
 	Georgia: "serif",
 	"Courier New": "monospace",
 	"Comic Sans MS": "cursive",

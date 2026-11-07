@@ -36,6 +36,8 @@ export interface CanvasItem {
 	fillColor?: string;
 	fontFamily?: string;
 	fontStyle?: string;
+	/** Text only: how its lines sit inside the box. */
+	align?: TextAlign;
 	/** Position & size in logical Stage pixels (96 dpi basis) */
 	x: number;
 	y: number;
@@ -98,13 +100,20 @@ export interface ImageCrop {
 	height: number;
 }
 
-/** Text styling used when an item doesn't set its own (editor, export and print share it). */
+export type TextAlign = "left" | "center" | "right";
+
+/**
+ * How a text is drawn when it doesn't set a field (editor, export and print
+ * share it). These keep older boards looking as they were saved; a new text
+ * gets its own look in newTextItem.
+ */
 export const TEXT_DEFAULTS = {
 	fontSize: 24,
 	fontFamily: "Inter",
 	fillColor: "#7C3AED",
 	fontStyle: "normal",
 	lineHeight: 1,
+	align: "left",
 } as const;
 
 /** Older saves have no `type`; an item with text and no image is a text item. */

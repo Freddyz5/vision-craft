@@ -233,6 +233,7 @@ function CanvasTextShape({ item, scaleFactor, interaction, ref }: CanvasItemShap
 			{...geometry}
 			fontSize={(item.fontSize || TEXT_DEFAULTS.fontSize) * scaleFactor}
 			fontFamily={fontStack(item.fontFamily)}
+			align={item.align || TEXT_DEFAULTS.align}
 			fill={item.fillColor || TEXT_DEFAULTS.fillColor}
 			fontStyle={item.fontStyle || TEXT_DEFAULTS.fontStyle}
 			lineHeight={TEXT_DEFAULTS.lineHeight}

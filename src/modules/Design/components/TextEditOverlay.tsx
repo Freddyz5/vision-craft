@@ -60,6 +60,7 @@ export function TextEditOverlay({ item, scale, onCommit, onCancel }: TextEditOve
 				transformOrigin: "0 0",
 				fontSize: (item.fontSize || TEXT_DEFAULTS.fontSize) * scale,
 				fontFamily: fontStack(item.fontFamily),
+				textAlign: item.align || TEXT_DEFAULTS.align,
 				fontStyle: item.fontStyle || TEXT_DEFAULTS.fontStyle,
 				color: item.fillColor || TEXT_DEFAULTS.fillColor,
 				lineHeight: TEXT_DEFAULTS.lineHeight,

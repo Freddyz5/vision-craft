@@ -61,6 +61,12 @@ export function newPhotoItem(
 	};
 }
 
+/**
+ * A new text's look: centred in its box, in Graphite Ink rather than the
+ * app's violet (the photos carry the colour, and this is what prints).
+ */
+const NEW_TEXT_COLOR = "#111827";
+
 export function newTextItem(sheet: Sheet, items: CanvasItem[]): CanvasItem {
 	const width = sheet.width * TEXT_WIDTH_SHARE;
 	const offset = cascade(items);
@@ -79,7 +85,8 @@ export function newTextItem(sheet: Sheet, items: CanvasItem[]): CanvasItem {
 		y: sheet.height * 0.12 + offset,
 		height: measureTextHeight(text),
 		rotation: 0,
-		fillColor: TEXT_DEFAULTS.fillColor,
+		fillColor: NEW_TEXT_COLOR,
+		align: "center",
 		zIndex: topZ(items),
 	};
 }
